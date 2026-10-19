@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ivory: #F8F5EF;
+  --white: #FFFFFF;
+  --emerald: #8B1E2D;
+  --forest: #4A0B13;
+  --champagne: #C2AA6A;
+  --gold-muted: #B49A58;
+  --ink: #292923;
+  --text-muted: #716D64;
+  --border: #E6DFD3;
+  --surface: #F1ECE3;
+  --blush: #E8C0B8;
+  --content-width: 80rem;
+  --radius-card: 0.5rem;
+  --shadow-card: 0 8px 28px rgba(41, 41, 35, 0.06);
+  --space-section: clamp(3rem, 6vw, 5.5rem);
+  --transition-ui: 180ms ease;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+    letter-spacing: -0.01em;
+  }
+  a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid var(--emerald); outline-offset: 3px; }
+  ::selection { background: var(--champagne); color: var(--forest); }
+}
+
+.btn-primary {
+  background: var(--emerald); color: var(--white); border: 1px solid var(--emerald);
+  transition: background var(--transition-ui), border-color var(--transition-ui), transform var(--transition-ui);
+}
+.btn-primary:hover { background: var(--forest); border-color: var(--forest); }
+.btn-secondary { background: var(--champagne); color: var(--forest); font-weight: 600; transition: background var(--transition-ui); }
+.btn-secondary:hover { background: var(--gold-muted); }
+.btn-outline { background: transparent; color: var(--emerald); border: 1px solid var(--emerald); transition: all var(--transition-ui); }
+.btn-outline:hover { background: var(--emerald); color: var(--white); }
+.glass-gold { background: rgba(255,255,255,.94); border: 1px solid rgba(194,170,106,.35); }
+.glass-dark { background: rgba(74,11,19,.94); border: 1px solid rgba(194,170,106,.25); }
+.gold-gradient-text { color: var(--gold-muted); }
+
+button, a, input, select, textarea { transition-duration: var(--transition-ui); }
+img { max-width: 100%; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--ivory); }
+::-webkit-scrollbar-thumb { background: #c9bea7; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* ==========================================================================
+   RISHI LAL JEWELLERS — BURGUNDY CRYSTAL ATELIER ANIMATIONS
+   ========================================================================== */
+
+/* 1. Deep Burgundy Atmosphere Breathing */
+@keyframes rjAmbientPulse {
+  0% { transform: scale(1); opacity: 0.96; }
+  50% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.96; }
+}
+
+/* 2. Sweeping Curved Glass Ribbon Float */
+@keyframes rjRibbonDrift1 {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-14px, 12px, 0) rotate(1.5deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+
+/* 3. Asymmetrical Second Crystal Form Counter-Drift */
+@keyframes rjRibbonDrift2 {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(16px, -12px, 0) rotate(-1.5deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+
+/* 4. Restrained Central Spotlight Bloom */
+@keyframes rjCenterSpotlight {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 5. Center Medallion Soft Bloom */
+@keyframes rjMedallionBloom {
+  0% {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 6. Subtle Satin Wave Ambient Breathing */
+@keyframes rjSatinBreathing {
+  0% {
+    transform: scale(1.0);
+  }
+  100% {
+    transform: scale(1.025);
+  }
+}
+
+/* 7. Cinematic Logo Specular Gleam Sweep */
+@keyframes rjLogoSpecular {
+  0% {
+    transform: translateX(-150%) rotate(35deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateX(250%) rotate(35deg);
+    opacity: 0;
+  }
+}
+
+/* 8. Traveling Horizon Glint for Wordmark Reveal */
+@keyframes rjTravelingGlint {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+/* 9. Cinematic Ambient Light Sweep across Satin Waves */
+@keyframes rjWaveSheenSweep {
+  0% {
+    opacity: 0.15;
+    transform: translate3d(-4%, -2%, 0);
+  }
+  50% {
+    opacity: 0.35;
+    transform: translate3d(4%, 2%, 0);
+  }
+  100% {
+    opacity: 0.15;
+    transform: translate3d(-4%, -2%, 0);
+  }
+}
+
+/* 10. Subtle Cinematic Wave Light Sweep across Satin Waves */
+@keyframes rjWaveLightSweep {
+  0% {
+    transform: translate3d(-110%, 0, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.75;
+  }
+  80% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(110%, 0, 0);
+    opacity: 0;
+  }
+}
+
+
+

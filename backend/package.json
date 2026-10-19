@@ -1,0 +1,36 @@
+{
+  "name": "rishi-lal-jewellers-backend",
+  "version": "1.0.0",
+  "description": "REST API for Rishi Lal Jewellers Luxury E-Commerce",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node src/seeds/seed.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "ecommerce",
+    "jewelry",
+    "express",
+    "mongodb",
+    "mongoose"
+  ],
+  "author": "Rishi Lal Jewellers Engineering",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^2.30.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb-memory-server": "^10.1.2",
+    "mongoose": "^8.7.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "zod": "^3.23.8"
+  }
+}

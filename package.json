@@ -1,0 +1,17 @@
+{
+  "name": "rishi-lal-jewellers-workspace",
+  "version": "1.0.0",
+  "description": "Rishi Lal Jewellers - Luxury Indian Jewelry E-Commerce Platform",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "seed": "cd backend && npm run seed",
+    "build:frontend": "cd frontend && npm run build",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && npm start"
+  },
+  "keywords": ["jewelry", "ecommerce", "nextjs", "react", "express", "mongodb"],
+  "author": "Rishi Lal Jewellers Engineering",
+  "license": "ISC"
+}
+

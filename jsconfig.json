@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./frontend/src/*"]
+    },
+    "jsx": "preserve"
+  },
+  "include": [
+    "frontend/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "frontend/node_modules",
+    "backend/node_modules",
+    "frontend/.next"
+  ]
+}
+
