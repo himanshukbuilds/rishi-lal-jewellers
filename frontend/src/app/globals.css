@@ -206,5 +206,146 @@ img { max-width: 100%; }
   }
 }
 
+/* 11. Modern Navy Glass Architecture Ambient Drift */
+@keyframes rjGlassAmbient {
+  0% {
+    transform: scale(1.0);
+  }
+  100% {
+    transform: scale(1.02);
+  }
+}
 
+/* 12. Glass Ribbons & Floor Specular Light Sweep */
+@keyframes rjGlassLightSweep {
+  0% {
+    transform: translate3d(-110%, 0, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(110%, 0, 0);
+    opacity: 0;
+  }
+}
 
+/* 13. Specular Caustic Shimmer on Polished Floor */
+@keyframes rjGlassFloorShimmer {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.2;
+    transform: scale(0.98);
+  }
+}
+
+/* 14. Prismatic Crystal Orb Gleam */
+@keyframes rjCrystalPrism {
+  0% {
+    opacity: 0.3;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(0.95);
+  }
+}
+
+/* 15. Ruby Glass Luxury Architecture Ambient Drift */
+@keyframes rjRubyGlassAmbient {
+  0% {
+    transform: scale(1.0);
+  }
+  100% {
+    transform: scale(1.018);
+  }
+}
+
+/* 16. Translucent Glass Ribbons & Gold Specular Sweep */
+@keyframes rjRubyGlassSweep {
+  0% {
+    transform: translate3d(-110%, 0, 0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.68;
+  }
+  75% {
+    opacity: 0.68;
+  }
+  100% {
+    transform: translate3d(110%, 0, 0);
+    opacity: 0;
+  }
+}
+
+/* 17. Polished Floor Golden Caustic Shimmer */
+@keyframes rjRubyFloorShimmer {
+  0% {
+    opacity: 0.22;
+    transform: scale(0.99);
+  }
+  50% {
+    opacity: 0.44;
+    transform: scale(1.015);
+  }
+  100% {
+    opacity: 0.22;
+    transform: scale(0.99);
+  }
+}
+
+/* 18. Delicate Sparkling Starburst Light Point */
+@keyframes rjSparklePulse {
+  0%, 100% {
+    opacity: 0.16;
+    transform: scale(0.72);
+  }
+  50% {
+    opacity: 0.58;
+    transform: scale(1.05);
+  }
+}
+
+/* 19. Volumetric Light Ray Subtle Breathing */
+@keyframes rjVolumetricBreathing {
+  0%, 100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* 20. Elegant Champagne-Gold Specular Light Sweep across Lettering */
+@keyframes rjBrandNameSweep {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.75;
+  }
+  75% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+    opacity: 0;
+  }
+}

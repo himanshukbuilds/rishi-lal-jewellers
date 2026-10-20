@@ -1,6 +1,7 @@
 import './globals.css';
 import Providers from '@/context/Providers';
 import { BRAND_CONFIG } from '@/config/brandConfig';
+import CinematicSequence from '@/components/common/CinematicSequence';
 
 export const metadata = {
   title: `${BRAND_CONFIG.name} — ${BRAND_CONFIG.tagline}`,
@@ -26,19 +27,25 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" style={{ backgroundColor: '#3B0710' }}>
+    <html lang="en" style={{ backgroundColor: '#2A080E' }}>
       <head>
         <link
           rel="preload"
           as="image"
-          href="/images/splash/satin_background_clean.png"
+          href="/images/splash/cinematic-ruby-ribbons.png"
           type="image/png"
           fetchPriority="high"
+        />
+        <link
+          rel="preload"
+          as="image"
+          href="/images/splash/bridal-intro-ruby-background.png"
+          type="image/png"
         />
         <style dangerouslySetInnerHTML={{
           __html: `
             html, body {
-              background-color: #3B0710 !important;
+              background-color: #2A080E !important;
               margin: 0;
               padding: 0;
             }
@@ -47,9 +54,11 @@ export default function RootLayout({ children }) {
       </head>
       <body
         className="min-h-screen flex flex-col font-sans selection:bg-gold-500 selection:text-emerald-950"
-        style={{ backgroundColor: '#3B0710' }}
+        style={{ backgroundColor: '#2A080E' }}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          <CinematicSequence>{children}</CinematicSequence>
+        </Providers>
       </body>
     </html>
   );

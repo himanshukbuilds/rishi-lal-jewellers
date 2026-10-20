@@ -4,6 +4,9 @@ module.exports = {
   JWT_SECRET: process.env.JWT_SECRET || 'rishilal_luxury_secret_jwt_key_2026_int252_int257',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
+  APP_BASE_URL: process.env.APP_BASE_URL || process.env.CLIENT_URL || 'http://localhost:3000',
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  EMAIL_FROM: process.env.EMAIL_FROM || 'Rishi Lal Jewellers <onboarding@resend.dev>',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
   GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   // Precious Metal Market Price Providers

@@ -76,14 +76,34 @@ export const AuthProvider = ({ children }) => {
     return data.user;
   };
 
-  // Customer Registration
+  // Customer Registration (requires email verification before session is issued)
   const register = async (userData) => {
     const data = await api.register(userData);
-    setToken(data.token);
-    setUser(data.user);
-    localStorage.setItem('rishilal_token', data.token);
-    localStorage.setItem('rishilal_user', JSON.stringify(data.user));
-    return data.user;
+    // If backend returns a token (e.g. if instant verification was enabled or demo), save it
+    if (data.token && data.user) {
+      setToken(data.token);
+      setUser(data.user);
+      localStorage.setItem('rishilal_token', data.token);
+      localStorage.setItem('rishilal_user', JSON.stringify(data.user));
+    }
+    return data;
+  };
+
+  // Verify email token and establish authenticated session
+  const verifyEmail = async (tokenString) => {
+    const data = await api.verifyEmail(tokenString);
+    if (data.token && data.user) {
+      setToken(data.token);
+      setUser(data.user);
+      localStorage.setItem('rishilal_token', data.token);
+      localStorage.setItem('rishilal_user', JSON.stringify(data.user));
+    }
+    return data;
+  };
+
+  // Resend email verification link
+  const resendVerification = async (email) => {
+    return await api.resendVerification(email);
   };
 
   // Logout
@@ -131,6 +151,8 @@ export const AuthProvider = ({ children }) => {
     login,
     adminLogin,
     register,
+    verifyEmail,
+    resendVerification,
     logout,
     updateProfile,
     addAddress,

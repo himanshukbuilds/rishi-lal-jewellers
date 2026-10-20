@@ -642,6 +642,7 @@ async function seedDatabase() {
       email: DEMO_ACCOUNTS.ADMIN.email,
       password: DEMO_ACCOUNTS.ADMIN.password,
       role: DEMO_ACCOUNTS.ADMIN.role,
+      isEmailVerified: true,
       phone: '+91 98200 88990',
       addresses: [
         {
@@ -664,6 +665,7 @@ async function seedDatabase() {
       email: DEMO_ACCOUNTS.CUSTOMER.email,
       password: DEMO_ACCOUNTS.CUSTOMER.password,
       role: DEMO_ACCOUNTS.CUSTOMER.role,
+      isEmailVerified: true,
       phone: '+91 98112 34567',
       addresses: [
         {

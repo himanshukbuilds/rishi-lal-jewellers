@@ -59,6 +59,19 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
+// Specific rate limit for email verification resend requests
+const resendLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10, // 10 attempts per 15 minutes per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many verification email requests. Please try again after 15 minutes.'
+  }
+});
+app.use('/api/auth/resend-verification', resendLimiter);
+
 // API Health Check
 app.get('/api/health', (req, res) => {
   res.status(200).json({

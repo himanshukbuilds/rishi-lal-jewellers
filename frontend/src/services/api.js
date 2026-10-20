@@ -70,6 +70,20 @@ class ApiClient {
     });
   }
 
+  async verifyEmail(token) {
+    return this.request('/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+  }
+
+  async resendVerification(email) {
+    return this.request('/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
   async getMe() {
     return this.request('/auth/me');
   }
