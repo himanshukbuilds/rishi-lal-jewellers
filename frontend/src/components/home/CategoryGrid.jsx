@@ -30,9 +30,9 @@ const rightColumnCategories = [
     name: 'Casual & Daily Wear',
     slug: 'daily-wear',
     image: '/images/categories/daily-wear.jpg',
-    alt: 'Everyday jewellery collection',
+    alt: 'Casual and daily wear jewellery collection',
     heightClass: 'h-[400px] sm:h-[460px] lg:h-[540px]',
-    objectPosition: 'object-[center_25%]',
+    objectPosition: 'object-[center_8%]',
     priority: true,
   },
   {
@@ -62,9 +62,9 @@ function CategoryCard({ category }) {
         className={`object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${category.objectPosition}`}
       />
 
-      {/* Subtle burgundy gradient at the bottom of the card matching the reference */}
+      {/* Elegant bottom vignette gradient matching Tanishq: preserves upper 65% crystal clear */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#26050B]/90 via-[#590F1B]/35 to-transparent"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#26050B]/90 via-[#3B0710]/40 via-20% to-transparent to-40%"
         aria-hidden="true"
       />
 
@@ -74,8 +74,8 @@ function CategoryCard({ category }) {
         aria-hidden="true"
       />
 
-      {/* Centered serif category title */}
-      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center justify-end p-6 text-center sm:p-8 lg:p-10">
+      {/* Centered serif category title positioned cleanly in the bottom vignette */}
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center justify-end px-4 pb-5 pt-0 text-center sm:pb-6 lg:pb-7">
         <h3 className="font-serif text-2xl font-normal tracking-wide text-white drop-shadow-md transition-transform duration-300 group-hover:-translate-y-1 sm:text-3xl lg:text-4xl">
           {category.name}
         </h3>
