@@ -32,7 +32,7 @@ const rightColumnCategories = [
     image: '/images/categories/daily-wear.jpg',
     alt: 'Casual and daily wear jewellery collection',
     heightClass: 'h-[400px] sm:h-[460px] lg:h-[540px]',
-    objectPosition: 'object-[center_8%]',
+    objectPosition: 'object-[center_20%]',
     priority: true,
   },
   {
