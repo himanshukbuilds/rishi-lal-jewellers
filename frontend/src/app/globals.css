@@ -266,16 +266,6 @@ img { max-width: 100%; }
   }
 }
 
-/* 15. Ruby Glass Luxury Architecture Ambient Drift */
-@keyframes rjRubyGlassAmbient {
-  0% {
-    transform: scale(1.0);
-  }
-  100% {
-    transform: scale(1.018);
-  }
-}
-
 /* 16. Translucent Glass Ribbons & Gold Specular Sweep */
 @keyframes rjRubyGlassSweep {
   0% {

@@ -666,7 +666,17 @@ export function filterFallbackProducts(params = {}) {
   }
 
   if (params.categorySlug) {
-    list = list.filter((p) => p.categorySlug === params.categorySlug.toLowerCase());
+    const slug = params.categorySlug.toLowerCase();
+    if (slug === 'necklaces') {
+      list = list.filter(
+        (p) =>
+          p.categorySlug === 'necklaces' ||
+          /necklace/i.test(p.category || '') ||
+          (p.tags && p.tags.some((t) => ['necklace', 'choker', 'haar', 'mangalsutra'].includes(t.toLowerCase())))
+      );
+    } else {
+      list = list.filter((p) => p.categorySlug === slug);
+    }
   }
 
   if (params.metal && params.metal !== 'all') {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Search,
@@ -48,7 +49,7 @@ const NAV_CATEGORIES = [
   { name: 'Diamond', href: '/categories/diamond', icon: Gem },
   { name: 'Earrings', href: '/categories/earrings', icon: Disc },
   { name: 'Rings', href: '/categories/rings', icon: CircleDot },
-  { name: 'Necklaces', href: '/categories/necklaces', icon: Link2 },
+  { name: 'Necklaces', href: '/necklaces', icon: Link2 },
   { name: 'Bangles', href: '/categories/bangles', icon: Circle },
   { name: 'Daily Wear', href: '/products?category=Gold&maxPrice=50000', icon: Sun },
   { name: 'Wedding', href: '/categories/bridal', icon: Heart },

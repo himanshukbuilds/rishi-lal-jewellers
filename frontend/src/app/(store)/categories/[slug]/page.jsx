@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { SlidersHorizontal, ChevronDown, ArrowLeft, ShieldCheck, Gem } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import { api } from '@/services/api';
+import NecklacesLandingPage from '../../necklaces/page';
 
 const categoryBanners = {
   traditional: { title: 'Traditional Wear', tagline: 'Classic gold jewelry with a heritage soul', desc: 'Discover heritage inspired necklaces, jhumkas, bangles and timeless gold creations.', bannerImg: '/images/categories/traditional.jpg' },
@@ -101,6 +102,11 @@ const categoryBanners = {
 export default function CategoryPage() {
   const params = useParams();
   const slug = (params?.slug || '').toLowerCase();
+
+  if (slug === 'necklaces') {
+    return <NecklacesLandingPage />;
+  }
+
   const [sort, setSort] = useState('newest');
 
   const banner = categoryBanners[slug] || {

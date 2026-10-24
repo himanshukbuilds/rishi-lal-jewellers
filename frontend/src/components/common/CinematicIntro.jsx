@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import SilkFlowBackdrop from './SilkFlowBackdrop';
 
 /**
  * RISHI LAL JEWELLERS — CINEMATIC INTRO SCREEN (STAGE 2)
@@ -123,14 +124,11 @@ export default function CinematicIntro({ onDismissComplete, dismissEnabled = tru
           ═══════════════════════════════════════════════════════════════════════ */}
       {/* Layer 1: Approved Ruby Luxury Backdrop */}
       <div className="absolute inset-0 w-full h-full pointer-events-none z-0">
-        <Image
+        <SilkFlowBackdrop
           src="/images/splash/bridal-intro-ruby-background.png"
-          alt=""
-          fill
+          kind="intro"
           priority
-          quality={92}
-          sizes="100vw"
-          className="object-cover object-center transform scale-105"
+          className="scale-105"
         />
       </div>
 

@@ -1,6 +1,52 @@
+const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
+
+// Robust product resolver: handles MongoDB ObjectId, SKU, slug, or fallback ID (e.g. prod-004)
+const resolveProduct = async (identifier, item = {}) => {
+  const idStr = String(identifier || item.productId || item._id || '').trim();
+
+  // 1. Valid MongoDB ObjectId
+  if (idStr && mongoose.Types.ObjectId.isValid(idStr)) {
+    try {
+      const p = await Product.findById(idStr);
+      if (p) return p;
+    } catch (_) {}
+  }
+
+  // 2. Exact match on sku or slug
+  if (idStr) {
+    const p = await Product.findOne({
+      $or: [{ sku: idStr }, { slug: idStr.toLowerCase() }]
+    });
+    if (p) return p;
+  }
+
+  // 3. Match fallback prod-00X pattern (e.g. prod-004 -> matching sku ending with -004)
+  const match = idStr.match(/^prod-?(\d+)$/i);
+  if (match) {
+    const num = match[1].padStart(3, '0');
+    const p = await Product.findOne({
+      $or: [
+        { sku: new RegExp(`-${num}$`, 'i') },
+        { sku: new RegExp(`-${match[1]}$`, 'i') }
+      ]
+    });
+    if (p) return p;
+  }
+
+  // 4. Match by item sku or name if provided
+  if (item.sku || item.name) {
+    const query = [];
+    if (item.sku) query.push({ sku: item.sku });
+    if (item.name) query.push({ name: item.name });
+    const p = await Product.findOne({ $or: query });
+    if (p) return p;
+  }
+
+  return null;
+};
 
 // Helper to generate luxury order tracking number
 const generateOrderNumber = () => {
@@ -49,7 +95,7 @@ exports.createOrder = async (req, res, next) => {
     let calculatedSubtotal = 0;
 
     for (const item of items) {
-      const product = await Product.findById(item.productId || item._id);
+      const product = await resolveProduct(item.productId || item._id, item);
 
       if (!product) {
         return res.status(404).json({

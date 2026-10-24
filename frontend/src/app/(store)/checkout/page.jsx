@@ -121,6 +121,8 @@ export default function CheckoutPage() {
         },
         items: cartItems.map((item) => ({
           productId: item.productId,
+          sku: item.sku,
+          name: item.name,
           quantity: item.quantity,
           selectedSize: item.selectedSize,
         })),

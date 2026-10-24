@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import {
   Heart,
   ShoppingBag,
@@ -25,6 +26,11 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { api } from '@/services/api';
 import { formatPrice } from '@/config/brandConfig';
+
+const Product3DViewer = dynamic(() => import('@/components/product/Product3DViewer'), {
+  ssr: false,
+  loading: () => <div className="aspect-square animate-pulse rounded-sm border border-gold-300/60 bg-white" aria-label="Loading 3D viewer" />,
+});
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -140,14 +146,18 @@ export default function ProductDetailsPage() {
           <div className="space-y-4">
             {/* Main Stage Image */}
             <div className="relative aspect-square rounded-sm overflow-hidden bg-white border border-gold-300/60 shadow-sm">
-              <Image
-                src={images[selectedImageIndex]}
-                alt={product.name}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-contain p-4 transition-all duration-300"
-              />
+              {product.modelUrl ? (
+                <Product3DViewer modelUrl={product.modelUrl} image={images[selectedImageIndex]} name={product.name} />
+              ) : (
+                <Image
+                  src={images[selectedImageIndex]}
+                  alt={product.name}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-contain p-4 transition-all duration-300"
+                />
+              )}
 
               {(product.purity || product.metalType) && <div className="absolute top-4 left-4 bg-white/95 text-[#8B1E2D] text-[11px] font-sans px-3 py-1 rounded-sm border border-[#E6DFD3]">
                 {product.purity || product.metalType}

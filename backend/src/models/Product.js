@@ -89,6 +89,12 @@ const productSchema = new mongoose.Schema(
         message: 'A product must have at least one image'
       }
     },
+    // Optional path or URL to an authentic glTF/GLB product model.
+    modelUrl: {
+      type: String,
+      trim: true,
+      default: undefined
+    },
     stock: {
       type: Number,
       required: true,

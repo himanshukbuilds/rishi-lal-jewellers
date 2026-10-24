@@ -28,9 +28,25 @@ exports.getProducts = async (req, res, next) => {
     // Category filter
     if (categorySlug && categorySlug !== 'all') {
       const slugs = categorySlug.split(',').map((slug) => slug.trim().toLowerCase()).filter(Boolean);
-      query.categorySlug = slugs.length > 1 ? { $in: slugs } : slugs[0];
+      if (slugs.length === 1 && slugs[0] === 'necklaces') {
+        query.$or = [
+          { categorySlug: 'necklaces' },
+          { category: /necklace/i },
+          { tags: { $in: ['necklace', 'choker', 'haar', 'mangalsutra'] } }
+        ];
+      } else {
+        query.categorySlug = slugs.length > 1 ? { $in: slugs } : slugs[0];
+      }
     } else if (category && category !== 'all') {
-      query.category = { $regex: new RegExp(category, 'i') };
+      if (/necklace/i.test(category)) {
+        query.$or = [
+          { categorySlug: 'necklaces' },
+          { category: /necklace/i },
+          { tags: { $in: ['necklace', 'choker', 'haar', 'mangalsutra'] } }
+        ];
+      } else {
+        query.category = { $regex: new RegExp(category, 'i') };
+      }
     }
 
     // Metal filter
@@ -164,6 +180,23 @@ exports.getProduct = async (req, res, next) => {
 
     if (!product) {
       product = await Product.findOne({ slug: identifier.toLowerCase() });
+    }
+
+    if (!product) {
+      product = await Product.findOne({ sku: identifier.toUpperCase() });
+    }
+
+    if (!product) {
+      const match = identifier.match(/^prod-?(\d+)$/i);
+      if (match) {
+        const num = match[1].padStart(3, '0');
+        product = await Product.findOne({
+          $or: [
+            { sku: new RegExp(`-${num}$`, 'i') },
+            { sku: new RegExp(`-${match[1]}$`, 'i') }
+          ]
+        });
+      }
     }
 
     if (!product) {

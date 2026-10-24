@@ -264,11 +264,21 @@ const sendVerificationEmail = async ({ to, name, token }) => {
     };
   }
 
-  // 3. Check for API key
+  // 3. Check for API key - in development without key, log verification URL to console
   if (!RESEND_API_KEY) {
-    const errorMsg = 'RESEND_API_KEY is not configured in backend environment. Real email could not be dispatched.';
-    console.error(`[EmailService] Error: ${errorMsg}`);
-    throw new Error(errorMsg);
+    console.log('\n================================================================================');
+    console.log('📧 [EMAIL VERIFICATION - LOCAL DEVELOPMENT]');
+    console.log(`To: ${to} (${name})`);
+    console.log(`Subject: ${subject}`);
+    console.log(`🔗 Verification URL: ${verificationUrl}`);
+    console.log('================================================================================\n');
+    return {
+      success: true,
+      id: 'dev-local-id',
+      verificationUrl,
+      isDevMode: true,
+      message: 'Email simulated in local development. Check terminal output for verification URL.'
+    };
   }
 
   // 4. Send via official Resend SDK

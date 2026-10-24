@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { JWT_SECRET, JWT_EXPIRES_IN, DEMO_ACCOUNTS } = require('../config/constants');
+const { JWT_SECRET, JWT_EXPIRES_IN, DEMO_ACCOUNTS, RESEND_API_KEY } = require('../config/constants');
 const emailService = require('../services/emailService');
 
 // Generate JWT Token
@@ -74,14 +74,21 @@ exports.register = async (req, res, next) => {
       isEmailVerified: false
     });
 
+    // In local development without configured Resend key, auto-verify for frictionless onboarding
+    const isDevAutoVerify = !RESEND_API_KEY && process.env.NODE_ENV === 'development';
+    if (isDevAutoVerify) {
+      user.isEmailVerified = true;
+    }
+
     // Generate single-use crypto random verification token and store SHA-256 hash
     const rawToken = user.createEmailVerificationToken();
     user.lastVerificationEmailSent = new Date();
     await user.save();
 
     // Send actual branded verification email
+    let emailResult = null;
     try {
-      await emailService.sendVerificationEmail({
+      emailResult = await emailService.sendVerificationEmail({
         to: user.email,
         name: user.name,
         token: rawToken
@@ -97,9 +104,22 @@ exports.register = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      requiresVerification: true,
-      message: 'Account created successfully. A verification link has been sent to your email address. Please verify to activate your account.',
-      email: user.email
+      requiresVerification: !isDevAutoVerify,
+      message: isDevAutoVerify
+        ? 'Account created and verified successfully. Welcome to Rishi Lal Privileges.'
+        : 'Account created successfully. A verification link has been sent to your email address. Please verify to activate your account.',
+      email: user.email,
+      verificationUrl: emailResult?.verificationUrl || undefined,
+      token: isDevAutoVerify ? generateToken(user._id) : undefined,
+      user: isDevAutoVerify
+        ? {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            isEmailVerified: true
+          }
+        : undefined
     });
   } catch (err) {
     next(err);
@@ -221,8 +241,9 @@ exports.resendVerification = async (req, res, next) => {
     user.lastVerificationEmailSent = new Date();
     await user.save();
 
+    let emailResult = null;
     try {
-      await emailService.sendVerificationEmail({
+      emailResult = await emailService.sendVerificationEmail({
         to: user.email,
         name: user.name,
         token: rawToken
@@ -236,7 +257,8 @@ exports.resendVerification = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'If an unverified account exists for this email address, a new verification link has been sent.'
+      message: 'If an unverified account exists for this email address, a new verification link has been sent.',
+      verificationUrl: (!RESEND_API_KEY && process.env.NODE_ENV === 'development') ? emailResult?.verificationUrl : undefined
     });
   } catch (err) {
     next(err);
@@ -283,12 +305,18 @@ exports.login = async (req, res, next) => {
     );
 
     if (!user.isEmailVerified && !isDemoAccount) {
-      return res.status(403).json({
-        success: false,
-        code: 'EMAIL_NOT_VERIFIED',
-        message: 'Please verify your email address before signing in. Check your inbox for the verification link.',
-        email: user.email
-      });
+      if (!RESEND_API_KEY && process.env.NODE_ENV === 'development') {
+        user.isEmailVerified = true;
+        await user.save();
+        console.log(`[Auth] Auto-verified ${user.email} in development mode.`);
+      } else {
+        return res.status(403).json({
+          success: false,
+          code: 'EMAIL_NOT_VERIFIED',
+          message: 'Please verify your email address before signing in. Check your inbox for the verification link.',
+          email: user.email
+        });
+      }
     }
 
     const token = generateToken(user._id);

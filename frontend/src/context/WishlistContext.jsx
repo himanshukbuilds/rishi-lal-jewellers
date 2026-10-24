@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { api } from '@/services/api';
+import { useLoginExperience } from './LoginExperienceContext';
 
 const WishlistContext = createContext(null);
 
@@ -10,6 +11,7 @@ export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { openLogin } = useLoginExperience();
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -46,8 +48,7 @@ export const WishlistProvider = ({ children }) => {
     async (product) => {
       const authToken = localStorage.getItem('rishilal_token') || localStorage.getItem('aurelia_token');
       if (!authToken) {
-        const next = `${window.location.pathname}${window.location.search}`;
-        window.location.assign(`/login?${new URLSearchParams({ next }).toString()}`);
+        openLogin({ source: 'protected-action', onSuccess: () => toggleWishlist(product) });
         return;
       }
       const id = product._id || product.id;
@@ -68,7 +69,7 @@ export const WishlistProvider = ({ children }) => {
         }
       }
     },
-    [wishlistItems, isAuthenticated]
+    [wishlistItems, isAuthenticated, openLogin]
   );
 
   // Remove from wishlist

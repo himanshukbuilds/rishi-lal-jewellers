@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -32,6 +33,7 @@ import {
  */
 
 const AUTOPLAY_INTERVAL = 30000; // 30 seconds as specified
+const BridalRibbons = dynamic(() => import('./BridalRibbons'), { ssr: false });
 
 const CAMPAIGN_SLIDES = [
   {
@@ -393,6 +395,8 @@ export default function HeroCarousel() {
                         className="object-cover object-center transition-transform duration-1000 ease-out hover:scale-105"
                         unoptimized
                       />
+
+                      {slide.theme === 'bridal' && isActive && <BridalRibbons />}
 
                       {/* Subtle Rishi Lal Watermark Crest */}
                       <div className="absolute top-4 right-4 z-10 hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-ivory-200 text-[10px] uppercase tracking-widest">

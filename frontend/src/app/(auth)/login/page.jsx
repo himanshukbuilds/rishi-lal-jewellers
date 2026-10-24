@@ -69,6 +69,10 @@ export default function LoginPage() {
     try {
       const authenticatedUser = await login(normalizedEmail, data.password);
 
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('rj_intro_seen', 'true');
+      }
+
       // Default destination for patron login is the HOMEPAGE ('/')
       let destination = '/';
 

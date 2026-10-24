@@ -45,6 +45,7 @@ export default function AdminProductsPage() {
     description: '',
     craftsmanshipStory: '',
     images: '',
+    modelUrl: '',
     availableSizes: 'Standard',
     isBestseller: false,
     isNewArrival: false,
@@ -140,6 +141,7 @@ export default function AdminProductsPage() {
       description: product.description,
       craftsmanshipStory: product.craftsmanshipStory || '',
       images: product.images ? product.images.join(', ') : '',
+      modelUrl: product.modelUrl || '',
       availableSizes: product.availableSizes ? product.availableSizes.join(', ') : 'Standard',
       isBestseller: !!product.isBestseller,
       isNewArrival: !!product.isNewArrival,
@@ -169,6 +171,7 @@ export default function AdminProductsPage() {
       netGoldWeight: Number(formData.netGoldWeight) || Number(formData.grossWeight) || 10,
       stock: Number(formData.stock) || 1,
       images: imgArray.length > 0 ? imgArray : ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80'],
+      modelUrl: formData.modelUrl.trim() || null,
       availableSizes: sizesArray.length > 0 ? sizesArray : ['Standard'],
       categorySlug: formData.category.toLowerCase(),
     };
@@ -513,6 +516,20 @@ export default function AdminProductsPage() {
                     placeholder="https://images.unsplash.com/..., https://..."
                     className="w-full px-3 py-2 border border-gold-300 rounded-sm"
                   />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="text-[11px] font-serif uppercase tracking-wider text-emerald-950 font-bold block mb-1">
+                    Optional 3D Model URL (.glb or .gltf)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.modelUrl}
+                    onChange={(e) => setFormData({ ...formData, modelUrl: e.target.value })}
+                    placeholder="/models/gold-ring.glb"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                  />
+                  <p className="mt-1 text-[10px] text-charcoal-500">Leave blank to use product photos. Local files go in frontend/public/models/.</p>
                 </div>
 
                 <div className="sm:col-span-2">

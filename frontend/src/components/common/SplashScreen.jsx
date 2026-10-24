@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { BRAND_CONFIG } from '@/config/brandConfig';
+import SilkFlowBackdrop from './SilkFlowBackdrop';
 
 /**
  * RISHI LAL JEWELLERS — CINEMATIC RUBY AND CHAMPAGNE BRAND REVEAL
@@ -103,16 +104,11 @@ export default function SplashScreen({ onTransitionStart, onComplete }) {
           ================================================================== */}
       <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
         {/* Layer 1: Ruby silk ribbons, champagne reflections, and reflective floor */}
-        <img
+        <SilkFlowBackdrop
           src="/images/splash/cinematic-ruby-ribbons.png"
-          alt=""
-          fetchPriority="high"
-          decoding="sync"
-          className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-700 ease-out ${backgroundVisible ? 'opacity-100' : 'opacity-0'}`}
-          style={{
-            willChange: 'transform',
-            animation: 'rjRubyGlassAmbient 16s ease-in-out infinite alternate',
-          }}
+          kind="splash"
+          priority
+          className={`transition-opacity duration-700 ease-out ${backgroundVisible ? 'opacity-100' : 'opacity-0'}`}
         />
 
         {/* Layer 2: Warm Ivory & Champagne Soft Diffused Central Illumination */}
@@ -134,27 +130,6 @@ export default function SplashScreen({ onTransitionStart, onComplete }) {
             animation: 'rjRubyFloorShimmer 4.5s ease-in-out infinite',
           }}
         />
-
-        {/* Layer 4: Translucent Ribbons Champagne-Gold Specular Light Sweep
-            Traveling reflection constrained strictly to the lower 42% (ribbon zone).
-            Masked so it flows along the ribbon curves and NEVER obscures text. */}
-        {glassSweepActive && (
-          <div
-            className="absolute inset-x-0 bottom-0 h-[42%] w-full pointer-events-none overflow-hidden"
-            style={{
-              WebkitMaskImage: 'linear-gradient(to top, black 0%, black 80%, transparent 100%)',
-              maskImage: 'linear-gradient(to top, black 0%, black 80%, transparent 100%)',
-            }}
-          >
-            <div
-              className="absolute inset-0 w-[200%] h-full pointer-events-none -left-[50%]"
-              style={{
-                background: 'linear-gradient(115deg, transparent 32%, rgba(255, 240, 200, 0.22) 44%, rgba(255, 255, 255, 0.60) 50%, rgba(212, 175, 55, 0.35) 56%, transparent 68%)',
-                animation: 'rjRubyGlassSweep 3.2s cubic-bezier(0.25, 1, 0.35, 1) forwards',
-              }}
-            />
-          </div>
-        )}
 
         {/* Layer 5: Delicate Sparkling Starburst Light Points (Along Ribbon Crests) */}
         {/* Starburst 1: On rising ribbon curve (left) */}
@@ -211,25 +186,9 @@ export default function SplashScreen({ onTransitionStart, onComplete }) {
               style={{
                 background: 'radial-gradient(circle, rgba(214,179,106,0.20) 0%, rgba(180,110,48,0.10) 42%, transparent 72%)',
                 filter: 'blur(12px)',
-                opacity: logoGleam ? 1 : 0.45,
-                transition: 'opacity 900ms ease-out',
+                opacity: 0.65,
               }}
             />
-            {logoGleam && (
-              <div
-                aria-hidden="true"
-                className="absolute inset-[-10%] z-20 overflow-hidden rounded-full pointer-events-none"
-              >
-                <div
-                  className="absolute inset-y-0 left-[-60%] w-[45%]"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent, rgba(255,244,210,0.30), transparent)',
-                    filter: 'blur(5px)',
-                    animation: 'rjLogoSpecular 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                  }}
-                />
-              </div>
-            )}
             {!imgError ? (
               <Image
                 src="/images/logo-transparent.png"

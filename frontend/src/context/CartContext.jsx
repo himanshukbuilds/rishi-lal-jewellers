@@ -2,10 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '@/services/api';
+import { useLoginExperience } from './LoginExperienceContext';
 
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
+  const { openLogin } = useLoginExperience();
   const [cartItems, setCartItems] = useState([]);
   const [coupon, setCoupon] = useState(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -51,8 +53,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = useCallback((product, quantity = 1, selectedSize = 'Standard') => {
     const authToken = localStorage.getItem('rishilal_token') || localStorage.getItem('aurelia_token');
     if (!authToken) {
-      const next = `${window.location.pathname}${window.location.search}`;
-      window.location.assign(`/login?${new URLSearchParams({ next }).toString()}`);
+      openLogin({ source: 'protected-action', onSuccess: () => addToCart(product, quantity, selectedSize) });
       return;
     }
     setCartItems((prevItems) => {
@@ -87,7 +88,7 @@ export const CartProvider = ({ children }) => {
     });
 
     setIsCartOpen(true);
-  }, []);
+  }, [openLogin]);
 
   // Remove Item
   const removeFromCart = useCallback((productId, selectedSize) => {
@@ -182,8 +183,7 @@ export const CartProvider = ({ children }) => {
     openCart: () => {
       const authToken = typeof window !== 'undefined' && (localStorage.getItem('rishilal_token') || localStorage.getItem('aurelia_token'));
       if (!authToken) {
-        const next = `${window.location.pathname}${window.location.search}`;
-        window.location.assign(`/login?${new URLSearchParams({ next: next === '/' ? '/cart' : next }).toString()}`);
+        openLogin({ source: 'protected-action', onSuccess: () => setIsCartOpen(true) });
         return;
       }
       setIsCartOpen(true);
