@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/config/brandConfig';
@@ -84,12 +84,13 @@ export default function CartDrawer() {
                 >
                   {/* Thumbnail */}
                   <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-300/30">
-                    <Image
+                    <SafeImage
                       src={item.image}
                       alt={item.name}
                       fill
                       sizes="80px"
                       className="object-cover"
+                      fallbackSrc="/images/placeholder.jpg"
                     />
                   </div>
 

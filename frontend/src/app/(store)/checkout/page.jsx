@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -488,7 +488,7 @@ export default function CheckoutPage() {
                   {cartItems.map((item) => (
                     <div key={`${item.productId}-${item.selectedSize}`} className="pt-2 flex items-center gap-3">
                       <div className="relative w-12 h-12 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-200">
-                        <Image src={item.image} alt={item.name} fill sizes="48px" className="object-cover" />
+                        <SafeImage src={item.image} alt={item.name} fill sizes="48px" className="object-cover" fallbackSrc="/images/placeholder.jpg" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-serif text-xs font-medium text-emerald-950 truncate">

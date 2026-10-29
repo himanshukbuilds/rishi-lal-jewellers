@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { Heart, ShoppingBag, Star, Check } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -40,13 +40,13 @@ export default function ProductCard({ product }) {
     <div className="group relative flex flex-col bg-white rounded-sm border border-[#E6DFD3] hover:border-[#C2AA6A]/60 overflow-hidden shadow-xs hover:shadow-luxury transition-all duration-500">
       {/* Image Container */}
       <Link href={`/products/${product.slug || productId}`} className="relative block aspect-square overflow-hidden bg-[#F8F5EF]">
-        <Image
+        <SafeImage
           src={imgSrc}
           alt={product.name}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           className="object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.025]"
-          onError={() => setImgSrc('/images/placeholder.jpg')}
+          fallbackSrc="/images/placeholder.jpg"
         />
 
         {/* Badges */}

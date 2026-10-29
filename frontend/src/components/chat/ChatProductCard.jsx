@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { ShoppingBag, Check, ExternalLink, Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
@@ -37,13 +37,13 @@ export default function ChatProductCard({ product, onSelect }) {
         href={product.productUrl || `/products/${product.slug}`}
         className="relative block h-32 w-full overflow-hidden bg-ivory-100"
       >
-        <Image
+        <SafeImage
           src={imgSrc}
           alt={product.name}
           fill
           sizes="230px"
           className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-          onError={() => setImgSrc('/images/categories/wedding.jpg')}
+          fallbackSrc="/images/categories/wedding.jpg"
         />
         {product.discountPercentage > 0 && (
           <span className="absolute left-2 top-2 rounded bg-[#4A0B13] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#C2AA6A]">

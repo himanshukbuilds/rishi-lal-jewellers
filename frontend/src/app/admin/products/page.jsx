@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
@@ -13,7 +12,9 @@ import {
   AlertCircle,
   Gem,
   Filter,
+  Loader2,
 } from 'lucide-react';
+import SafeImage from '@/components/common/SafeImage';
 import { api } from '@/services/api';
 import { formatPrice } from '@/config/brandConfig';
 
@@ -29,6 +30,7 @@ export default function AdminProductsPage() {
   const [currentProductId, setCurrentProductId] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
+  const [formError, setFormError] = useState(null);
 
   // Form State
   const initialForm = {
@@ -66,9 +68,17 @@ export default function AdminProductsPage() {
 
   const products = data?.products || [];
 
+  // Live parsed preview images for the form
+  const previewImages = useMemo(() => {
+    return String(formData.images || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  }, [formData.images]);
+
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   // Create Product Mutation
@@ -77,12 +87,22 @@ export default function AdminProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       setIsModalOpen(false);
       setFormData(initialForm);
+      setFormError(null);
       showToast('New fine jewelry creation added to catalog successfully!');
     },
     onError: (err) => {
-      alert(`Error creating product: ${err.message}`);
+      let msg = err.message || 'Product creation failed. Please try again.';
+      if (err.status === 401) {
+        msg = 'Your administrator session has expired. Please log in again.';
+      } else if (err.status === 403) {
+        msg = 'You do not have permission to add or modify products.';
+      } else if (err.data?.message) {
+        msg = err.data.message;
+      }
+      setFormError(msg);
     },
   });
 
@@ -92,14 +112,24 @@ export default function AdminProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       setIsModalOpen(false);
       setIsEditing(false);
       setCurrentProductId(null);
       setFormData(initialForm);
+      setFormError(null);
       showToast('Product specifications updated successfully!');
     },
     onError: (err) => {
-      alert(`Error updating product: ${err.message}`);
+      let msg = err.message || 'Product update failed. Please try again.';
+      if (err.status === 401) {
+        msg = 'Your administrator session has expired. Please log in again.';
+      } else if (err.status === 403) {
+        msg = 'You do not have permission to add or modify products.';
+      } else if (err.data?.message) {
+        msg = err.data.message;
+      }
+      setFormError(msg);
     },
   });
 
@@ -109,11 +139,12 @@ export default function AdminProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       setDeleteConfirmId(null);
       showToast('Product removed from catalog.');
     },
     onError: (err) => {
-      alert(`Error deleting product: ${err.message}`);
+      showToast(`Error deleting product: ${err.message}`);
     },
   });
 
@@ -121,24 +152,26 @@ export default function AdminProductsPage() {
     setIsEditing(false);
     setCurrentProductId(null);
     setFormData(initialForm);
+    setFormError(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (product) => {
     setIsEditing(true);
     setCurrentProductId(product._id);
+    setFormError(null);
     setFormData({
-      name: product.name,
-      category: product.category,
-      categorySlug: product.categorySlug || product.category.toLowerCase(),
-      price: product.price,
-      originalPrice: product.originalPrice || '',
-      metal: product.metal,
-      purity: product.purity,
-      grossWeight: product.grossWeight,
-      netGoldWeight: product.netGoldWeight || product.grossWeight,
-      stock: product.stock,
-      description: product.description,
+      name: product.name || '',
+      category: product.category || 'Gold',
+      categorySlug: product.categorySlug || (product.category ? product.category.toLowerCase() : 'gold'),
+      price: product.price ?? '',
+      originalPrice: product.originalPrice ?? '',
+      metal: product.metal || '22K Yellow Gold',
+      purity: product.purity || '22KT (916 Hallmarked)',
+      grossWeight: product.grossWeight ?? '',
+      netGoldWeight: product.netGoldWeight ?? product.grossWeight ?? '',
+      stock: product.stock ?? 5,
+      description: product.description || '',
       craftsmanshipStory: product.craftsmanshipStory || '',
       images: product.images ? product.images.join(', ') : '',
       modelUrl: product.modelUrl || '',
@@ -152,28 +185,73 @@ export default function AdminProductsPage() {
 
   const handleSubmitForm = (e) => {
     e.preventDefault();
+    setFormError(null);
 
-    const imgArray = formData.images
+    // Validation
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      setFormError('Please enter a valid jewelry creation name.');
+      return;
+    }
+
+    const priceNum = Number(formData.price);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setFormError('Please enter a valid selling price greater than ₹0.');
+      return;
+    }
+
+    const weightNum = Number(formData.grossWeight);
+    if (isNaN(weightNum) || weightNum <= 0) {
+      setFormError('Please enter a valid gross weight in grams (e.g. 15.5).');
+      return;
+    }
+
+    const stockNum = Number(formData.stock);
+    if (isNaN(stockNum) || stockNum < 0) {
+      setFormError('Please enter a valid inventory stock number (0 or more).');
+      return;
+    }
+
+    const trimmedDesc = formData.description.trim();
+    if (!trimmedDesc) {
+      setFormError('Please provide a detailed craftsmanship description.');
+      return;
+    }
+
+    const imgArray = String(formData.images || '')
       .split(',')
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
-    const sizesArray = formData.availableSizes
+    if (imgArray.length === 0) {
+      setFormError('Please provide at least one product image URL or path.');
+      return;
+    }
+
+    const sizesArray = String(formData.availableSizes || '')
       .split(',')
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
     const payload = {
-      ...formData,
-      price: Number(formData.price),
-      originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
-      grossWeight: Number(formData.grossWeight) || 10,
-      netGoldWeight: Number(formData.netGoldWeight) || Number(formData.grossWeight) || 10,
-      stock: Number(formData.stock) || 1,
-      images: imgArray.length > 0 ? imgArray : ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80'],
-      modelUrl: formData.modelUrl.trim() || null,
-      availableSizes: sizesArray.length > 0 ? sizesArray : ['Standard'],
+      name: trimmedName,
+      category: formData.category,
       categorySlug: formData.category.toLowerCase(),
+      price: priceNum,
+      originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
+      metal: formData.metal,
+      purity: formData.purity,
+      grossWeight: weightNum,
+      netGoldWeight: Number(formData.netGoldWeight) || weightNum,
+      stock: stockNum,
+      description: trimmedDesc,
+      craftsmanshipStory: formData.craftsmanshipStory.trim() || undefined,
+      images: imgArray,
+      modelUrl: formData.modelUrl?.trim() || undefined,
+      availableSizes: sizesArray.length > 0 ? sizesArray : ['Standard'],
+      isBestseller: Boolean(formData.isBestseller),
+      isNewArrival: Boolean(formData.isNewArrival),
+      isBridal: Boolean(formData.isBridal),
     };
 
     if (isEditing) {
@@ -206,7 +284,7 @@ export default function AdminProductsPage() {
 
         <button
           onClick={handleOpenAddModal}
-          className="px-4 py-2.5 bg-emerald-950 text-gold-300 hover:bg-emerald-900 text-xs uppercase tracking-wider font-semibold rounded-sm transition-colors flex items-center gap-2 border border-gold-400/40 shadow-sm"
+          className="px-4 py-2.5 bg-emerald-950 text-gold-300 hover:bg-emerald-900 text-xs uppercase tracking-wider font-semibold rounded-sm transition-colors flex items-center gap-2 border border-gold-400/40 shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4 text-gold-400" />
           <span>Add New Creation</span>
@@ -264,7 +342,10 @@ export default function AdminProductsPage() {
               {isLoading ? (
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-charcoal-500">
-                    Loading inventory...
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-gold-600" />
+                      <span>Loading inventory...</span>
+                    </div>
                   </td>
                 </tr>
               ) : products.length === 0 ? (
@@ -280,12 +361,13 @@ export default function AdminProductsPage() {
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-12 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-200">
-                          <Image
-                            src={prod.images?.[0] || '/images/placeholder.jpg'}
+                          <SafeImage
+                            src={prod.images?.[0]}
                             alt={prod.name}
                             fill
                             sizes="48px"
                             className="object-cover"
+                            fallbackSrc="/images/placeholder.jpg"
                           />
                         </div>
                         <div>
@@ -331,7 +413,7 @@ export default function AdminProductsPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleOpenEditModal(prod)}
-                          className="p-1.5 text-charcoal-600 hover:text-emerald-950 rounded hover:bg-ivory-100 transition-colors"
+                          className="p-1.5 text-charcoal-600 hover:text-emerald-950 rounded hover:bg-ivory-100 transition-colors cursor-pointer"
                           title="Edit Creation"
                         >
                           <Edit className="w-4 h-4" />
@@ -339,7 +421,7 @@ export default function AdminProductsPage() {
 
                         <button
                           onClick={() => setDeleteConfirmId(prod._id)}
-                          className="p-1.5 text-charcoal-600 hover:text-red-700 rounded hover:bg-red-50 transition-colors"
+                          className="p-1.5 text-charcoal-600 hover:text-red-700 rounded hover:bg-red-50 transition-colors cursor-pointer"
                           title="Delete Creation"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -356,7 +438,7 @@ export default function AdminProductsPage() {
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white rounded-sm p-6 max-w-sm w-full border border-gold-300 shadow-xl space-y-4">
             <h3 className="font-serif text-lg font-semibold text-emerald-950">
               Confirm Deletion
@@ -367,15 +449,16 @@ export default function AdminProductsPage() {
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="px-4 py-2 border border-gold-300 text-xs font-sans uppercase font-medium rounded-sm"
+                className="px-4 py-2 border border-gold-300 text-xs font-sans uppercase font-medium rounded-sm cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={() => deleteMutation.mutate(deleteConfirmId)}
-                className="px-4 py-2 bg-red-700 text-white text-xs font-sans uppercase font-semibold rounded-sm hover:bg-red-800 transition-colors"
+                disabled={deleteMutation.isPending}
+                className="px-4 py-2 bg-red-700 text-white text-xs font-sans uppercase font-semibold rounded-sm hover:bg-red-800 transition-colors cursor-pointer disabled:opacity-50"
               >
-                Delete
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
@@ -384,16 +467,24 @@ export default function AdminProductsPage() {
 
       {/* Add / Edit Product Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
           <div className="bg-white rounded-sm p-6 sm:p-8 max-w-2xl w-full border border-gold-300 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-gold-200 mb-6">
               <h3 className="font-serif text-xl font-semibold text-emerald-950">
                 {isEditing ? 'Edit Jewelry Specifications' : 'Add New Jewelry Creation'}
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-charcoal-500 hover:text-black">
+              <button onClick={() => setIsModalOpen(false)} className="text-charcoal-500 hover:text-black cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Error Alert Banner */}
+            {formError && (
+              <div className="mb-4 p-3.5 bg-red-50 border border-red-200 text-red-800 rounded-sm text-xs flex items-start gap-2.5 font-sans animate-fade-in">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                <span className="leading-relaxed font-medium">{formError}</span>
+              </div>
+            )}
 
             <form onSubmit={handleSubmitForm} className="space-y-4 text-xs font-sans">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -405,9 +496,12 @@ export default function AdminProductsPage() {
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      if (formError) setFormError(null);
+                    }}
                     placeholder="e.g. Royal Nizam Polki Necklace Set"
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
                 </div>
 
@@ -418,7 +512,7 @@ export default function AdminProductsPage() {
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white focus:outline-none focus:border-gold-600"
                   >
                     <option value="Gold">Gold</option>
                     <option value="Diamond">Diamond</option>
@@ -438,7 +532,7 @@ export default function AdminProductsPage() {
                   <select
                     value={formData.metal}
                     onChange={(e) => setFormData({ ...formData, metal: e.target.value })}
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white focus:outline-none focus:border-gold-600"
                   >
                     <option value="22K Yellow Gold">22K Yellow Gold</option>
                     <option value="18K Yellow Gold">18K Yellow Gold</option>
@@ -455,10 +549,14 @@ export default function AdminProductsPage() {
                   <input
                     type="number"
                     required
+                    min="1"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, price: e.target.value });
+                      if (formError) setFormError(null);
+                    }}
                     placeholder="e.g. 145000"
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
                 </div>
 
@@ -468,10 +566,11 @@ export default function AdminProductsPage() {
                   </label>
                   <input
                     type="number"
+                    min="0"
                     value={formData.originalPrice}
                     onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
                     placeholder="e.g. 165000"
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
                 </div>
 
@@ -483,10 +582,14 @@ export default function AdminProductsPage() {
                     type="number"
                     step="0.01"
                     required
+                    min="0.01"
                     value={formData.grossWeight}
-                    onChange={(e) => setFormData({ ...formData, grossWeight: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, grossWeight: e.target.value });
+                      if (formError) setFormError(null);
+                    }}
                     placeholder="e.g. 24.8"
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
                 </div>
 
@@ -497,10 +600,14 @@ export default function AdminProductsPage() {
                   <input
                     type="number"
                     required
+                    min="0"
                     value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, stock: e.target.value });
+                      if (formError) setFormError(null);
+                    }}
                     placeholder="e.g. 5"
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
                 </div>
 
@@ -512,10 +619,42 @@ export default function AdminProductsPage() {
                     type="text"
                     required
                     value={formData.images}
-                    onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                    placeholder="https://images.unsplash.com/..., https://..."
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                    onChange={(e) => {
+                      setFormData({ ...formData, images: e.target.value });
+                      if (formError) setFormError(null);
+                    }}
+                    placeholder="https://images.unsplash.com/..., https://i.pinimg.com/..."
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
+                  <p className="mt-1 text-[10px] text-charcoal-500">
+                    Paste image URLs (Unsplash, Pinterest, Cloudinary, etc.) or local paths (/images/...). Multiple images can be separated by commas.
+                  </p>
+
+                  {/* Live Image Thumbnail Preview */}
+                  {previewImages.length > 0 && (
+                    <div className="mt-2.5 p-3 bg-ivory-50 border border-gold-200/80 rounded-sm">
+                      <span className="text-[10px] font-serif uppercase tracking-wider text-charcoal-600 block mb-2 font-semibold">
+                        Image Preview ({previewImages.length})
+                      </span>
+                      <div className="flex flex-wrap gap-2.5">
+                        {previewImages.map((url, i) => (
+                          <div
+                            key={i}
+                            className="relative w-16 h-16 rounded-sm overflow-hidden bg-white border border-gold-300 shadow-2xs"
+                          >
+                            <SafeImage
+                              src={url}
+                              alt={`Preview ${i + 1}`}
+                              fill
+                              sizes="64px"
+                              className="object-contain p-1"
+                              fallbackSrc="/images/placeholder.jpg"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="sm:col-span-2">
@@ -527,9 +666,11 @@ export default function AdminProductsPage() {
                     value={formData.modelUrl}
                     onChange={(e) => setFormData({ ...formData, modelUrl: e.target.value })}
                     placeholder="/models/gold-ring.glb"
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
-                  <p className="mt-1 text-[10px] text-charcoal-500">Leave blank to use product photos. Local files go in frontend/public/models/.</p>
+                  <p className="mt-1 text-[10px] text-charcoal-500">
+                    Leave blank to use product photos. Local files go in frontend/public/models/.
+                  </p>
                 </div>
 
                 <div className="sm:col-span-2">
@@ -541,7 +682,7 @@ export default function AdminProductsPage() {
                     value={formData.availableSizes}
                     onChange={(e) => setFormData({ ...formData, availableSizes: e.target.value })}
                     placeholder="e.g. 12, 14, 16, 18 or 2.4, 2.6, 2.8"
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
                 </div>
 
@@ -553,9 +694,12 @@ export default function AdminProductsPage() {
                     rows={3}
                     required
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, description: e.target.value });
+                      if (formError) setFormError(null);
+                    }}
                     placeholder="Detailed craftsmanship and design description..."
-                    className="w-full px-3 py-2 border border-gold-300 rounded-sm"
+                    className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
                 </div>
               </div>
@@ -597,16 +741,25 @@ export default function AdminProductsPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gold-300 text-charcoal-700 uppercase tracking-wider font-medium rounded-sm"
+                  className="px-4 py-2 border border-gold-300 text-charcoal-700 uppercase tracking-wider font-medium rounded-sm cursor-pointer hover:bg-ivory-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
-                  className="px-6 py-2 bg-emerald-950 hover:bg-emerald-900 text-gold-300 uppercase tracking-wider font-semibold rounded-sm transition-colors border border-gold-400/40"
+                  className="px-6 py-2 bg-emerald-950 hover:bg-emerald-900 text-gold-300 uppercase tracking-wider font-semibold rounded-sm transition-colors border border-gold-400/40 cursor-pointer disabled:opacity-50 flex items-center gap-2"
                 >
-                  {isEditing ? 'Save Changes' : 'Create Piece'}
+                  {(createMutation.isPending || updateMutation.isPending) && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-gold-400" />
+                  )}
+                  <span>
+                    {createMutation.isPending || updateMutation.isPending
+                      ? 'Saving Creation...'
+                      : isEditing
+                      ? 'Save Changes'
+                      : 'Create Piece'}
+                  </span>
                 </button>
               </div>
             </form>
@@ -616,4 +769,3 @@ export default function AdminProductsPage() {
     </div>
   );
 }
-

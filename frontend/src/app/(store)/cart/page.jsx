@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import {
   ShoppingBag,
   Trash2,
@@ -112,7 +112,7 @@ export default function CartPage() {
                       {/* Product Thumbnail & Details */}
                       <div className="flex gap-4 items-center">
                         <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-300/40">
-                          <Image src={item.image} alt={item.name} fill sizes="100px" className="object-cover" />
+                          <SafeImage src={item.image} alt={item.name} fill sizes="100px" className="object-cover" fallbackSrc="/images/placeholder.jpg" />
                         </div>
                         <div>
                           <span className="text-[10px] font-sans text-gold-700 uppercase tracking-widest block">

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
@@ -149,13 +150,14 @@ export default function ProductDetailsPage() {
               {product.modelUrl ? (
                 <Product3DViewer modelUrl={product.modelUrl} image={images[selectedImageIndex]} name={product.name} />
               ) : (
-                <Image
+                <SafeImage
                   src={images[selectedImageIndex]}
                   alt={product.name}
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-contain p-4 transition-all duration-300"
+                  fallbackSrc="/images/placeholder.jpg"
                 />
               )}
 
@@ -177,7 +179,7 @@ export default function ProductDetailsPage() {
                         : 'border-gold-200/60 opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <Image src={img} alt={`View ${idx + 1}`} fill sizes="80px" className="object-contain p-1" />
+                    <SafeImage src={img} alt={`View ${idx + 1}`} fill sizes="80px" className="object-contain p-1" fallbackSrc="/images/placeholder.jpg" />
                   </button>
                 ))}
               </div>
