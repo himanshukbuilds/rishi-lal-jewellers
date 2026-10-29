@@ -34,6 +34,38 @@ exports.getProducts = async (req, res, next) => {
           { category: /necklace/i },
           { tags: { $in: ['necklace', 'choker', 'haar', 'mangalsutra'] } }
         ];
+      } else if (slugs.length === 1 && slugs[0] === 'gold') {
+        query.$or = [
+          { categorySlug: 'gold' },
+          { category: /gold/i },
+          { metal: /gold/i },
+          { tags: { $in: ['gold', 'temple', '22k', '18k'] } }
+        ];
+      } else if (slugs.length === 1 && (slugs[0] === 'diamond' || slugs[0] === 'diamonds')) {
+        query.$or = [
+          { categorySlug: 'diamond' },
+          { category: /diamond/i },
+          { tags: { $in: ['diamond', 'solitaire', 'polki'] } },
+          { 'gemstones.type': /diamond/i }
+        ];
+      } else if (slugs.length === 1 && (slugs[0] === 'earrings' || slugs[0] === 'earring')) {
+        query.$or = [
+          { categorySlug: 'earrings' },
+          { category: /earring/i },
+          { tags: { $in: ['earring', 'earrings', 'jhumka', 'jhumkas', 'stud', 'studs'] } }
+        ];
+      } else if (slugs.length === 1 && (slugs[0] === 'rings' || slugs[0] === 'ring')) {
+        query.$or = [
+          { categorySlug: 'rings' },
+          { category: /\brings?\b/i },
+          { tags: { $in: ['ring', 'rings', 'band', 'signet', 'cocktail ring'] } }
+        ];
+      } else if (slugs.length === 1 && (slugs[0] === 'bangles' || slugs[0] === 'bangle')) {
+        query.$or = [
+          { categorySlug: 'bangles' },
+          { category: /bangle|kada|bracelet/i },
+          { tags: { $in: ['bangle', 'bangles', 'kada', 'kadas', 'bracelet', 'meenakari', 'nazariya'] } }
+        ];
       } else {
         query.categorySlug = slugs.length > 1 ? { $in: slugs } : slugs[0];
       }
@@ -43,6 +75,38 @@ exports.getProducts = async (req, res, next) => {
           { categorySlug: 'necklaces' },
           { category: /necklace/i },
           { tags: { $in: ['necklace', 'choker', 'haar', 'mangalsutra'] } }
+        ];
+      } else if (/^gold$/i.test(category)) {
+        query.$or = [
+          { categorySlug: 'gold' },
+          { category: /gold/i },
+          { metal: /gold/i },
+          { tags: { $in: ['gold', 'temple', '22k', '18k'] } }
+        ];
+      } else if (/^diamond/i.test(category)) {
+        query.$or = [
+          { categorySlug: 'diamond' },
+          { category: /diamond/i },
+          { tags: { $in: ['diamond', 'solitaire', 'polki'] } },
+          { 'gemstones.type': /diamond/i }
+        ];
+      } else if (/^earring/i.test(category)) {
+        query.$or = [
+          { categorySlug: 'earrings' },
+          { category: /earring/i },
+          { tags: { $in: ['earring', 'earrings', 'jhumka', 'jhumkas', 'stud', 'studs'] } }
+        ];
+      } else if (/^ring/i.test(category)) {
+        query.$or = [
+          { categorySlug: 'rings' },
+          { category: /\brings?\b/i },
+          { tags: { $in: ['ring', 'rings', 'band', 'signet', 'cocktail ring'] } }
+        ];
+      } else if (/^bangle/i.test(category) || /^kada/i.test(category)) {
+        query.$or = [
+          { categorySlug: 'bangles' },
+          { category: /bangle|kada|bracelet/i },
+          { tags: { $in: ['bangle', 'bangles', 'kada', 'kadas', 'bracelet', 'meenakari', 'nazariya'] } }
         ];
       } else {
         query.category = { $regex: new RegExp(category, 'i') };

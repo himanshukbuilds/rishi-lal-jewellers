@@ -45,12 +45,12 @@ const ANNOUNCEMENT_MESSAGES = [
 // Category navigation items with lucide icons
 const NAV_CATEGORIES = [
   { name: 'All Jewellery', href: '/products', icon: Sparkles },
-  { name: 'Gold', href: '/categories/gold', icon: Crown },
-  { name: 'Diamond', href: '/categories/diamond', icon: Gem },
-  { name: 'Earrings', href: '/categories/earrings', icon: Disc },
-  { name: 'Rings', href: '/categories/rings', icon: CircleDot },
+  { name: 'Gold', href: '/gold', icon: Crown },
+  { name: 'Diamond', href: '/diamond', icon: Gem },
+  { name: 'Earrings', href: '/earrings', icon: Disc },
+  { name: 'Rings', href: '/rings', icon: CircleDot },
   { name: 'Necklaces', href: '/necklaces', icon: Link2 },
-  { name: 'Bangles', href: '/categories/bangles', icon: Circle },
+  { name: 'Bangles', href: '/bangles', icon: Circle },
   { name: 'Daily Wear', href: '/products?category=Gold&maxPrice=50000', icon: Sun },
   { name: 'Wedding', href: '/categories/bridal', icon: Heart },
   { name: 'Gifting', href: '/categories/gifts', icon: Gift },
@@ -409,7 +409,13 @@ export default function Header() {
           <ul className="flex items-center justify-center gap-7 py-2.5">
             {NAV_CATEGORIES.map((cat) => {
               const IconComponent = cat.icon;
-              const isActive = pathname === cat.href || (cat.href !== '/products' && pathname?.startsWith(cat.href));
+              const isGoldActive = cat.name === 'Gold' && (pathname === '/gold' || pathname === '/categories/gold');
+              const isDiamondActive = cat.name === 'Diamond' && (pathname === '/diamond' || pathname === '/categories/diamond');
+              const isEarringsActive = cat.name === 'Earrings' && (pathname === '/earrings' || pathname === '/categories/earrings');
+              const isNecklaceActive = cat.name === 'Necklaces' && (pathname === '/necklaces' || pathname === '/categories/necklaces');
+              const isRingsActive = cat.name === 'Rings' && (pathname === '/rings' || pathname === '/categories/rings');
+              const isBanglesActive = cat.name === 'Bangles' && (pathname === '/bangles' || pathname === '/categories/bangles');
+              const isActive = isGoldActive || isDiamondActive || isEarringsActive || isNecklaceActive || isRingsActive || isBanglesActive || pathname === cat.href || (cat.href !== '/products' && pathname?.startsWith(cat.href));
               return (
                 <li key={cat.name}>
                   <Link

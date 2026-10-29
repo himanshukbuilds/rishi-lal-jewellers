@@ -8,6 +8,11 @@ import { SlidersHorizontal, ChevronDown, ArrowLeft, ShieldCheck, Gem } from 'luc
 import ProductCard from '@/components/product/ProductCard';
 import { api } from '@/services/api';
 import NecklacesLandingPage from '../../necklaces/page';
+import GoldLandingPage from '../../gold/page';
+import DiamondLandingPage from '../../diamond/page';
+import EarringsLandingPage from '../../earrings/page';
+import RingsLandingPage from '../../rings/page';
+import BanglesLandingPage from '../../bangles/page';
 
 const categoryBanners = {
   traditional: { title: 'Traditional Wear', tagline: 'Classic gold jewelry with a heritage soul', desc: 'Discover heritage inspired necklaces, jhumkas, bangles and timeless gold creations.', bannerImg: '/images/categories/traditional.jpg' },
@@ -105,6 +110,26 @@ export default function CategoryPage() {
 
   if (slug === 'necklaces') {
     return <NecklacesLandingPage />;
+  }
+
+  if (slug === 'gold') {
+    return <GoldLandingPage />;
+  }
+
+  if (slug === 'diamond') {
+    return <DiamondLandingPage />;
+  }
+
+  if (slug === 'earrings') {
+    return <EarringsLandingPage />;
+  }
+
+  if (slug === 'rings') {
+    return <RingsLandingPage />;
+  }
+
+  if (slug === 'bangles') {
+    return <BanglesLandingPage />;
   }
 
   const [sort, setSort] = useState('newest');
