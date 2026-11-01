@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import SafeImage from '@/components/common/SafeImage';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import {
@@ -35,6 +35,7 @@ const Product3DViewer = dynamic(() => import('@/components/product/Product3DView
 
 export default function ProductDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id;
 
   const { addToCart } = useCart();
@@ -58,6 +59,15 @@ export default function ProductDetailsPage() {
 
   const product = data?.product;
   const relatedProducts = data?.relatedProducts || [];
+  const isDesignEnquiryOnly = product?.priceStatus === 'indicative' || product?.pricingType === 'indicative' || product?.availability === 'design-enquiry';
+  const isOrderable = Boolean(product && !isDesignEnquiryOnly && product.pricingType !== 'price-on-request' && product.isOrderable !== false && product.stock > 0);
+  const availabilityLabel = product?.availability === 'design-enquiry' || isDesignEnquiryOnly
+    ? 'Price approval required'
+    : product?.availability === 'made-to-order'
+      ? 'Made to Order'
+      : product?.availability === 'contact-for-availability' || !product?.stock
+        ? 'Contact for Availability'
+        : 'In Stock';
 
   // Initialize selected size when product loads
   React.useEffect(() => {
@@ -101,11 +111,22 @@ export default function ProductDetailsPage() {
 
   const inWishlist = isInWishlist(product._id);
   const images = product.images && product.images.length > 0 ? product.images : ['/images/placeholder.jpg'];
+  const collectionProduct = Boolean(product.category);
+  const necklaceProduct = /necklace/i.test(product.category || '') || product.categorySlug === 'necklaces';
 
   const handleAddToCart = () => {
-    addToCart(product, quantity, selectedSize || 'Standard');
-    setAddedToCartToast(true);
-    setTimeout(() => setAddedToCartToast(false), 2500);
+    if (!isOrderable && !isDesignEnquiryOnly) return;
+    const added = addToCart(product, quantity, selectedSize || 'Standard');
+    if (added) {
+      setAddedToCartToast(true);
+      setTimeout(() => setAddedToCartToast(false), 2500);
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!isOrderable) return;
+    const added = addToCart(product, quantity, selectedSize || 'Standard');
+    if (added) router.push('/checkout');
   };
 
   const handleCheckPincode = (e) => {
@@ -131,10 +152,10 @@ export default function ProductDetailsPage() {
         <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs font-sans text-charcoal-500 overflow-x-auto whitespace-nowrap">
           <Link href="/" className="hover:text-emerald-950">Home</Link>
           <ChevronRight className="w-3 h-3 text-gold-600" />
-          <Link href="/products" className="hover:text-emerald-950">Jewelry</Link>
+          <Link href="/products" className="hover:text-emerald-950">Jewellery</Link>
           <ChevronRight className="w-3 h-3 text-gold-600" />
-          <Link href={`/categories/${product.categorySlug}`} className="hover:text-emerald-950">
-            {product.category}
+          <Link href={necklaceProduct ? '/necklaces' : `/categories/${product.categorySlug}`} className="hover:text-emerald-950">
+            {necklaceProduct ? 'Necklaces' : product.category}
           </Link>
           <ChevronRight className="w-3 h-3 text-gold-600" />
           <span className="font-medium text-emerald-950 truncate max-w-xs">{product.name}</span>
@@ -164,6 +185,7 @@ export default function ProductDetailsPage() {
               {(product.purity || product.metalType) && <div className="absolute top-4 left-4 bg-white/95 text-[#8B1E2D] text-[11px] font-sans px-3 py-1 rounded-sm border border-[#E6DFD3]">
                 {product.purity || product.metalType}
               </div>}
+              {product.imageType && <div className="absolute bottom-3 left-3 bg-white/95 px-2.5 py-1.5 text-[9px] uppercase tracking-wider text-[#53685D]">{product.imageType}</div>}
             </div>
 
             {/* Thumbnail Row */}
@@ -189,6 +211,7 @@ export default function ProductDetailsPage() {
               <ShieldCheck className="w-4 h-4 text-[#B49A58]" />
               <span>Purity: {product.purity}</span>
             </div>}
+            {product.imageType === 'AI-Generated Concept Image' && <p className="border border-[#D8C99F] bg-[#FBF7E9] p-3 text-xs leading-5 text-[#6F5B31]">Illustrative AI-generated concept image. It does not represent a confirmed stocked item; the actual design may differ.</p>}
           </div>
 
           {/* Right: Product Details & Controls */}
@@ -221,7 +244,7 @@ export default function ProductDetailsPage() {
             <div className="p-4 bg-white rounded-sm border border-gold-300/50 shadow-sm space-y-2">
               <div className="flex items-baseline gap-3">
                 <span className="font-serif text-3xl font-bold text-emerald-950">
-                  {formatPrice(product.price)}
+                  {product.pricingType === 'price-on-request' ? 'Price on request' : formatPrice(product.price)}
                 </span>
                 {product.originalPrice && product.originalPrice > product.price && (
                   <>
@@ -235,24 +258,44 @@ export default function ProductDetailsPage() {
                 )}
               </div>
               <p className="text-[11px] text-charcoal-500">
-                (Inclusive of all taxes & 3% Indian jewellery GST. Zero making charges on select festive designs.)
+                {product.pricingType === 'indicative' ? 'Indicative Catalogue Price — Final price subject to confirmed product specifications and quotation. This AI concept estimate is not a verified supplier price or market valuation.' : product.pricingType === 'price-on-request' ? 'Contact our team for verified pricing and availability.' : 'Final listed selling price. Applicable taxes are included where stated in the product record.'}
               </p>
+              {product.pricingType === 'indicative' && <p className="text-[10px] font-semibold uppercase tracking-wider text-[#826D43]">Indicative Catalogue Price</p>}
+              {collectionProduct && <p className="text-xs font-medium text-emerald-800">{availabilityLabel}</p>}
+              {collectionProduct && <div className="mt-4 border-t border-gold-200/70 pt-3 text-xs text-charcoal-600">
+                <p className="mb-2 font-semibold uppercase tracking-wider text-emerald-950">Price details</p>
+                {product.pricingType === 'indicative' ? <p>Indicative catalogue estimate only. Actual materials, purity, diamond specifications, making charges, taxes, availability and final quotation require business verification.</p> : product.pricingType === 'price-on-request' ? <p>Verified selling price is not available online. Please enquire before purchase.</p> : <div className="space-y-1">
+                  <p className="flex justify-between"><span>Metal value</span><span>{product.metalValue != null ? formatPrice(product.metalValue) : 'Included in listed price'}</span></p>
+                  <p className="flex justify-between"><span>Making charges</span><span>{product.makingCharge != null ? formatPrice(product.makingCharge) : 'As listed'}</span></p>
+                  <p className="flex justify-between"><span>Wastage / stone / other</span><span>{[product.wastageCharge, product.stoneCharge, product.otherCharges].some(Number.isFinite) ? formatPrice((product.wastageCharge || 0) + (product.stoneCharge || 0) + (product.otherCharges || 0)) : 'As listed'}</span></p>
+                  <p className="flex justify-between"><span>GST</span><span>{product.gstRate != null ? `${product.gstRate}%` : 'Included where applicable'}</span></p>
+                </div>}
+                {product.pricingSource && <p className="mt-2 text-[10px]">Rate source: {product.pricingSource}{product.priceUpdatedAt ? ` · Updated ${new Date(product.priceUpdatedAt).toLocaleString('en-IN')}` : ''}. Metal spot rates are indicative; jewellery charges are additional.</p>}
+              </div>}
             </div>
 
             {/* Quick Specs Pill Badges */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs font-sans">
-              <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
+              {product.metalType && <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
+                <span className="text-charcoal-500 text-[10px] uppercase block">Metal Type</span>
+                <span className="font-medium text-emerald-950">{product.metalType}</span>
+              </div>}
+              {product.purity && <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
                 <span className="text-charcoal-500 text-[10px] uppercase block">Metal Purity</span>
                 <span className="font-medium text-emerald-950">{product.purity}</span>
-              </div>
-              <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
+              </div>}
+              {product.grossWeight > 0 && <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
                 <span className="text-charcoal-500 text-[10px] uppercase block">Gross Weight</span>
                 <span className="font-medium text-emerald-950">{product.grossWeight} grams</span>
-              </div>
-              <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
+              </div>}
+              {(product.netMetalWeight > 0 || product.netGoldWeight > 0) && <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
                 <span className="text-charcoal-500 text-[10px] uppercase block">Net Gold Weight</span>
-                <span className="font-medium text-emerald-950">{product.netGoldWeight || product.grossWeight} grams</span>
-              </div>
+                <span className="font-medium text-emerald-950">{product.netMetalWeight || product.netGoldWeight || product.grossWeight} grams</span>
+              </div>}
+              {product.diamondWeight != null && <div><span className="text-charcoal-500 text-[10px] uppercase block">Diamond Weight</span><span className="font-medium text-emerald-950">{product.diamondWeight} ct</span></div>}
+              {product.diamondShape && <div><span className="text-charcoal-500 text-[10px] uppercase block">Diamond Shape</span><span className="font-medium text-emerald-950">{product.diamondShape}</span></div>}
+              {product.diamondColor && <div><span className="text-charcoal-500 text-[10px] uppercase block">Diamond Colour</span><span className="font-medium text-emerald-950">{product.diamondColor}</span></div>}
+              {product.diamondClarity && <div><span className="text-charcoal-500 text-[10px] uppercase block">Diamond Clarity</span><span className="font-medium text-emerald-950">{product.diamondClarity}</span></div>}
             </div>
 
             {/* Size Selector */}
@@ -311,11 +354,13 @@ export default function ProductDetailsPage() {
                 {/* Add to Bag CTA */}
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 py-3.5 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 border border-[#C2AA6A]/40 shadow-sm flex items-center justify-center gap-2"
+                  disabled={!isOrderable && !isDesignEnquiryOnly}
+                  className="flex-1 py-3.5 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 border border-[#C2AA6A]/40 shadow-sm flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Add to Shopping Bag</span>
+                  <span>Add to Bag</span>
                 </button>
+                {isOrderable && <button onClick={handleBuyNow} className="px-3 py-3.5 bg-emerald-950 text-white text-[10px] uppercase tracking-widest">Buy Now</button>}
 
                 {/* Wishlist Button */}
                 <button
@@ -331,10 +376,12 @@ export default function ProductDetailsPage() {
                 </button>
               </div>
 
+              {isDesignEnquiryOnly && <p className="border border-gold-300/70 bg-white p-3 text-[11px] leading-5 text-charcoal-600">Indicative concept price only. Adding to your bag saves the design; checkout stays locked until the business confirms and approves its final price.</p>}
+              {!isOrderable && !isDesignEnquiryOnly && <p className="text-[11px] text-charcoal-600">Price or inventory must be confirmed before this item can be added to your bag.</p>}
               {addedToCartToast && (
                 <div className="p-3 bg-emerald-900 text-gold-300 rounded-sm text-xs flex items-center gap-2 animate-fade-in border border-gold-400/30">
                   <Check className="w-4 h-4 text-gold-400 shrink-0" />
-                  <span>Successfully added to your shopping bag!</span>
+                  <span>{isDesignEnquiryOnly ? 'Added to your bag. Final price approval is required before checkout.' : 'Successfully added to your shopping bag!'}</span>
                 </div>
               )}
             </div>

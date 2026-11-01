@@ -20,6 +20,7 @@ export default function CartDrawer() {
     total,
     itemCount,
   } = useCart();
+  const hasIndicativeItems = cartItems.some((item) => item.priceStatus === 'indicative' || item.pricingType === 'indicative' || item.availability === 'design-enquiry' || item.isOrderable === false);
 
   if (!isCartOpen) return null;
 
@@ -89,7 +90,7 @@ export default function CartDrawer() {
                       alt={item.name}
                       fill
                       sizes="80px"
-                      className="object-cover"
+                      className="object-contain"
                       fallbackSrc="/images/placeholder.jpg"
                     />
                   </div>
@@ -110,8 +111,9 @@ export default function CartDrawer() {
                         </button>
                       </div>
                       <p className="text-[11px] text-charcoal-500 mt-0.5">
-                        {item.purity || '22KT Gold'} • Size: <span className="font-medium text-emerald-950">{item.selectedSize}</span>
+                        {[item.purity, item.metal, `Size: ${item.selectedSize}`].filter(Boolean).join(' · ')}
                       </p>
+                      {(item.priceStatus === 'indicative' || item.pricingType === 'indicative') && <p className="mt-1 text-[9px] font-medium uppercase tracking-wider text-[#826D43]">Indicative estimate · final price requires approval</p>}
                     </div>
 
                     <div className="flex items-center justify-between mt-3 pt-2 border-t border-ivory-200">
@@ -150,6 +152,7 @@ export default function CartDrawer() {
           {cartItems.length > 0 && (
             <div className="p-6 bg-white border-t border-gold-300/40 space-y-3">
               <div className="space-y-1.5 text-xs text-charcoal-600">
+                {hasIndicativeItems && <p className="mb-2 border border-gold-300 bg-ivory-100 p-2 text-[10px] leading-4 text-charcoal-600">Indicative value only; not payable before price approval.</p>}
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span className="font-medium text-emerald-950">{formatPrice(subtotal)}</span>
@@ -171,7 +174,7 @@ export default function CartDrawer() {
               </div>
 
               <div className="pt-3 border-t border-gold-200 flex justify-between items-baseline">
-                <span className="font-serif text-base text-emerald-950 font-medium">Estimated Total</span>
+                <span className="font-serif text-base text-emerald-950 font-medium">{hasIndicativeItems ? 'Indicative Total' : 'Estimated Total'}</span>
                 <span className="font-serif text-xl font-bold text-emerald-950">{formatPrice(total)}</span>
               </div>
 
@@ -183,14 +186,14 @@ export default function CartDrawer() {
                 >
                   View Bag
                 </Link>
-                <Link
+                {hasIndicativeItems ? <span className="flex-[1.5] py-3 text-center bg-gray-200 text-gray-600 text-[10px] uppercase tracking-wider rounded-sm">Price approval required before checkout</span> : <Link
                   href="/checkout"
                   onClick={closeCart}
                   className="flex-[1.5] py-3 text-center bg-emerald-950 text-gold-300 text-xs uppercase tracking-widest font-medium hover:bg-emerald-900 transition-colors rounded-sm flex items-center justify-center gap-2 border border-gold-400/40 shadow-sm"
                 >
                   <span>Checkout</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                </Link>}
               </div>
             </div>
           )}

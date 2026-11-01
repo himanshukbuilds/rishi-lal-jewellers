@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Heart,
   SlidersHorizontal,
-  X,
   ShieldCheck,
   Award,
   Truck,
@@ -19,8 +18,10 @@ import {
   CircleDot
 } from 'lucide-react';
 import { api } from '@/services/api';
+import ProductCard from '@/components/product/ProductCard';
 import { formatPrice } from '@/config/brandConfig';
 import { useWishlist } from '@/context/WishlistContext';
+import SafeImage from '@/components/common/SafeImage';
 
 // Carousel slide data for the three-panel Rings editorial hero
 const HERO_SLIDES = [
@@ -71,69 +72,14 @@ const HERO_SLIDES = [
   },
 ];
 
-// Fallback products matching the exact reference cards in case of initial load or empty DB records
-const FALLBACK_RINGS_PRODUCTS = [
-  {
-    _id: 'fb-rg-1',
-    name: 'Solitaire Diamond Ring',
-    slug: 'the-crown-1-50-ct-solitaire-diamond-ring',
-    price: 185000,
-    category: 'Rings',
-    image: '/images/rings/products/solitaire-diamond-ring.jpg',
-    metal: '18K White Gold',
-  },
-  {
-    _id: 'fb-rg-2',
-    name: 'Wedding Band Ring',
-    slug: 'the-crown-1-50-ct-solitaire-diamond-ring',
-    price: 110000,
-    category: 'Rings',
-    image: '/images/rings/products/wedding-band-ring.jpg',
-    metal: '18K Yellow Gold',
-  },
-  {
-    _id: 'fb-rg-3',
-    name: 'Ruby Gold Ring',
-    slug: 'royal-mughal-ruby-uncut-diamond-cocktail-ring',
-    price: 98000,
-    category: 'Rings',
-    image: '/images/rings/products/ruby-gold-ring.jpg',
-    metal: '22K Yellow Gold',
-  },
-  {
-    _id: 'fb-rg-4',
-    name: 'Emerald Ring',
-    slug: 'navratna-royal-nine-gem-heritage-ring',
-    price: 145000,
-    category: 'Rings',
-    image: '/images/rings/products/emerald-ring.jpg',
-    metal: '18K Yellow Gold',
-  },
-  {
-    _id: 'fb-rg-5',
-    name: 'Floral Diamond Ring',
-    slug: 'the-crown-1-50-ct-solitaire-diamond-ring',
-    price: 125000,
-    category: 'Rings',
-    image: '/images/rings/products/floral-diamond-ring.jpg',
-    metal: '18K White Gold',
-  },
-  {
-    _id: 'fb-rg-6',
-    name: 'Gold Ring (Mens)',
-    slug: 'sultan-mens-22k-solid-gold-lion-signet-ring',
-    price: 92000,
-    category: 'Rings',
-    image: '/images/rings/products/gold-ring-mens.jpg',
-    metal: '22K Yellow Gold',
-  },
-];
-
 export default function RingsLandingPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sort, setSort] = useState('featured');
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState('all');
+  const [metalFilter, setMetalFilter] = useState('all');
+  const [priceFilter, setPriceFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { isInWishlist, toggleWishlist } = useWishlist();
 
@@ -141,18 +87,38 @@ export default function RingsLandingPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['rings-collection', sort],
     queryFn: () =>
-      api.getProducts({
-        categorySlug: 'rings',
-        sort: sort === 'featured' ? undefined : sort,
-        limit: 48,
-      }),
+      api.request(`/products?categorySlug=rings&limit=48${sort === 'featured' ? '' : `&sort=${encodeURIComponent(sort)}`}`),
   });
 
-  const rawProducts = data?.products && data.products.length > 0 ? data.products : FALLBACK_RINGS_PRODUCTS;
+  const rawProducts = data?.products || [];
 
   // Filter and sort products
   const displayedProducts = useMemo(() => {
     let list = [...rawProducts];
+
+    if (metalFilter !== 'all') {
+      list = list.filter((product) => {
+        const descriptor = `${product.name || ''} ${product.metal || ''} ${(product.tags || []).join(' ')}`;
+        if (metalFilter === 'Rose Gold') return /rose\s*gold/i.test(descriptor);
+        if (metalFilter === 'Platinum Finish') return /platinum\s*finish/i.test(descriptor);
+        return product.metalType === metalFilter;
+      });
+    }
+    if (searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      list = list.filter((product) => [product.name, product.description, product.metal, product.metalType, product.subcategory, ...(product.tags || [])].filter(Boolean).join(' ').toLowerCase().includes(term));
+    }
+    const priceBands = {
+      under5000: [0, 5000],
+      '5000-15000': [5000, 15000],
+      '15000-30000': [15000, 30000],
+      '30000-50000': [30000, 50000],
+      above50000: [50000, Infinity],
+    };
+    if (priceFilter !== 'all') {
+      const [minimum, maximum] = priceBands[priceFilter];
+      list = list.filter((product) => Number.isFinite(Number(product.price)) && Number(product.price) >= minimum && Number(product.price) < maximum);
+    }
 
     // Filter by style
     if (selectedStyle !== 'all') {
@@ -162,7 +128,7 @@ export default function RingsLandingPage() {
         const tags = (p.tags || []).map((t) => t.toLowerCase());
 
         if (selectedStyle === 'solitaire') {
-          return /solitaire|diamond|crown|floral/i.test(name) || tags.some((t) => ['solitaire', 'diamond'].includes(t));
+          return /solitaire|diamond|floral/i.test(name) || tags.some((t) => ['solitaire', 'diamond'].includes(t));
         }
         if (selectedStyle === 'band') {
           return /band|wedding|eternity/i.test(name) || /band/i.test(desc) || tags.includes('band');
@@ -186,18 +152,11 @@ export default function RingsLandingPage() {
     } else if (sort === 'price-desc') {
       list.sort((a, b) => b.price - a.price);
     } else if (sort === 'newest') {
-      list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    }
-
-    // Ensure we always have our 6 showcase reference items available for display
-    if (list.length < 6 && selectedStyle === 'all') {
-      const existingSlugs = new Set(list.map((p) => p.slug));
-      const extras = FALLBACK_RINGS_PRODUCTS.filter((fb) => !existingSlugs.has(fb.slug));
-      list = [...list, ...extras].slice(0, 6);
+      list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     }
 
     return list;
-  }, [rawProducts, sort, selectedStyle]);
+  }, [rawProducts, sort, selectedStyle, metalFilter, priceFilter, searchTerm]);
 
   const slide = HERO_SLIDES[currentSlide];
 
@@ -396,7 +355,15 @@ export default function RingsLandingPage() {
             </div>
 
             {/* Controls: Sort Dropdown & Filter Drawer Button */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search rings"
+                aria-label="Search rings"
+                className="w-36 rounded-xs border border-[#D5CDC0] bg-white px-3 py-2 text-xs outline-none focus:border-[#650B19] sm:w-44"
+              />
               <div className="relative">
                 <select
                   value={sort}
@@ -420,6 +387,28 @@ export default function RingsLandingPage() {
               </button>
             </div>
           </div>
+
+          <p className="mb-5 border border-[#E6DFD3] bg-white/80 px-4 py-3 text-[11px] leading-5 text-[#716D64]">
+            Indicative Catalogue Price — Final price subject to confirmed product specifications and quotation. AI-generated images are illustrative concepts, not verified product photographs.
+          </p>
+
+          {filterDrawerOpen && (
+            <div className="mb-6 grid grid-cols-1 gap-3 border border-[#E6DFD3] bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-[#8B1E2D]">Metal
+                <select value={metalFilter} onChange={(event) => setMetalFilter(event.target.value)} className="mt-1 block w-full border border-[#D5CDC0] bg-white p-2 text-xs normal-case tracking-normal text-[#2B2B2B]">
+                  <option value="all">All metals</option><option value="Gold">Gold</option><option value="Diamond">Diamond</option><option value="Silver">Silver</option><option value="Rose Gold">Rose Gold</option><option value="Platinum Finish">Platinum Finish</option>
+                </select>
+              </label>
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-[#8B1E2D]">Price range
+                <select value={priceFilter} onChange={(event) => setPriceFilter(event.target.value)} className="mt-1 block w-full border border-[#D5CDC0] bg-white p-2 text-xs normal-case tracking-normal text-[#2B2B2B]">
+                  <option value="all">All prices</option><option value="under5000">Under ₹5,000</option><option value="5000-15000">₹5,000 – ₹15,000</option><option value="15000-30000">₹15,000 – ₹30,000</option><option value="30000-50000">₹30,000 – ₹50,000</option><option value="above50000">Above ₹50,000</option>
+                </select>
+              </label>
+              <div className="flex items-end justify-end">
+                <button onClick={() => { setSelectedStyle('all'); setMetalFilter('all'); setPriceFilter('all'); setSearchTerm(''); }} className="px-3 py-2 text-xs font-medium text-[#8B1E2D] hover:underline">Reset filters</button>
+              </div>
+            </div>
+          )}
 
           {/* Quick Style Filter Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-none text-xs font-sans">
@@ -446,10 +435,10 @@ export default function RingsLandingPage() {
           </div>
 
           {/* ═════════════════════════════════════════════════════════════════
-              PRODUCT GRID: 6-COLUMN RESPONSIVE LAYOUT MATCHING REFERENCE
+              DATABASE PRODUCT GRID
           ═════════════════════════════════════════════════════════════════ */}
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="bg-white rounded-xs p-3 animate-pulse border border-[#E6DFD3]">
                   <div className="w-full h-32 bg-[#EBE4D8] rounded-xs mb-3" />
@@ -466,79 +455,15 @@ export default function RingsLandingPage() {
                 Try selecting a different style or reset to view all creations.
               </p>
               <button
-                onClick={() => setSelectedStyle('all')}
+                onClick={() => { setSelectedStyle('all'); setMetalFilter('all'); setPriceFilter('all'); setSearchTerm(''); }}
                 className="px-4 py-2 bg-[#650B19] text-white text-xs uppercase font-sans tracking-wider rounded-xs"
               >
                 Reset Filters
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-              {displayedProducts.map((product) => {
-                const isFavorited = isInWishlist(product._id);
-                const displayImage =
-                  product.image ||
-                  (product.images && product.images[0]) ||
-                  '/images/rings/products/solitaire-diamond-ring.jpg';
-
-                return (
-                  <div
-                    key={product._id}
-                    className="group bg-white rounded-xs border border-[#E6DFD3] hover:border-[#D6B36A] transition-all duration-300 hover:shadow-md flex flex-col overflow-hidden"
-                  >
-                    {/* Product Card Image Container */}
-                    <div className="relative w-full aspect-4/3 bg-[#F4EFE6] overflow-hidden">
-                      <Link href={`/products/${product.slug}`} className="block w-full h-full">
-                        <Image
-                          src={displayImage}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
-                          className="object-cover object-center group-hover:scale-108 transition-transform duration-500 ease-out"
-                        />
-                      </Link>
-
-                      {/* Wishlist toggle heart button */}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleWishlist(product);
-                        }}
-                        aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
-                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-[#650B19] flex items-center justify-center transition-colors shadow-xs z-10"
-                      >
-                        <Heart
-                          className={`w-3.5 h-3.5 transition-colors ${
-                            isFavorited ? 'fill-[#650B19] text-[#650B19]' : 'text-[#4A4A4A]'
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Product Card Details */}
-                    <div className="p-3 flex flex-col flex-1 justify-between bg-white">
-                      <div>
-                        <Link href={`/products/${product.slug}`}>
-                          <h3 className="font-sans text-xs text-[#2B2B2B] group-hover:text-[#650B19] transition-colors line-clamp-1 font-normal mb-1">
-                            {product.name}
-                          </h3>
-                        </Link>
-                      </div>
-
-                      <div className="pt-1 flex items-baseline justify-between">
-                        <span className="font-sans text-xs font-semibold text-[#1A1A1A]">
-                          {formatPrice(product.price)}
-                        </span>
-                        {product.metal && (
-                          <span className="text-[10px] text-charcoal-500 font-sans truncate max-w-[70px]">
-                            {product.metal.replace('Yellow Gold', 'Gold').replace('White Gold', 'Platinum')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+              {displayedProducts.map((product) => <ProductCard key={product._id || product.id || product.slug} product={product} />)}
             </div>
           )}
 
@@ -550,9 +475,9 @@ export default function RingsLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">100% BIS Hallmarked</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Specifications to Confirm</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                Government certified purity with HUID authenticity on every ring.
+                Purity, hallmark and weight are verified with the business before an order.
               </p>
             </div>
 
@@ -560,9 +485,9 @@ export default function RingsLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <Award className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">IGI &amp; GIA Diamonds</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Stone Details on Enquiry</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                Natural, conflict-free certified solitaires of exceptional fire.
+                Diamond identity, quality and any certification are not verified for concept designs.
               </p>
             </div>
 
@@ -570,9 +495,9 @@ export default function RingsLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <Sparkles className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Lifetime Exchange</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Indicative Catalogue</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                Guaranteed buyback and exchange value across all RL boutiques.
+                Listed prices are estimates and require a confirmed business quotation.
               </p>
             </div>
 
@@ -580,9 +505,9 @@ export default function RingsLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <Truck className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Insured Delivery</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Made to Order Enquiry</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                Secure armored courier delivery with tamper-proof packaging.
+                No physical stock or delivery schedule is claimed for illustrative designs.
               </p>
             </div>
           </div>
@@ -590,111 +515,6 @@ export default function RingsLandingPage() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          INTERACTIVE FILTER DRAWER (Slide-over)
-      ═══════════════════════════════════════════════════════════════════ */}
-      {filterDrawerOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-            onClick={() => setFilterDrawerOpen(false)}
-          />
-
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-sm bg-white shadow-2xl flex flex-col">
-              
-              {/* Drawer Header */}
-              <div className="p-5 border-b border-[#E6DFD3] flex items-center justify-between bg-[#F8F5EF]">
-                <div>
-                  <h3 className="font-serif text-lg text-[#1A1A1A]">Filter Rings</h3>
-                  <p className="text-[11px] font-sans text-charcoal-500">Curate your ideal creation</p>
-                </div>
-                <button
-                  onClick={() => setFilterDrawerOpen(false)}
-                  className="p-1.5 text-charcoal-500 hover:text-charcoal-900 rounded-full"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Drawer Content */}
-              <div className="p-6 overflow-y-auto flex-1 space-y-6 font-sans text-xs">
-                <div>
-                  <label className="block text-xs uppercase tracking-wider font-bold text-[#8B1E2D] mb-3">
-                    Ring Category
-                  </label>
-                  <div className="space-y-2">
-                    {[
-                      { id: 'all', label: 'All Rings' },
-                      { id: 'solitaire', label: 'Solitaire & Diamond Rings' },
-                      { id: 'band', label: 'Wedding Bands & Eternity' },
-                      { id: 'gemstone', label: 'Burma Ruby & Gemstones' },
-                      { id: 'mens', label: "Men's Solid Gold Signets" },
-                      { id: 'gold', label: '22KT Pure Gold Rings' },
-                    ].map((opt) => (
-                      <label key={opt.id} className="flex items-center gap-2.5 cursor-pointer text-[#333]">
-                        <input
-                          type="radio"
-                          name="styleOption"
-                          checked={selectedStyle === opt.id}
-                          onChange={() => setSelectedStyle(opt.id)}
-                          className="accent-[#650B19]"
-                        />
-                        <span>{opt.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-[#E6DFD3]">
-                  <label className="block text-xs uppercase tracking-wider font-bold text-[#8B1E2D] mb-3">
-                    Sort Preference
-                  </label>
-                  <div className="space-y-2">
-                    {[
-                      { id: 'featured', label: 'Featured Curations' },
-                      { id: 'price-asc', label: 'Price: Low to High' },
-                      { id: 'price-desc', label: 'Price: High to Low' },
-                      { id: 'newest', label: 'Newest Arrivals' },
-                    ].map((opt) => (
-                      <label key={opt.id} className="flex items-center gap-2.5 cursor-pointer text-[#333]">
-                        <input
-                          type="radio"
-                          name="sortOption"
-                          checked={sort === opt.id}
-                          onChange={() => setSort(opt.id)}
-                          className="accent-[#650B19]"
-                        />
-                        <span>{opt.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Drawer Footer */}
-              <div className="p-4 bg-[#F8F5EF] border-t border-[#E6DFD3] flex gap-3">
-                <button
-                  onClick={() => {
-                    setSelectedStyle('all');
-                    setSort('featured');
-                  }}
-                  className="flex-1 py-2.5 border border-[#D5CDC0] text-xs font-sans uppercase font-medium rounded-xs text-charcoal-700 hover:bg-white"
-                >
-                  Reset
-                </button>
-                <button
-                  onClick={() => setFilterDrawerOpen(false)}
-                  className="flex-1 py-2.5 bg-[#650B19] text-white text-xs font-sans uppercase font-semibold rounded-xs shadow-xs hover:bg-[#7e1022]"
-                >
-                  Apply Filters
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

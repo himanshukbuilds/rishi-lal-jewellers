@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { MessageCircle, X } from 'lucide-react';
 import ChatWindow from './ChatWindow';
+import RivaAvatar from './RivaAvatar';
 
 export default function JewelryChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +29,7 @@ export default function JewelryChatbot() {
   }, []);
 
   return (
-    <aside aria-label="Halku - AI Jewellery Shopping Assistant" className="fixed bottom-5 right-5 z-50 print:hidden">
+    <aside aria-label="RIVA - Personal Jewellery Assistant" className="fixed bottom-5 right-5 z-50 print:hidden">
       {/* Active Floating Chat Window */}
       {isOpen && (
         <div className="fixed inset-x-3 bottom-3 top-20 z-50 flex sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[590px] sm:w-[420px] transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-5">
@@ -46,17 +46,9 @@ export default function JewelryChatbot() {
               onClick={() => setIsOpen(true)}
               className="mr-3 hidden cursor-pointer items-center gap-2 rounded-full border border-[#C2AA6A]/50 bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur-md transition-all duration-300 hover:border-[#C2AA6A] hover:bg-white md:flex"
             >
-              <div className="relative h-5 w-5 overflow-hidden rounded-full border border-[#C2AA6A] shrink-0">
-                <Image
-                  src="/images/avatar/halku.png"
-                  alt="Halku"
-                  fill
-                  sizes="20px"
-                  className="object-cover"
-                />
-              </div>
+              <RivaAvatar size="xs" />
               <span className="font-serif text-xs font-medium text-[#4A0B13]">
-                Ask Halku
+                Ask RIVA
               </span>
               <button
                 type="button"
@@ -72,29 +64,18 @@ export default function JewelryChatbot() {
             </div>
           )}
 
-          {/* Luxury Floating Button with Halku Avatar */}
+          {/* Luxury Floating Button with RIVA Icon */}
           <button
             onClick={() => setIsOpen(true)}
             type="button"
-            className="group relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#C2AA6A] bg-[#4A0B13] p-0.5 shadow-xl transition-all duration-300 hover:scale-105 hover:border-[#E4D4A7] hover:shadow-2xl active:scale-95"
-            aria-label="Open Halku - AI Jewellery Assistant"
+            className="group relative flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#C2AA6A] bg-[#4A0B13] p-0.5 shadow-xl transition-all duration-300 hover:scale-105 hover:border-[#E4D4A7] hover:shadow-2xl active:scale-95 cursor-pointer"
+            aria-label="Open RIVA - Personal Jewellery Assistant"
+            title="Chat with RIVA - Personal Jewellery Assistant"
           >
             {/* Pulsing ring */}
             <span className="absolute -inset-1 rounded-full border border-[#C2AA6A]/40 animate-ping opacity-60 pointer-events-none" />
 
-            <div className="relative h-full w-full overflow-hidden rounded-full">
-              <Image
-                src="/images/avatar/halku.png"
-                alt="Halku - AI Jewellery Assistant"
-                fill
-                sizes="56px"
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                priority
-              />
-            </div>
-
-            {/* Online status indicator dot */}
-            <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-[#4A0B13] bg-emerald-400" />
+            <RivaAvatar size="lg" showStatus={true} />
           </button>
         </div>
       )}

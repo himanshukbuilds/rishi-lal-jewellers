@@ -74,3 +74,29 @@ test('getMarketPrices accepts diamond 4Cs query parameters', async () => {
   assert.strictEqual(res.diamonds.selectedSpecs.shape, 'Oval');
 });
 
+test('getGoldPrices and getSilverPrices return dedicated metal payloads', async () => {
+  const { getGoldPrices, getSilverPrices } = require('../src/services/marketPriceService');
+
+  const goldData = await getGoldPrices();
+  assert.strictEqual(goldData.metal, 'Gold');
+  assert.strictEqual(goldData.currency, 'INR');
+
+  if (goldData.success) {
+    assert.ok(goldData.rates['24k']);
+    assert.ok(goldData.rates['22k']);
+    assert.ok(goldData.rates['18k']);
+    assert.ok(goldData.rates['24k'].perGram > 0);
+    assert.ok(goldData.rates['24k'].per10Gram === goldData.rates['24k'].perGram * 10);
+  }
+
+  const silverData = await getSilverPrices();
+  assert.strictEqual(silverData.metal, 'Silver');
+  assert.strictEqual(silverData.currency, 'INR');
+
+  if (silverData.success) {
+    assert.ok(silverData.perGram > 0);
+    assert.ok(silverData.perKg > silverData.perGram);
+    assert.strictEqual(Math.round(silverData.perKg), Math.round(silverData.perGram * 1000));
+  }
+});
+

@@ -33,6 +33,7 @@ export default function CartPage() {
     applyCoupon,
     removeCoupon,
   } = useCart();
+  const hasIndicativeItems = cartItems.some((item) => item.priceStatus === 'indicative' || item.pricingType === 'indicative' || item.availability === 'design-enquiry' || item.isOrderable === false);
 
   const [couponInput, setCouponInput] = useState('');
   const [couponFeedback, setCouponFeedback] = useState(null);
@@ -112,11 +113,11 @@ export default function CartPage() {
                       {/* Product Thumbnail & Details */}
                       <div className="flex gap-4 items-center">
                         <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-300/40">
-                          <SafeImage src={item.image} alt={item.name} fill sizes="100px" className="object-cover" fallbackSrc="/images/placeholder.jpg" />
+                          <SafeImage src={item.image} alt={item.name} fill sizes="100px" className="object-contain" fallbackSrc="/images/placeholder.jpg" />
                         </div>
                         <div>
                           <span className="text-[10px] font-sans text-gold-700 uppercase tracking-widest block">
-                            {item.purity || '22KT Hallmarked'} • Size: {item.selectedSize}
+                            {[item.purity, item.metal, `Size: ${item.selectedSize}`].filter(Boolean).join(' · ')}
                           </span>
                           <h3 className="font-serif text-base font-medium text-emerald-950 hover:text-gold-700 transition-colors">
                             <Link href={`/products/${item.productId}`}>{item.name}</Link>
@@ -124,6 +125,7 @@ export default function CartPage() {
                           <p className="text-xs text-charcoal-500 font-sans mt-0.5">
                             SKU: {item.sku}
                           </p>
+                          {(item.priceStatus === 'indicative' || item.pricingType === 'indicative') && <p className="mt-1 text-[9px] font-medium uppercase tracking-wider text-[#826D43]">Indicative estimate · final price requires approval</p>}
                           <p className="text-xs font-serif font-bold text-emerald-950 sm:hidden mt-2">
                             {formatPrice(item.price)} each
                           </p>
@@ -271,6 +273,7 @@ export default function CartPage() {
                 <h3 className="font-serif text-lg font-semibold text-emerald-950 pb-3 border-b border-gold-200">
                   Order Summary
                 </h3>
+                {hasIndicativeItems && <p className="border border-gold-300 bg-ivory-100 p-3 text-[10px] leading-4 text-charcoal-600">Prices and totals below are indicative estimates only. They are not payable; the business must approve final prices before checkout.</p>}
 
                 <div className="space-y-2.5 text-xs font-sans text-charcoal-600">
                   <div className="flex justify-between">
@@ -296,18 +299,18 @@ export default function CartPage() {
                 </div>
 
                 <div className="pt-4 border-t border-gold-200 flex justify-between items-baseline">
-                  <span className="font-serif text-base font-semibold text-emerald-950">Grand Total</span>
+                  <span className="font-serif text-base font-semibold text-emerald-950">{hasIndicativeItems ? 'Indicative Total' : 'Grand Total'}</span>
                   <span className="font-serif text-2xl font-bold text-emerald-950">{formatPrice(total)}</span>
                 </div>
 
                 <div className="pt-2">
-                  <Link
+                  {hasIndicativeItems ? <p className="w-full border border-gold-300 bg-ivory-100 p-3 text-center text-[10px] uppercase tracking-wider text-charcoal-600">This bag includes indicative prices. Checkout unlocks after business price approval.</p> : <Link
                     href="/checkout"
                     className="w-full py-4 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2 border border-[#C2AA6A]/40 group"
                   >
                     <span>Proceed to Luxury Checkout</span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
+                  </Link>}
                 </div>
 
                 <div className="pt-3 border-t border-ivory-200 space-y-2 text-[11px] text-charcoal-500 font-sans">

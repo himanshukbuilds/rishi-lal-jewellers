@@ -48,6 +48,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems, subtotal, tax, discount, total, coupon, clearCart } = useCart();
   const { user, isAuthenticated } = useAuth();
+  const hasUnapprovedItems = cartItems.some((item) => item.priceStatus === 'indicative' || item.pricingType === 'indicative' || item.availability === 'design-enquiry' || item.isOrderable === false);
 
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,6 +97,10 @@ export default function CheckoutPage() {
   const onSubmit = async (formData) => {
     if (cartItems.length === 0) {
       setSubmissionError('Your shopping bag is empty. Please add items before placing an order.');
+      return;
+    }
+    if (hasUnapprovedItems) {
+      setSubmissionError('One or more items still has an indicative price. Please return to your bag; checkout will be available after business approval.');
       return;
     }
 
@@ -170,6 +175,7 @@ export default function CheckoutPage() {
   return (
     <div className="bg-ivory-50 min-h-screen py-10 sm:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {hasUnapprovedItems && <div role="alert" className="mb-6 border border-gold-300 bg-white p-4 text-sm text-emerald-950"><strong>Price approval required.</strong> Indicative catalogue estimates cannot be used for payment. Return to your <Link href="/cart" className="underline">shopping bag</Link> while the business confirms the final price.</div>}
         {/* Title */}
         <div className="text-center max-w-xl mx-auto mb-10">
           <p className="font-sans text-xs uppercase tracking-[0.25em] text-gold-700 font-semibold mb-1">
@@ -538,7 +544,7 @@ export default function CheckoutPage() {
                 <div className="pt-2">
                   <button
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || hasUnapprovedItems}
                     className="w-full py-4 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2 border border-[#C2AA6A]/40 disabled:opacity-50"
                   >
                     <Lock className="w-3.5 h-3.5" />

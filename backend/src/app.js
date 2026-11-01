@@ -92,6 +92,7 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/market-prices', marketPriceRoutes);
+app.use('/api/metal-prices', marketPriceRoutes);
 
 // 404 Route Handler
 app.use('*', (req, res) => {

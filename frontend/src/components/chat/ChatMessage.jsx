@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { User } from 'lucide-react';
 import ChatProductCard from './ChatProductCard';
+import RivaAvatar from './RivaAvatar';
 
 /**
  * Lightweight helper to render simple markdown bold and lists cleanly without external deps
@@ -70,22 +70,14 @@ export default function ChatMessage({ message }) {
   return (
     <div className="flex w-full flex-col gap-2 pr-6">
       <div className="flex items-start gap-2">
-        {/* Halku Assistant Avatar */}
-        <div className="relative h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border border-[#C2AA6A] bg-[#4A0B13] shadow-xs">
-          <Image
-            src="/images/avatar/halku.png"
-            alt="Halku"
-            fill
-            sizes="28px"
-            className="object-cover"
-          />
-        </div>
+        {/* RIVA Assistant Avatar */}
+        <RivaAvatar size="sm" />
 
         {/* Message bubble */}
         <div className="relative flex-1 rounded-2xl rounded-tl-xs border border-[#C2AA6A]/25 bg-white p-3.5 text-[#222222] shadow-2xs">
           <div className="mb-1 flex items-center justify-between">
             <span className="font-serif text-[11px] font-semibold tracking-wide text-[#4A0B13]">
-              Halku
+              RIVA
             </span>
             {message.timestamp && (
               <span className="text-[9px] text-charcoal-400">

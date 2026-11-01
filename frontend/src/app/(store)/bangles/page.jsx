@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { useQuery } from '@tanstack/react-query';
 import {
   ChevronDown,
@@ -18,6 +19,7 @@ import {
   Circle
 } from 'lucide-react';
 import { api } from '@/services/api';
+import ProductCard from '@/components/product/ProductCard';
 import { formatPrice } from '@/config/brandConfig';
 import { useWishlist } from '@/context/WishlistContext';
 
@@ -30,8 +32,8 @@ const HERO_SLIDES = [
     titleLine2: 'BANGLES',
     titleLine3: 'FOR EVERY YOU',
     description:
-      'Discover our exquisite bangles collection, where heritage craftsmanship meets modern style. From everyday elegance to bridal splendour, find the perfect pair for every moment.',
-    tagline: 'PURE — TRADITIONAL — EVERLASTING',
+      'Explore traditional, bridal and contemporary bangle design concepts. Product materials, specifications, final prices and availability are confirmed only after a business enquiry.',
+    tagline: 'DESIGN — HERITAGE — ENQUIRY',
     mainImage: '/images/bangles/bangles-hero-main.jpg',
     mainAlt: 'Indian bride wearing layered traditional 22KT gold bangles on both wrists',
     insetVisible: true,
@@ -46,8 +48,8 @@ const HERO_SLIDES = [
     titleLine2: 'KADAS',
     titleLine3: '& MEENAKARI',
     description:
-      'Substantial die-struck 22KT solid gold kadas adorned with hand-carved royal elephant heads, ruby eyes, and vibrant Jaipur enamel blossoms.',
-    tagline: 'ROYAL — HAND-CARVED — HEIRLOOM',
+      'Explore ornamental kada and temple-inspired design concepts. Images are illustrative; metal, purity, workmanship and availability are not verified until confirmed by the business.',
+    tagline: 'ORNAMENTAL — DISTINCTIVE — ENQUIRY',
     mainImage: '/images/categories/traditional.jpg',
     mainAlt: 'Royal Indian bride wearing heavy antique gold kadas',
     insetVisible: false,
@@ -62,8 +64,8 @@ const HERO_SLIDES = [
     titleLine2: 'TENNIS',
     titleLine3: 'BRACELETS',
     description:
-      'Continuous streams of brilliant natural solitaires set in 18K rose gold and white gold with precision double safety clasp engineering.',
-    tagline: 'EFFORTLESS — CONTEMPORARY — LUXURY',
+      'Explore refined diamond-inspired bangle concepts. Stone identity, setting metal, specifications and certification are not verified for these illustrative designs.',
+    tagline: 'CONTEMPORARY — ILLUSTRATIVE — ENQUIRY',
     mainImage: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1200&q=85',
     mainAlt: 'Diamond tennis bracelet and rose gold bangles stack',
     insetVisible: false,
@@ -73,69 +75,20 @@ const HERO_SLIDES = [
   },
 ];
 
-// Fallback products matching the exact reference cards
-const FALLBACK_BANGLES_PRODUCTS = [
-  {
-    _id: 'fb-bg-1',
-    name: 'Traditional Gold Bangle',
-    slug: 'imperial-royal-elephant-22k-gold-kadas-pair',
-    price: 125000,
-    category: 'Bangles',
-    image: '/images/bangles/products/traditional-gold-bangle.jpg',
-    metal: '22K Yellow Gold',
-  },
-  {
-    _id: 'fb-bg-2',
-    name: 'Bridal Gold Bangle',
-    slug: 'imperial-royal-elephant-22k-gold-kadas-pair',
-    price: 235000,
-    category: 'Bangles',
-    image: '/images/bangles/products/bridal-gold-bangle.jpg',
-    metal: '22K Yellow Gold',
-  },
-  {
-    _id: 'fb-bg-3',
-    name: 'Daily Wear Bangles',
-    slug: 'aarav-baby-22k-gold-nazariya-bracelet-pair',
-    price: 78000,
-    category: 'Bangles',
-    image: '/images/bangles/products/daily-wear-bangles.jpg',
-    metal: '18K Yellow Gold',
-  },
-  {
-    _id: 'fb-bg-4',
-    name: 'Gold Kada',
-    slug: 'imperial-royal-elephant-22k-gold-kadas-pair',
-    price: 110000,
-    category: 'Bangles',
-    image: '/images/bangles/products/gold-kada.jpg',
-    metal: '22K Yellow Gold',
-  },
-  {
-    _id: 'fb-bg-5',
-    name: 'Temple Bangles',
-    slug: 'meenakari-hand-painted-floral-22k-gold-bangle',
-    price: 110000,
-    category: 'Bangles',
-    image: '/images/bangles/products/temple-bangles.jpg',
-    metal: '22K Yellow Gold',
-  },
-  {
-    _id: 'fb-bg-6',
-    name: 'Designer Bangles',
-    slug: 'eternal-rose-diamond-tennis-bracelet-3-00-ct',
-    price: 48000,
-    category: 'Bangles',
-    image: '/images/bangles/products/designer-bangles.jpg',
-    metal: '18K Rose Gold',
-  },
-];
-
 export default function BanglesLandingPage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [sort, setSort] = useState('featured');
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState('all');
+  const [metalFilter, setMetalFilter] = useState('all');
+  const [purityFilter, setPurityFilter] = useState('all');
+  const [priceFilter, setPriceFilter] = useState('all');
+  const [searchFilter, setSearchFilter] = useState('');
+
+  React.useEffect(() => {
+    const requestedStyle = new URLSearchParams(window.location.search).get('style');
+    if (['bridal', 'daily', 'traditional', 'temple', 'kada', 'gemstone'].includes(requestedStyle)) setSelectedStyle(requestedStyle);
+  }, []);
 
   const { isInWishlist, toggleWishlist } = useWishlist();
 
@@ -150,11 +103,29 @@ export default function BanglesLandingPage() {
       }),
   });
 
-  const rawProducts = data?.products && data.products.length > 0 ? data.products : FALLBACK_BANGLES_PRODUCTS;
+  const rawProducts = data?.products || [];
 
   // Filter and sort products
   const displayedProducts = useMemo(() => {
     let list = [...rawProducts];
+
+    if (metalFilter !== 'all') list = list.filter((product) => product.metalType === metalFilter);
+    if (purityFilter !== 'all') list = list.filter((product) => (product.purity || '').toLowerCase().includes(purityFilter.toLowerCase()));
+    if (searchFilter.trim()) {
+      const term = searchFilter.trim().toLowerCase();
+      list = list.filter((product) => [product.name, product.description, product.subcategory, product.metalType, ...(product.tags || [])].filter(Boolean).join(' ').toLowerCase().includes(term));
+    }
+    const priceBands = {
+      under50000: [0, 50000],
+      '50000-100000': [50000, 100000],
+      '100000-200000': [100000, 200000],
+      '200000-500000': [200000, 500000],
+      above500000: [500000, Infinity],
+    };
+    if (priceFilter !== 'all') {
+      const [minimum, maximum] = priceBands[priceFilter];
+      list = list.filter((product) => Number.isFinite(Number(product.price)) && Number(product.price) >= minimum && Number(product.price) < maximum);
+    }
 
     // Filter by style
     if (selectedStyle !== 'all') {
@@ -167,7 +138,7 @@ export default function BanglesLandingPage() {
           return /traditional|temple|antique|elephant|jadau/i.test(name) || tags.some((t) => ['traditional', 'temple', 'antique'].includes(t));
         }
         if (selectedStyle === 'bridal') {
-          return /bridal|kada|kadas|heavy|wedding/i.test(name) || p.isBridal || tags.includes('bridal');
+          return /bridal|heavy/i.test(name) || p.isBridal || tags.includes('bridal');
         }
         if (selectedStyle === 'daily') {
           return /daily|sleek|rope|chain|bracelet|nazariya/i.test(name) || /daily/i.test(desc) || tags.includes('daily');
@@ -175,6 +146,7 @@ export default function BanglesLandingPage() {
         if (selectedStyle === 'kada') {
           return /kada|kadas|elephant|signet/i.test(name) || tags.includes('kadas');
         }
+        if (selectedStyle === 'temple') return /temple/i.test(`${name} ${p.subcategory || ''}`) || tags.includes('temple');
         if (selectedStyle === 'gemstone') {
           return /ruby|emerald|meenakari|diamond|tennis/i.test(name) || /enamel|gemstone/i.test(desc) || tags.some((t) => ['meenakari', 'diamond'].includes(t));
         }
@@ -188,18 +160,11 @@ export default function BanglesLandingPage() {
     } else if (sort === 'price-desc') {
       list.sort((a, b) => b.price - a.price);
     } else if (sort === 'newest') {
-      list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    }
-
-    // Complement with showcase reference items to ensure 6 complete cards
-    if (list.length < 6 && selectedStyle === 'all') {
-      const existingSlugs = new Set(list.map((p) => p.slug));
-      const extras = FALLBACK_BANGLES_PRODUCTS.filter((fb) => !existingSlugs.has(fb.slug));
-      list = [...list, ...extras].slice(0, 6);
+      list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     }
 
     return list;
-  }, [rawProducts, sort, selectedStyle]);
+  }, [rawProducts, sort, selectedStyle, metalFilter, purityFilter, priceFilter, searchFilter]);
 
   const slide = HERO_SLIDES[currentSlide];
 
@@ -407,10 +372,12 @@ export default function BanglesLandingPage() {
               <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[#1A1A1A] tracking-tight">
                 Our Bangles Collection
               </h2>
+              <p className="mt-2 text-xs text-charcoal-500">Showing {displayedProducts.length} designs</p>
             </div>
 
             {/* Controls: Sort Dropdown & Filter Drawer Button */}
             <div className="flex items-center gap-3">
+              <input aria-label="Search bangles" value={searchFilter} onChange={(event) => setSearchFilter(event.target.value)} placeholder="Search bangles" className="w-32 sm:w-44 bg-white border border-[#D5CDC0] px-3 py-2 text-xs" />
               <div className="relative">
                 <select
                   value={sort}
@@ -442,6 +409,7 @@ export default function BanglesLandingPage() {
               { id: 'traditional', label: 'Traditional Gold Bangles' },
               { id: 'bridal', label: 'Bridal Sets & Kadas' },
               { id: 'daily', label: 'Daily Wear & Sleek' },
+              { id: 'temple', label: 'Temple Bangles' },
               { id: 'kada', label: 'Royal Elephant Kadas' },
               { id: 'gemstone', label: 'Meenakari & Gemstones' },
             ].map((item) => (
@@ -463,7 +431,7 @@ export default function BanglesLandingPage() {
               PRODUCT GRID: 6-COLUMN RESPONSIVE LAYOUT MATCHING REFERENCE
           ═════════════════════════════════════════════════════════════════ */}
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="bg-white rounded-xs p-3 animate-pulse border border-[#E6DFD3]">
                   <div className="w-full h-32 bg-[#EBE4D8] rounded-xs mb-3" />
@@ -480,79 +448,15 @@ export default function BanglesLandingPage() {
                 Try selecting a different style or reset to view all creations.
               </p>
               <button
-                onClick={() => setSelectedStyle('all')}
+                onClick={() => { setSelectedStyle('all'); setMetalFilter('all'); setPurityFilter('all'); setPriceFilter('all'); setSearchFilter(''); }}
                 className="px-4 py-2 bg-[#650B19] text-white text-xs uppercase font-sans tracking-wider rounded-xs"
               >
                 Reset Filters
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-              {displayedProducts.map((product) => {
-                const isFavorited = isInWishlist(product._id);
-                const displayImage =
-                  product.image ||
-                  (product.images && product.images[0]) ||
-                  '/images/bangles/products/traditional-gold-bangle.jpg';
-
-                return (
-                  <div
-                    key={product._id}
-                    className="group bg-white rounded-xs border border-[#E6DFD3] hover:border-[#D6B36A] transition-all duration-300 hover:shadow-md flex flex-col overflow-hidden"
-                  >
-                    {/* Product Card Image Container */}
-                    <div className="relative w-full aspect-4/3 bg-[#F4EFE6] overflow-hidden">
-                      <Link href={`/products/${product.slug}`} className="block w-full h-full">
-                        <Image
-                          src={displayImage}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
-                          className="object-cover object-center group-hover:scale-108 transition-transform duration-500 ease-out"
-                        />
-                      </Link>
-
-                      {/* Wishlist toggle heart button */}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleWishlist(product);
-                        }}
-                        aria-label={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
-                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 hover:bg-white text-[#650B19] flex items-center justify-center transition-colors shadow-xs z-10"
-                      >
-                        <Heart
-                          className={`w-3.5 h-3.5 transition-colors ${
-                            isFavorited ? 'fill-[#650B19] text-[#650B19]' : 'text-[#4A4A4A]'
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Product Card Details */}
-                    <div className="p-3 flex flex-col flex-1 justify-between bg-white">
-                      <div>
-                        <Link href={`/products/${product.slug}`}>
-                          <h3 className="font-sans text-xs text-[#2B2B2B] group-hover:text-[#650B19] transition-colors line-clamp-1 font-normal mb-1">
-                            {product.name}
-                          </h3>
-                        </Link>
-                      </div>
-
-                      <div className="pt-1 flex items-baseline justify-between">
-                        <span className="font-sans text-xs font-semibold text-[#1A1A1A]">
-                          {formatPrice(product.price)}
-                        </span>
-                        {product.metal && (
-                          <span className="text-[10px] text-charcoal-500 font-sans truncate max-w-[70px]">
-                            {product.metal.replace('Yellow Gold', 'Gold').replace('Rose Gold', 'Rose')}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {displayedProducts.map((product) => <ProductCard key={product._id || product.id || product.slug} product={product} />)}
             </div>
           )}
 
@@ -564,9 +468,9 @@ export default function BanglesLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">100% BIS Hallmarked</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Concept Designs</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                Official 916 purity stamp with unique HUID laser engraving.
+                The bangle images are illustrative AI-generated design concepts.
               </p>
             </div>
 
@@ -574,9 +478,9 @@ export default function BanglesLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <Award className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Heritage Karigari</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Specifications on Enquiry</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                Hand-carved die-struck masterworks by traditional craftsmen.
+                Metal, purity, weights and stones require business verification.
               </p>
             </div>
 
@@ -584,9 +488,9 @@ export default function BanglesLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <Sparkles className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Lifetime Buyback</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Indicative Prices</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                Guaranteed exchange and upgrade value at all official boutiques.
+                Catalogue estimates are not final quotations or verified market rates.
               </p>
             </div>
 
@@ -594,9 +498,9 @@ export default function BanglesLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <Truck className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Armored Transit</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Design Enquiry</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                100% insured doorstep shipping in tamper-evident security vaulting.
+                Concept pieces cannot be purchased until price and availability are approved.
               </p>
             </div>
           </div>
@@ -633,6 +537,18 @@ export default function BanglesLandingPage() {
 
               {/* Drawer Content */}
               <div className="p-6 overflow-y-auto flex-1 space-y-6 font-sans text-xs">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-bold text-[#8B1E2D] mb-2">Metal</label>
+                  <select value={metalFilter} onChange={(event) => setMetalFilter(event.target.value)} className="w-full border border-[#D5CDC0] bg-white p-2"><option value="all">All metals</option><option>Gold</option><option>Diamond</option><option>Silver</option></select>
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-bold text-[#8B1E2D] mb-2">Purity</label>
+                  <select value={purityFilter} onChange={(event) => setPurityFilter(event.target.value)} className="w-full border border-[#D5CDC0] bg-white p-2"><option value="all">All purity</option><option value="18K">18K</option><option value="22K">22K</option><option value="24K">24K</option></select>
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider font-bold text-[#8B1E2D] mb-2">Price range</label>
+                  <select value={priceFilter} onChange={(event) => setPriceFilter(event.target.value)} className="w-full border border-[#D5CDC0] bg-white p-2"><option value="all">All prices</option><option value="under50000">Under ₹50,000</option><option value="50000-100000">₹50,000 – ₹1,00,000</option><option value="100000-200000">₹1,00,000 – ₹2,00,000</option><option value="200000-500000">₹2,00,000 – ₹5,00,000</option><option value="above500000">Above ₹5,00,000</option></select>
+                </div>
                 <div>
                   <label className="block text-xs uppercase tracking-wider font-bold text-[#8B1E2D] mb-3">
                     Bangle Style
@@ -691,6 +607,7 @@ export default function BanglesLandingPage() {
                 <button
                   onClick={() => {
                     setSelectedStyle('all');
+                    setMetalFilter('all'); setPurityFilter('all'); setPriceFilter('all'); setSearchFilter('');
                     setSort('featured');
                   }}
                   className="flex-1 py-2.5 border border-[#D5CDC0] text-xs font-sans uppercase font-medium rounded-xs text-charcoal-700 hover:bg-white"

@@ -67,12 +67,13 @@ const productSchema = new mongoose.Schema(
     },
     purity: {
       type: String,
-      required: true,
-      default: '22KT (916 Hallmarked)'
+      required: false,
+      default: undefined
     },
     grossWeight: {
       type: Number,
-      required: true
+      required: false,
+      default: undefined
     },
     netGoldWeight: {
       type: Number
@@ -134,13 +135,36 @@ const productSchema = new mongoose.Schema(
     },
     certification: {
       type: String,
-      default: 'BIS Hallmarked & IGI Certified'
+      default: undefined
     },
     makingChargesRate: {
       type: Number,
       default: 12.5 // percentage of gold value
     },
-    tags: [{ type: String }]
+    tags: [{ type: String }],
+    isPublished: { type: Boolean, default: true, index: true },
+    metalType: { type: String, enum: ['Gold', 'Diamond', 'Silver'], default: undefined },
+    subcategory: { type: String, trim: true, default: undefined },
+    weightClass: { type: String, enum: ['Lightweight', 'Medium', 'Heavy'], default: undefined },
+    netMetalWeight: { type: Number, min: 0, default: undefined },
+    diamondWeight: { type: Number, min: 0, default: undefined },
+    diamondShape: { type: String, trim: true, default: undefined },
+    diamondColor: { type: String, trim: true, default: undefined },
+    diamondClarity: { type: String, trim: true, default: undefined },
+    imageType: { type: String, enum: ['Real Product Photograph', 'AI-Generated Concept Image'], default: undefined },
+    imageSource: { type: String, trim: true, default: undefined },
+    imageRights: { type: String, trim: true, default: undefined },
+    pricingType: { type: String, enum: ['market-based', 'business-set', 'price-on-request', 'indicative'], default: undefined },
+    // Checkout requires an explicitly approved selling price. Legacy products remain
+    // governed by their established pricingType and verified stock fields.
+    priceStatus: { type: String, enum: ['approved', 'indicative'], default: undefined, index: true },
+    isOrderable: { type: Boolean, default: undefined, index: true },
+    availability: { type: String, enum: ['in-stock', 'made-to-order', 'contact-for-availability', 'design-enquiry'], default: undefined },
+    makingCharge: { type: Number, min: 0, default: undefined },
+    wastageCharge: { type: Number, min: 0, default: undefined },
+    stoneCharge: { type: Number, min: 0, default: undefined },
+    otherCharges: { type: Number, min: 0, default: undefined },
+    gstRate: { type: Number, min: 0, max: 100, default: undefined }
   },
   {
     timestamps: true

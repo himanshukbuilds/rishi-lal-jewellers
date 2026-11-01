@@ -43,7 +43,7 @@ export default function AdminProductsPage() {
     purity: '22KT (916 Hallmarked)',
     grossWeight: '',
     netGoldWeight: '',
-    stock: 5,
+    stock: 0,
     description: '',
     craftsmanshipStory: '',
     images: '',
@@ -52,6 +52,26 @@ export default function AdminProductsPage() {
     isBestseller: false,
     isNewArrival: false,
     isBridal: false,
+    metalType: 'Gold',
+    subcategory: '',
+    weightClass: '',
+    imageType: 'Real Product Photograph',
+    imageSource: '',
+    imageRights: '',
+    pricingType: 'business-set',
+    priceStatus: 'indicative',
+    isOrderable: false,
+    availability: 'contact-for-availability',
+    makingCharge: '',
+    wastageCharge: '',
+    stoneCharge: '',
+    otherCharges: '',
+    gstRate: '',
+    diamondWeight: '',
+    diamondShape: '',
+    diamondColor: '',
+    diamondClarity: '',
+    isPublished: true,
   };
   const [formData, setFormData] = useState(initialForm);
 
@@ -59,7 +79,7 @@ export default function AdminProductsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-products', selectedCategory, searchTerm],
     queryFn: () =>
-      api.getProducts({
+      api.getAdminProducts({
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         search: searchTerm.trim() || undefined,
         limit: 50,
@@ -179,6 +199,26 @@ export default function AdminProductsPage() {
       isBestseller: !!product.isBestseller,
       isNewArrival: !!product.isNewArrival,
       isBridal: !!product.isBridal,
+      metalType: product.metalType || 'Gold',
+      subcategory: product.subcategory || '',
+      weightClass: product.weightClass || '',
+      imageType: product.imageType || 'Real Product Photograph',
+      imageSource: product.imageSource || '',
+      imageRights: product.imageRights || '',
+      pricingType: product.pricingType || 'business-set',
+      priceStatus: product.priceStatus || (product.pricingType === 'indicative' ? 'indicative' : 'approved'),
+      isOrderable: product.isOrderable ?? (Number(product.stock) > 0 && product.pricingType !== 'indicative'),
+      availability: product.availability || 'contact-for-availability',
+      makingCharge: product.makingCharge ?? '',
+      wastageCharge: product.wastageCharge ?? '',
+      stoneCharge: product.stoneCharge ?? '',
+      otherCharges: product.otherCharges ?? '',
+      gstRate: product.gstRate ?? '',
+      diamondWeight: product.diamondWeight ?? '',
+      diamondShape: product.diamondShape || '',
+      diamondColor: product.diamondColor || '',
+      diamondClarity: product.diamondClarity || '',
+      isPublished: product.isPublished !== false,
     });
     setIsModalOpen(true);
   };
@@ -195,7 +235,7 @@ export default function AdminProductsPage() {
     }
 
     const priceNum = Number(formData.price);
-    if (isNaN(priceNum) || priceNum <= 0) {
+    if (formData.pricingType !== 'price-on-request' && (isNaN(priceNum) || priceNum <= 0)) {
       setFormError('Please enter a valid selling price greater than ₹0.');
       return;
     }
@@ -237,7 +277,7 @@ export default function AdminProductsPage() {
       name: trimmedName,
       category: formData.category,
       categorySlug: formData.category.toLowerCase(),
-      price: priceNum,
+      price: formData.pricingType === 'price-on-request' ? 0 : priceNum,
       originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
       metal: formData.metal,
       purity: formData.purity,
@@ -252,6 +292,26 @@ export default function AdminProductsPage() {
       isBestseller: Boolean(formData.isBestseller),
       isNewArrival: Boolean(formData.isNewArrival),
       isBridal: Boolean(formData.isBridal),
+      metalType: formData.metalType,
+      subcategory: formData.subcategory.trim() || undefined,
+      weightClass: formData.weightClass || undefined,
+      imageType: formData.imageType,
+      imageSource: formData.imageSource.trim() || undefined,
+      imageRights: formData.imageRights.trim() || undefined,
+      pricingType: formData.pricingType,
+      priceStatus: formData.priceStatus,
+      isOrderable: Boolean(formData.isOrderable) && formData.priceStatus === 'approved' && formData.pricingType !== 'price-on-request' && stockNum > 0,
+      availability: formData.availability,
+      makingCharge: formData.makingCharge === '' ? undefined : Number(formData.makingCharge),
+      wastageCharge: formData.wastageCharge === '' ? undefined : Number(formData.wastageCharge),
+      stoneCharge: formData.stoneCharge === '' ? undefined : Number(formData.stoneCharge),
+      otherCharges: formData.otherCharges === '' ? undefined : Number(formData.otherCharges),
+      gstRate: formData.gstRate === '' ? undefined : Number(formData.gstRate),
+      diamondWeight: formData.diamondWeight === '' ? undefined : Number(formData.diamondWeight),
+      diamondShape: formData.diamondShape.trim() || undefined,
+      diamondColor: formData.diamondColor.trim() || undefined,
+      diamondClarity: formData.diamondClarity.trim() || undefined,
+      isPublished: Boolean(formData.isPublished),
     };
 
     if (isEditing) {
@@ -548,8 +608,8 @@ export default function AdminProductsPage() {
                   </label>
                   <input
                     type="number"
-                    required
-                    min="1"
+                    required={formData.pricingType !== 'price-on-request'}
+                    min={formData.pricingType === 'price-on-request' ? '0' : '1'}
                     value={formData.price}
                     onChange={(e) => {
                       setFormData({ ...formData, price: e.target.value });
@@ -611,6 +671,29 @@ export default function AdminProductsPage() {
                   />
                 </div>
 
+                <div className="sm:col-span-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 border-y border-gold-200 py-4">
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Metal type</label><select value={formData.metalType} onChange={e=>setFormData({...formData,metalType:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white"><option>Gold</option><option>Diamond</option><option>Silver</option></select></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Necklace subcategory / style</label><input value={formData.subcategory} onChange={e=>setFormData({...formData,subcategory:e.target.value})} placeholder="e.g. Temple, Bridal, Daily Wear" className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Weight class</label><select value={formData.weightClass} onChange={e=>setFormData({...formData,weightClass:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white"><option value="">Unspecified</option><option>Lightweight</option><option>Medium</option><option>Heavy</option></select></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Price method</label><select value={formData.pricingType} onChange={e=>setFormData({...formData,pricingType:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white"><option value="business-set">Business-set selling price</option><option value="market-based">Market-based pricing</option><option value="indicative">Indicative catalogue estimate</option><option value="price-on-request">Price on request</option></select></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Price approval</label><select value={formData.priceStatus} onChange={e=>setFormData({...formData,priceStatus:e.target.value,pricingType:e.target.value==='approved'&&formData.pricingType==='indicative'?'business-set':formData.pricingType,isOrderable:e.target.value==='approved'&&Number(formData.stock)>0})} className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white"><option value="indicative">Indicative / not approved</option><option value="approved">Business-approved price</option></select></div>
+                  <label className="flex items-center gap-2 self-end pb-2 text-[11px] uppercase tracking-wider"><input type="checkbox" checked={formData.isOrderable} disabled={formData.priceStatus!=='approved'} onChange={e=>setFormData({...formData,isOrderable:e.target.checked})} />Approved for online orders</label>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Availability</label><select value={formData.availability} onChange={e=>setFormData({...formData,availability:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white"><option value="in-stock">In Stock (verified only)</option><option value="made-to-order">Made to Order</option><option value="contact-for-availability">Contact for Availability</option><option value="design-enquiry">Available to Order – Design Enquiry</option></select></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Making charges (₹)</label><input type="number" min="0" value={formData.makingCharge} onChange={e=>setFormData({...formData,makingCharge:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Wastage charges (₹)</label><input type="number" min="0" value={formData.wastageCharge} onChange={e=>setFormData({...formData,wastageCharge:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Stone charges (₹)</label><input type="number" min="0" value={formData.stoneCharge} onChange={e=>setFormData({...formData,stoneCharge:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Other disclosed charges (₹)</label><input type="number" min="0" value={formData.otherCharges} onChange={e=>setFormData({...formData,otherCharges:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">GST rate (%)</label><input type="number" min="0" max="100" value={formData.gstRate} onChange={e=>setFormData({...formData,gstRate:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Diamond weight (ct)</label><input type="number" min="0" step="0.01" value={formData.diamondWeight} onChange={e=>setFormData({...formData,diamondWeight:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Diamond shape</label><input value={formData.diamondShape} onChange={e=>setFormData({...formData,diamondShape:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Diamond colour</label><input value={formData.diamondColor} onChange={e=>setFormData({...formData,diamondColor:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Diamond clarity</label><input value={formData.diamondClarity} onChange={e=>setFormData({...formData,diamondClarity:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Image type</label><select value={formData.imageType} onChange={e=>setFormData({...formData,imageType:e.target.value})} className="w-full px-3 py-2 border border-gold-300 rounded-sm bg-white"><option>Real Product Photograph</option><option>AI-Generated Concept Image</option></select></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Image source</label><input value={formData.imageSource} onChange={e=>setFormData({...formData,imageSource:e.target.value})} placeholder="Supplier / generation record" className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <div><label className="text-[11px] uppercase tracking-wider block mb-1">Image rights / licence</label><input value={formData.imageRights} onChange={e=>setFormData({...formData,imageRights:e.target.value})} placeholder="Permission or licence details" className="w-full px-3 py-2 border border-gold-300 rounded-sm" /></div>
+                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={formData.isPublished} onChange={e=>setFormData({...formData,isPublished:e.target.checked})}/> Published to customers</label>
+                </div>
+
                 <div className="sm:col-span-2">
                   <label className="text-[11px] font-serif uppercase tracking-wider text-emerald-950 font-bold block mb-1">
                     Image URLs (comma separated) *
@@ -623,11 +706,11 @@ export default function AdminProductsPage() {
                       setFormData({ ...formData, images: e.target.value });
                       if (formError) setFormError(null);
                     }}
-                    placeholder="https://images.unsplash.com/..., https://i.pinimg.com/..."
+                    placeholder="/images/necklaces/your-image.png"
                     className="w-full px-3 py-2 border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600"
                   />
                   <p className="mt-1 text-[10px] text-charcoal-500">
-                    Paste image URLs (Unsplash, Pinterest, Cloudinary, etc.) or local paths (/images/...). Multiple images can be separated by commas.
+                    Use business-owned, licensed or original AI-generated assets. Record the source and usage rights above; do not use unlicensed third-party images.
                   </p>
 
                   {/* Live Image Thumbnail Preview */}

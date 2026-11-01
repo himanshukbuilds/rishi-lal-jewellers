@@ -53,7 +53,7 @@ export default function HeroSection() {
             </Link>
 
             <Link
-              href="/categories/bridal"
+              href="/wedding"
               className="px-8 py-4 bg-transparent hover:bg-emerald-900/60 text-ivory-50 border border-gold-400/60 hover:border-gold-300 text-xs uppercase tracking-[0.2em] font-medium rounded-sm transition-all duration-300 flex items-center justify-center backdrop-blur-sm"
             >
               <span>Bridal Heirlooms</span>

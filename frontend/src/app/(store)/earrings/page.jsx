@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { useQuery } from '@tanstack/react-query';
 import {
   ChevronDown,
@@ -18,6 +19,7 @@ import {
   Gem
 } from 'lucide-react';
 import { api } from '@/services/api';
+import ProductCard from '@/components/product/ProductCard';
 import { formatPrice } from '@/config/brandConfig';
 import { useWishlist } from '@/context/WishlistContext';
 
@@ -29,7 +31,7 @@ const HERO_SLIDES = [
     line2: 'NEW',
     line3: 'COLLECTION',
     description:
-      'Discover our exclusive earrings collection, where modern designs meet timeless elegance. From everyday wear to special occasions, find the perfect pair for every you.',
+      'Explore earrings design concepts spanning everyday wear and special occasions. Product details and availability are confirmed only after a business enquiry.',
     leftImage: '/images/earrings/earrings-hero-left.jpg',
     leftAlt: 'Woman wearing diamond stud earrings, ring, and delicate necklace with hand near ear',
     rightImage: '/images/earrings/earrings-hero-right.jpg',
@@ -43,9 +45,9 @@ const HERO_SLIDES = [
     line2: 'HERITAGE',
     line3: 'JHUMKAS',
     description:
-      'Ancient Chola casting brought to life in 22KT yellow gold. Intricate dancing peacocks, filigree bell drops, and hanging golden pearls.',
+      'Explore temple-inspired earring design concepts. The images are illustrative; metal, purity, specifications, price and availability require business confirmation.',
     leftImage: '/images/categories/traditional.jpg',
-    leftAlt: 'Antique 22KT gold temple jhumkas portrait',
+    leftAlt: 'Temple-inspired earrings editorial portrait',
     rightImage: '/images/home/royal_bridal_portrait.jpg',
     rightAlt: 'Royal bride wearing opulent chandelier jhumkas',
     leftCaption: ['HERITAGE', 'IN EVERY', 'CREATION'],
@@ -57,71 +59,13 @@ const HERO_SLIDES = [
     line2: 'SOLITAIRE',
     line3: 'STUDS',
     description:
-      'Pure IGI certified round brilliant solitaires set in four-prong platinum and 18K yellow gold crowns. Scintillating optical fire from every angle.',
+      'Explore solitaire-inspired earring concepts. Stone identity, setting metal, specifications and certification are not verified for these illustrative designs.',
     leftImage: '/images/categories/diamond.jpg',
-    leftAlt: 'Solitaire diamond earrings in luxury showcase',
+    leftAlt: 'Solitaire-inspired earrings concept in a luxury showcase',
     rightImage: '/images/diamond/diamond-hero-model.jpg',
-    rightAlt: 'Woman wearing blue sapphire halo diamond drop earrings',
+    rightAlt: 'Editorial portrait with halo drop earrings',
     leftCaption: ['BRILLIANCE', 'IN EVERY', 'FACET'],
     rightTagline: ['SPARKLE', 'THAT', 'DAZZLES', 'FOREVER'],
-  },
-];
-
-// Fallback products matching the exact reference cards in case of loading
-const FALLBACK_EARRINGS_PRODUCTS = [
-  {
-    _id: 'fb-er-1',
-    name: 'Diamond Stud Earrings',
-    slug: 'celestial-dewdrop-solitaire-diamond-studs-1-00-ct',
-    price: 75000,
-    category: 'Earrings',
-    image: '/images/earrings/products/diamond-stud-earrings.jpg',
-    metal: '18K White Gold',
-  },
-  {
-    _id: 'fb-er-2',
-    name: 'Gold Jhumka Earrings',
-    slug: 'mayur-heritage-22k-gold-temple-jhumkas',
-    price: 110000,
-    category: 'Earrings',
-    image: '/images/earrings/products/gold-jhumka-earrings.jpg',
-    metal: '22K Yellow Gold',
-  },
-  {
-    _id: 'fb-er-3',
-    name: 'Emerald Drop Earrings',
-    slug: 'kashmir-royale-colombian-emerald-pendant-18k-chain',
-    price: 145000,
-    category: 'Earrings',
-    image: '/images/earrings/products/emerald-drop-earrings.jpg',
-    metal: '18K Yellow Gold',
-  },
-  {
-    _id: 'fb-er-4',
-    name: 'Pearl Gold Earrings',
-    slug: 'basra-heritage-natural-pearl-diamond-choker',
-    price: 92000,
-    category: 'Earrings',
-    image: '/images/earrings/products/pearl-gold-earrings.jpg',
-    metal: '18K Yellow Gold',
-  },
-  {
-    _id: 'fb-er-5',
-    name: 'Sapphire Earrings',
-    slug: 'celestial-dewdrop-solitaire-diamond-studs-1-00-ct',
-    price: 125000,
-    category: 'Earrings',
-    image: '/images/earrings/products/sapphire-earrings.jpg',
-    metal: '18K White Gold',
-  },
-  {
-    _id: 'fb-er-6',
-    name: 'Traditional Gold Earrings',
-    slug: 'mayur-heritage-22k-gold-temple-jhumkas',
-    price: 98000,
-    category: 'Earrings',
-    image: '/images/earrings/products/traditional-gold-earrings.jpg',
-    metal: '22K Yellow Gold',
   },
 ];
 
@@ -130,6 +74,9 @@ export default function EarringsLandingPage() {
   const [sort, setSort] = useState('featured');
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectedStyle, setSelectedStyle] = useState('all');
+  const [metalFilter, setMetalFilter] = useState('all');
+  const [priceFilter, setPriceFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { isInWishlist, toggleWishlist } = useWishlist();
 
@@ -144,11 +91,27 @@ export default function EarringsLandingPage() {
       }),
   });
 
-  const rawProducts = data?.products && data.products.length > 0 ? data.products : FALLBACK_EARRINGS_PRODUCTS;
+  const rawProducts = data?.products || [];
 
   // Filter and sort products
   const displayedProducts = useMemo(() => {
     let list = [...rawProducts];
+
+    if (metalFilter !== 'all') {
+      list = list.filter((product) => {
+        if (metalFilter === 'Rose Gold') return /rose\s*gold/i.test(product.metal || '') || (product.tags || []).includes('rose-gold');
+        return product.metalType === metalFilter;
+      });
+    }
+    if (searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      list = list.filter((product) => [product.name, product.description, product.metal, product.metalType, product.subcategory, ...(product.tags || [])].filter(Boolean).join(' ').toLowerCase().includes(term));
+    }
+    const priceBands = { under10000: [0, 10000], '10000-25000': [10000, 25000], '25000-50000': [25000, 50000], above50000: [50000, Infinity] };
+    if (priceFilter !== 'all') {
+      const [minimum, maximum] = priceBands[priceFilter];
+      list = list.filter((product) => Number.isFinite(Number(product.price)) && Number(product.price) >= minimum && Number(product.price) < maximum);
+    }
 
     // Filter by style
     if (selectedStyle !== 'all') {
@@ -178,12 +141,14 @@ export default function EarringsLandingPage() {
       list.sort((a, b) => a.price - b.price);
     } else if (sort === 'price_desc') {
       list.sort((a, b) => b.price - a.price);
+    } else if (sort === 'newest') {
+      list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     } else if (sort === 'rating') {
       list.sort((a, b) => (b.rating || 5) - (a.rating || 5));
     }
 
     return list;
-  }, [rawProducts, selectedStyle, sort]);
+  }, [rawProducts, selectedStyle, sort, metalFilter, priceFilter, searchTerm]);
 
   const slide = HERO_SLIDES[currentSlide];
 
@@ -387,10 +352,12 @@ export default function EarringsLandingPage() {
               <h2 className="font-serif text-3xl sm:text-4xl lg:text-[2.75rem] font-medium tracking-tight text-[#1D1C16]">
                 Our Earrings Collection
               </h2>
+              <p className="mt-2 text-xs text-[#716D64]">Showing {displayedProducts.length} earrings</p>
             </div>
 
             {/* Right: Sort by & Filter controls matching reference */}
             <div className="flex items-center gap-3 sm:gap-4 self-start md:self-auto">
+              <input aria-label="Search earrings" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search earrings" className="w-32 sm:w-44 rounded-md border border-[#D6CBB8] bg-white px-3 py-2 text-xs" />
               {/* Sort by dropdown */}
               <div className="flex items-center gap-2 text-xs font-sans text-[#524B42]">
                 <span className="hidden sm:inline">Sort by</span>
@@ -414,7 +381,7 @@ export default function EarringsLandingPage() {
               <button
                 onClick={() => setFilterDrawerOpen(!filterDrawerOpen)}
                 className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-md border text-xs font-sans font-medium transition-all duration-200 cursor-pointer shadow-2xs ${
-                  filterDrawerOpen || selectedStyle !== 'all'
+                  filterDrawerOpen || selectedStyle !== 'all' || metalFilter !== 'all' || priceFilter !== 'all'
                     ? 'border-[#650B19] bg-[#650B19] text-white'
                     : 'border-[#650B19] bg-transparent text-[#650B19] hover:bg-[#650B19]/10'
                 }`}
@@ -422,7 +389,7 @@ export default function EarringsLandingPage() {
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
                 <span>Filter</span>
-                {selectedStyle !== 'all' && (
+                {(selectedStyle !== 'all' || metalFilter !== 'all' || priceFilter !== 'all') && (
                   <span className="w-2 h-2 rounded-full bg-[#D6B36A] ml-0.5" />
                 )}
               </button>
@@ -446,6 +413,14 @@ export default function EarringsLandingPage() {
                 </button>
               </div>
 
+              <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="text-[11px] font-sans uppercase tracking-wider font-bold text-[#8B1E2D]">Metal
+                  <select value={metalFilter} onChange={(event) => setMetalFilter(event.target.value)} className="mt-1 block w-full rounded border border-[#D6CBB8] bg-white p-2 text-xs normal-case tracking-normal"><option value="all">All metals</option><option value="Gold">Gold</option><option value="Diamond">Diamond</option><option value="Silver">Silver</option><option value="Rose Gold">Rose Gold</option></select>
+                </label>
+                <label className="text-[11px] font-sans uppercase tracking-wider font-bold text-[#8B1E2D]">Price range
+                  <select value={priceFilter} onChange={(event) => setPriceFilter(event.target.value)} className="mt-1 block w-full rounded border border-[#D6CBB8] bg-white p-2 text-xs normal-case tracking-normal"><option value="all">All prices</option><option value="under10000">Under ₹10,000</option><option value="10000-25000">₹10,000 – ₹25,000</option><option value="25000-50000">₹25,000 – ₹50,000</option><option value="above50000">Above ₹50,000</option></select>
+                </label>
+              </div>
               <div>
                 <p className="text-[11px] font-sans uppercase tracking-wider font-bold text-[#8B1E2D] mb-2.5">
                   Earring Style &amp; Silhouette
@@ -473,10 +448,10 @@ export default function EarringsLandingPage() {
                 </div>
               </div>
 
-              {selectedStyle !== 'all' && (
+              {(selectedStyle !== 'all' || metalFilter !== 'all' || priceFilter !== 'all' || Boolean(searchTerm)) && (
                 <div className="mt-4 pt-3 border-t border-[#EFEAE2] flex justify-end">
                   <button
-                    onClick={() => setSelectedStyle('all')}
+                    onClick={() => { setSelectedStyle('all'); setMetalFilter('all'); setPriceFilter('all'); setSearchTerm(''); }}
                     className="text-xs text-[#8B1E2D] font-medium hover:underline"
                   >
                     Reset all filters
@@ -487,8 +462,9 @@ export default function EarringsLandingPage() {
           )}
 
           {/* Loading Skeleton */}
+          <p className="mb-4 border border-[#E6DFD3] bg-white/80 px-4 py-3 text-[11px] leading-5 text-[#716D64]">Indicative Catalogue Price — Final price subject to confirmed product specifications and quotation.</p>
           {isLoading && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div
                   key={n}
@@ -499,76 +475,11 @@ export default function EarringsLandingPage() {
           )}
 
           {/* -------------------------------------------------------------------
-              PRODUCT GRID (6 CARDS PER ROW ON DESKTOP, MATCHING REFERENCE)
+              PRODUCT GRID (FOUR COLUMNS ON LARGE DESKTOP)
              ------------------------------------------------------------------- */}
           {!isLoading && displayedProducts.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-              {displayedProducts.map((product) => {
-                const inWishlist = isInWishlist(product._id || product.id);
-                const productImage =
-                  (product.images && product.images[0]) ||
-                  product.image ||
-                  '/images/placeholder.jpg';
-
-                return (
-                  <div
-                    key={product._id || product.id || product.slug}
-                    className="group bg-white rounded-xl border border-[#EADBCA] p-2.5 sm:p-3 flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-[#C2AA6A]/60"
-                  >
-                    {/* Product Image Area on Warm Neutral Background */}
-                    <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-[#FAF4EB] mb-2.5">
-                      <Link
-                        href={`/products/${product.slug || product._id || product.id}`}
-                        className="block w-full h-full"
-                      >
-                        <Image
-                          src={productImage}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
-                          className="object-contain p-2 transition-transform duration-500 ease-out group-hover:scale-105"
-                        />
-                      </Link>
-
-                      {/* Wishlist Heart Button in Top Right */}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleWishlist(product);
-                        }}
-                        className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center transition-all duration-200 shadow-xs cursor-pointer ${
-                          inWishlist
-                            ? 'text-red-600 bg-red-50'
-                            : 'text-[#635B50] hover:text-[#8B1E2D] hover:bg-white'
-                        }`}
-                        aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-                      >
-                        <Heart
-                          className={`w-3.5 h-3.5 ${
-                            inWishlist ? 'fill-current text-red-600' : ''
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Product Meta */}
-                    <div className="pt-0.5">
-                      <Link
-                        href={`/products/${product.slug || product._id || product.id}`}
-                        className="block group-hover:text-[#650B19] transition-colors"
-                      >
-                        <h3 className="font-serif text-xs sm:text-[13px] font-medium text-[#2A1810] leading-snug line-clamp-1">
-                          {product.name}
-                        </h3>
-                      </Link>
-
-                      <p className="font-serif text-xs sm:text-[13px] font-bold text-[#650B19] mt-1">
-                        {formatPrice(product.price)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+              {displayedProducts.map((product) => <ProductCard key={product._id || product.id || product.slug} product={product} />)}
             </div>
           )}
 
@@ -582,7 +493,7 @@ export default function EarringsLandingPage() {
                 Reset your filter to view the entire Rishi Lal Earrings Collection.
               </p>
               <button
-                onClick={() => setSelectedStyle('all')}
+                onClick={() => { setSelectedStyle('all'); setMetalFilter('all'); setPriceFilter('all'); setSearchTerm(''); }}
                 className="px-5 py-2 bg-[#650B19] text-white text-xs uppercase tracking-wider font-semibold rounded-md hover:bg-[#8B1E2D] transition-colors"
               >
                 Reset Filters
@@ -604,10 +515,10 @@ export default function EarringsLandingPage() {
               </div>
               <div>
                 <h4 className="font-serif text-sm sm:text-base font-semibold text-[#2A1810]">
-                  100% BIS Hallmarked
+                  AI-Generated Concepts
                 </h4>
                 <p className="font-sans text-xs text-[#716D64] mt-1 leading-relaxed">
-                  Every earring is crafted in 22KT or 18KT gold certified with authentic laser-etched HUID.
+                  These images are illustrative designs, not verified product photographs.
                 </p>
               </div>
             </div>
@@ -618,10 +529,10 @@ export default function EarringsLandingPage() {
               </div>
               <div>
                 <h4 className="font-serif text-sm sm:text-base font-semibold text-[#2A1810]">
-                  Certified Diamonds &amp; Gems
+                  Specifications on Enquiry
                 </h4>
                 <p className="font-sans text-xs text-[#716D64] mt-1 leading-relaxed">
-                  Natural solitaires and vibrant gemstones certified by international gemological assay laboratories.
+                  Metal, purity, stone details and certification require business confirmation.
                 </p>
               </div>
             </div>
@@ -632,10 +543,10 @@ export default function EarringsLandingPage() {
               </div>
               <div>
                 <h4 className="font-serif text-sm sm:text-base font-semibold text-[#2A1810]">
-                  Lifetime Buyback &amp; Exchange
+                  Indicative Catalogue Prices
                 </h4>
                 <p className="font-sans text-xs text-[#716D64] mt-1 leading-relaxed">
-                  Transparent 100% benchmark gold valuation with zero deductions across all ateliers.
+                  Estimates are not supplier quotations, market valuations or final prices.
                 </p>
               </div>
             </div>
@@ -646,10 +557,10 @@ export default function EarringsLandingPage() {
               </div>
               <div>
                 <h4 className="font-serif text-sm sm:text-base font-semibold text-[#2A1810]">
-                  Insured Armored Delivery
+                  Design Enquiry
                 </h4>
                 <p className="font-sans text-xs text-[#716D64] mt-1 leading-relaxed">
-                  Complimentary, fully insured doorstep delivery in tamper-evident luxury caskets.
+                  Concepts cannot be purchased until price and availability are approved.
                 </p>
               </div>
             </div>

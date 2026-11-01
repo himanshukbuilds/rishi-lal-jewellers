@@ -3,158 +3,179 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import SafeImage from '@/components/common/SafeImage';
-import { Heart, ShoppingBag, Star, Check } from 'lucide-react';
+import { Heart, ShoppingBag, Check } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { formatPrice } from '@/config/brandConfig';
 
+const isIndicative = (product) =>
+  product.priceStatus === 'indicative' ||
+  product.pricingType === 'indicative' ||
+  product.availability === 'design-enquiry';
+
+const isApprovedOrderable = (product) =>
+  !isIndicative(product) &&
+  product.pricingType !== 'price-on-request' &&
+  product.isOrderable !== false &&
+  Number(product.stock) > 0;
+
 export default function ProductCard({ product }) {
-  const { addToCart } = useCart();
+  const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [added, setAdded] = useState(false);
 
   const productId = product._id || product.id;
+  const productUrl = `/products/${product.slug || productId}`;
+  const indicative = isIndicative(product);
+  const orderable = isApprovedOrderable(product);
   const inWishlist = isInWishlist(productId);
 
-  const handleQuickAdd = (e) => {
+  const image =
+    (Array.isArray(product.images) && product.images[0]) ||
+    product.image ||
+    '/images/placeholder-jewelry.jpg';
+
+  const categoryLabel = product.subcategory || product.category || 'Fine Jewellery';
+  const metalDisplay = product.metalType || product.metal || null;
+
+  // Specifications
+  const specs = [
+    product.purity && product.purity !== 'Not verified — AI concept only' ? product.purity : null,
+    product.grossWeight && Number(product.grossWeight) > 0 ? `${product.grossWeight} g` : null,
+  ].filter(Boolean);
+
+  const availabilityText = indicative
+    ? 'Indicative Price · Approval Required'
+    : product.availability === 'made-to-order'
+      ? 'Made to Order'
+      : Number(product.stock) > 0
+        ? 'In Stock · Ready to Dispatch'
+        : 'Contact for Availability';
+
+  const handleAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product, 1, product.availableSizes ? product.availableSizes[0] : 'Standard');
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1800);
+    const result = addToCart(product, 1, product.availableSizes?.[0] || 'Standard');
+    if (result) {
+      setAdded(true);
+      window.setTimeout(() => setAdded(false), 2000);
+    }
   };
-
-  const handleWishlistToggle = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleWishlist(product);
-  };
-
-  const [imgSrc, setImgSrc] = useState(
-    product.images && product.images[0]
-      ? product.images[0]
-      : '/images/placeholder.jpg'
-  );
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-sm border border-[#E6DFD3] hover:border-[#C2AA6A]/60 overflow-hidden shadow-xs hover:shadow-luxury transition-all duration-500">
-      {/* Image Container */}
-      <Link href={`/products/${product.slug || productId}`} className="relative block aspect-square overflow-hidden bg-[#F8F5EF]">
-        <SafeImage
-          src={imgSrc}
-          alt={product.name}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          className="object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.025]"
-          fallbackSrc="/images/placeholder.jpg"
-        />
+    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-sm border border-[#E6DFD3] bg-white transition-all duration-500 hover:border-[#C2AA6A] hover:shadow-xl">
+      {/* Product Image Area */}
+      <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-[#FAF7F2]">
+        <Link href={productUrl} aria-label={`View ${product.name}`} className="absolute inset-0 block">
+          <SafeImage
+            src={image}
+            alt={product.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-contain p-4 transition-transform duration-700 ease-out group-hover:scale-105"
+            fallbackSrc="/images/placeholder-jewelry.jpg"
+          />
+        </Link>
 
-        {/* Badges */}
-        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
-          {product.isBestseller && (
-            <span className="px-2 py-0.5 rounded-xs text-[10px] font-sans font-semibold uppercase tracking-wider bg-[#4A0B13] text-[#C2AA6A] border border-[#C2AA6A]/30">
-              Bestseller
-            </span>
-          )}
-          {product.isNewArrival && (
-            <span className="px-2 py-0.5 rounded-xs text-[10px] font-sans font-semibold uppercase tracking-wider bg-[#C2AA6A] text-[#4A0B13] font-bold">
-              New Arrival
-            </span>
-          )}
-          {product.discountPercentage > 0 && (
-            <span className="px-2 py-0.5 rounded-xs text-[10px] font-sans font-semibold uppercase tracking-wider bg-[#8B1E2D] text-white">
-              {product.discountPercentage}% Off
-            </span>
-          )}
-        </div>
+        {/* Tag / Image Type Pill */}
+        {product.imageType && (
+          <span className="absolute bottom-2.5 left-2.5 max-w-[calc(100%-3.5rem)] rounded-xs bg-[#FAF7F2]/90 px-2 py-0.5 text-[8px] font-medium uppercase tracking-wider text-[#766F61] backdrop-blur-xs">
+            {product.imageType === 'AI-Generated Concept Image' ? 'Design Concept' : 'Crafted Edition'}
+          </span>
+        )}
 
         {/* Wishlist Button */}
         <button
-          onClick={handleWishlistToggle}
-          className={`absolute top-2.5 right-2.5 p-2 rounded-full transition-all duration-300 z-10 ${
-            inWishlist
-              ? 'bg-[#FAF2F0] text-[#DEB1A8] shadow-md'
-              : 'bg-white/85 backdrop-blur-sm text-charcoal-700 hover:text-[#DEB1A8] hover:bg-white shadow-sm'
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWishlist(product);
+          }}
+          aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+          className={`absolute right-2.5 top-2.5 z-10 grid h-8 w-8 place-items-center rounded-full bg-white/95 shadow-sm transition-all duration-300 hover:scale-110 ${
+            inWishlist ? 'text-[#7D2934]' : 'text-[#766F61] hover:text-[#7D2934]'
           }`}
-          aria-label={inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
         >
-          <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current text-[#DEB1A8]' : ''}`} />
+          <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />
         </button>
+      </div>
 
-        {/* Quick Add Button on Hover */}
-        <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 hidden sm:block">
-          <button
-            onClick={handleQuickAdd}
-            className={`w-full py-2.5 text-xs uppercase tracking-widest font-medium rounded-sm flex items-center justify-center gap-1.5 shadow-md transition-all duration-200 ${
-              added
-                ? 'bg-[#4A0B13] text-[#C2AA6A] border border-[#C2AA6A]'
-                : 'bg-[#8B1E2D] text-white hover:bg-[#4A0B13] border border-[#C2AA6A]/40'
-            }`}
-          >
-            {added ? (
-              <>
-                <Check className="w-3.5 h-3.5" />
-                <span>Added to Bag</span>
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span>Quick Add</span>
-              </>
-            )}
-          </button>
-        </div>
-      </Link>
+      {/* Product Content Details */}
+      <div className="flex flex-1 flex-col p-4 sm:p-5">
+        {/* Category & Metal Tag */}
+        <p className="min-h-4 text-[9px] font-semibold uppercase tracking-[.18em] text-[#9B8050]">
+          {categoryLabel}
+          {metalDisplay ? ` · ${metalDisplay}` : ''}
+        </p>
 
-      {/* Content */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
-        <div>
-          {/* Metal & Purity Tag */}
-          <div className="flex items-center justify-between text-[11px] text-[#B49A58] font-sans uppercase tracking-wider mb-1 font-medium">
-            <span>{product.purity || product.metalType || ''}</span>
-            {product.grossWeight && <span className="text-charcoal-400">{product.grossWeight}g</span>}
-          </div>
+        {/* Product Title */}
+        <Link
+          href={productUrl}
+          className="mt-1.5 block min-h-[42px] font-serif text-[14px] leading-snug text-[#17382D] transition-colors hover:text-[#7D2934] sm:text-[15px]"
+        >
+          <span className="line-clamp-2">{product.name}</span>
+        </Link>
 
-          {/* Product Title */}
-          <h3 className="font-serif text-sm font-medium text-[#4A0B13] line-clamp-2 leading-snug group-hover:text-[#C2AA6A] transition-colors">
-            <Link href={`/products/${product.slug || productId}`}>
-              {product.name}
-            </Link>
-          </h3>
-        </div>
+        {/* Metal Specifications & Weight */}
+        <p className="mt-1 min-h-[18px] text-[10px] text-[#766F61]">
+          {specs.length > 0 ? specs.join(' · ') : 'Specifications verified on order'}
+        </p>
 
-        {/* Price & Rating */}
-        <div className="mt-3 pt-3 border-t border-[#E6DFD3] flex items-baseline justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="font-serif text-base font-bold text-[#4A0B13]">
-              {formatPrice(product.price)}
+        {/* Price & Status Section */}
+        <div className="mt-3 border-t border-[#E6DFD3] pt-3">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-serif text-[17px] font-bold tracking-tight text-[#7D2934] sm:text-[19px]">
+              {product.pricingType === 'price-on-request' || !(Number(product.price) > 0)
+                ? 'Price on Request'
+                : formatPrice(product.price)}
             </span>
-            {product.originalPrice && product.originalPrice > product.price && (
-              <span className="text-xs text-charcoal-400 line-through">
+            {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
+              <span className="text-[11px] text-[#A09A8E] line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
           </div>
 
-          {product.rating != null && <div className="flex items-center gap-1 text-[11px] text-charcoal-600 font-sans">
-            <Star className="w-3 h-3 fill-[#C2AA6A] text-[#C2AA6A]" />
-            <span className="font-medium text-charcoal-800">{product.rating}</span>
-            {product.reviewsCount != null && <span className="text-charcoal-400">({product.reviewsCount})</span>}
-          </div>}
+          {/* Indicative Notice */}
+          {indicative && (
+            <p className="mt-1 text-[9px] leading-3.5 text-[#826D43]">
+              Indicative catalogue price · Subject to quotation
+            </p>
+          )}
+
+          {/* Availability Status */}
+          <p className="mt-1 text-[9px] font-medium uppercase tracking-wider text-[#8A604F]">
+            {availabilityText}
+          </p>
         </div>
 
-        {/* Mobile Add to Bag Button */}
-        <div className="mt-3 sm:hidden">
+        {/* Standardized ADD TO BAG Action */}
+        <div className="mt-4 pt-1">
           <button
-            onClick={handleQuickAdd}
-            className="w-full py-2 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-widest font-medium rounded-sm flex items-center justify-center gap-1.5"
+            type="button"
+            onClick={handleAdd}
+            className={`flex h-10 w-full items-center justify-center gap-2 rounded-xs px-4 text-[10px] font-semibold uppercase tracking-[.18em] transition-all duration-300 ${
+              added
+                ? 'border border-[#9B8050] bg-[#17382D] text-[#E7D19A]'
+                : 'border border-[#7D2934] bg-[#7D2934] text-white hover:bg-[#5C1D26] hover:shadow-md'
+            }`}
           >
-            <ShoppingBag className="w-3 h-3" />
-            <span>Add to Bag</span>
+            {added ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
+            <span>{added ? 'Added to Bag' : 'Add to Bag'}</span>
           </button>
+
+          {added && (
+            <button
+              type="button"
+              onClick={openCart}
+              className="mt-1.5 w-full text-center text-[9px] uppercase tracking-wider text-[#7D2934] underline underline-offset-2"
+            >
+              View Shopping Bag
+            </button>
+          )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }
-

@@ -17,7 +17,8 @@ export default function ChatProductCard({ product, onSelect }) {
     e.preventDefault();
     e.stopPropagation();
     try {
-      addToCart(product, 1, 'Standard');
+      const wasAdded = addToCart(product, 1, 'Standard');
+      if (wasAdded === false) return;
       setAdded(true);
       setTimeout(() => setAdded(false), 2200);
     } catch (err) {
@@ -25,7 +26,10 @@ export default function ChatProductCard({ product, onSelect }) {
     }
   };
 
-  const formattedPrice = `₹${Number(product.price || 0).toLocaleString('en-IN')}`;
+  const isDesignEnquiry = product.priceStatus === 'indicative' || product.pricingType === 'indicative' || product.availability === 'design-enquiry';
+  const formattedPrice = product.pricingType === 'price-on-request' || !(Number(product.price) > 0)
+    ? 'Price on request'
+    : `₹${Number(product.price).toLocaleString('en-IN')}`;
   const formattedOriginalPrice = product.originalPrice
     ? `₹${Number(product.originalPrice).toLocaleString('en-IN')}`
     : null;
@@ -81,6 +85,8 @@ export default function ChatProductCard({ product, onSelect }) {
             </span>
           )}
         </div>
+        {product.pricingType === 'indicative' && <p className="mt-0.5 text-[8px] font-medium uppercase tracking-wider text-[#826D43]">Indicative Catalogue Price</p>}
+        {isDesignEnquiry && <p className="mt-1 text-[9px] text-[#53685D]">Indicative estimate · price approval required</p>}
 
         {/* Action Buttons */}
         <div className="mt-3 flex items-center gap-1.5 pt-1">
@@ -100,6 +106,7 @@ export default function ChatProductCard({ product, onSelect }) {
                 : 'bg-[#4A0B13] text-[#C2AA6A] hover:bg-[#8B1E2D]'
             }`}
             title="Add to Bag"
+            aria-label="Add to Bag"
           >
             {added ? (
               <Check className="h-3.5 w-3.5" />

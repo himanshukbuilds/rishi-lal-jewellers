@@ -80,7 +80,7 @@ export default function FeaturedTabs() {
             href="/products"
             className="inline-flex items-center gap-2 px-8 py-3.5 border border-[#8B1E2D] text-[#8B1E2D] hover:bg-[#8B1E2D] hover:text-white transition-colors text-xs uppercase tracking-widest font-semibold rounded-sm group"
           >
-            <span>View All Jewelry</span>
+            <span>Explore Collections</span>
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Search,
@@ -27,13 +28,13 @@ import {
   Circle,
   Sun,
   Gift,
-  MoreHorizontal,
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import { BRAND_CONFIG } from '@/config/brandConfig';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { api } from '@/services/api';
 
 // Announcement bar rotating messages
 const ANNOUNCEMENT_MESSAGES = [
@@ -44,18 +45,57 @@ const ANNOUNCEMENT_MESSAGES = [
 
 // Category navigation items with lucide icons
 const NAV_CATEGORIES = [
-  { name: 'All Jewellery', href: '/products', icon: Sparkles },
   { name: 'Gold', href: '/gold', icon: Crown },
   { name: 'Diamond', href: '/diamond', icon: Gem },
   { name: 'Earrings', href: '/earrings', icon: Disc },
   { name: 'Rings', href: '/rings', icon: CircleDot },
   { name: 'Necklaces', href: '/necklaces', icon: Link2 },
   { name: 'Bangles', href: '/bangles', icon: Circle },
-  { name: 'Daily Wear', href: '/products?category=Gold&maxPrice=50000', icon: Sun },
-  { name: 'Wedding', href: '/categories/bridal', icon: Heart },
-  { name: 'Gifting', href: '/categories/gifts', icon: Gift },
-  { name: 'More', href: '/products', icon: MoreHorizontal },
+  { name: 'Casual Wear', href: '/daily-wear', icon: Sun },
+  { name: 'Wedding', href: '/wedding', icon: Heart },
+  { name: 'Gifting', href: '/gifting', icon: Gift },
 ];
+
+const getNecklaceMetalGroup = (product) => {
+  if (['Gold', 'Diamond', 'Silver'].includes(product.metalType)) return product.metalType;
+  const descriptor = [product.name, product.category, product.metal, ...(product.tags || [])].filter(Boolean).join(' ');
+  if (/diamond|solitaire|polki/i.test(descriptor) || (product.gemstones || []).some((stone) => /diamond/i.test(stone.type || ''))) return 'Diamond';
+  if (/silver/i.test(descriptor)) return 'Silver';
+  if (/gold|\b\d{2}k\b/i.test(descriptor)) return 'Gold';
+  return null;
+};
+
+const getRingMetalGroup = (product) => {
+  const descriptor = [product.name, product.metal, ...(product.tags || [])].filter(Boolean).join(' ');
+  if (/rose\s*gold/i.test(descriptor)) return 'Rose Gold';
+  if (/platinum\s*finish/i.test(descriptor)) return 'Platinum Finish';
+  return getNecklaceMetalGroup(product);
+};
+
+const getNecklaceAvailability = (product) => {
+  if (product.priceStatus === 'indicative' || product.availability === 'design-enquiry' || product.pricingType === 'indicative') return 'Indicative price · approval required';
+  if (product.availability === 'made-to-order') return 'Made to Order';
+  if (product.availability === 'contact-for-availability') return 'Contact for Availability';
+  return product.stock > 0 ? 'In Stock' : 'Contact for Availability';
+};
+
+function EarringsMenuCard({ product, onClick, mobile = false }) {
+  const image = product.image || product.images?.[0] || '/images/placeholder-jewelry.jpg';
+  return (
+    <Link href={`/products/${product.slug || product._id}`} onClick={onClick} className="group/card overflow-hidden border border-[#E6DFD3] bg-white transition-shadow hover:shadow-md">
+      <div className={`relative overflow-hidden bg-[#F2EEE5] ${mobile ? 'aspect-[4/3]' : 'aspect-[1.15]'}`}>
+        <SafeImage src={image} alt={`${product.name} — ${product.imageType || 'product image'}`} fill sizes={mobile ? '42vw' : '(max-width: 640px) 45vw, 220px'} className="object-contain p-1 transition-transform duration-700 ease-out group-hover/card:scale-105" fallbackSrc="/images/placeholder-jewelry.jpg" />
+        <span className="absolute left-2 top-2 bg-[#FBF9F4]/95 px-2 py-1 text-[7px] uppercase tracking-wider text-[#53685D]">{product.imageType || 'Image source not recorded'}</span>
+      </div>
+      <div className="p-2.5">
+        <p className="line-clamp-2 min-h-9 font-serif text-xs leading-snug text-[#17382D]">{product.name}</p>
+        <p className="mt-1 font-sans text-[9px] text-[#766F61]">{product.pricingType === 'price-on-request' || product.price == null ? 'Price on request' : `₹${Number(product.price).toLocaleString('en-IN')}`}</p>
+        {product.pricingType === 'indicative' && <p className="mt-0.5 text-[8px] font-medium uppercase tracking-wider text-[#826D43]">Indicative Catalogue Price</p>}
+        <p className="mt-1 text-[8px] uppercase tracking-wider text-[#8A604F]">{getNecklaceAvailability(product)}</p>
+      </div>
+    </Link>
+  );
+}
 
 export default function Header() {
   const router = useRouter();
@@ -66,12 +106,85 @@ export default function Header() {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [mobileJewelleryOpen, setMobileJewelleryOpen] = useState(false);
+  const [necklaceProducts, setNecklaceProducts] = useState([]);
+  const [bangleProducts, setBangleProducts] = useState([]);
+  const [earringProducts, setEarringProducts] = useState([]);
+  const [ringProducts, setRingProducts] = useState([]);
+  const [dailyWearProducts, setDailyWearProducts] = useState([]);
+  const [necklaceMenuLoading, setNecklaceMenuLoading] = useState(true);
+  const [bangleMenuLoading, setBangleMenuLoading] = useState(true);
+  const [earringMenuLoading, setEarringMenuLoading] = useState(true);
+  const [ringMenuLoading, setRingMenuLoading] = useState(true);
+  const [dailyWearMenuLoading, setDailyWearMenuLoading] = useState(true);
+  const [necklaceMenuError, setNecklaceMenuError] = useState(false);
+  const [bangleMenuError, setBangleMenuError] = useState(false);
+  const [earringMenuError, setEarringMenuError] = useState(false);
+  const [ringMenuError, setRingMenuError] = useState(false);
+  const [dailyWearMenuError, setDailyWearMenuError] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [barDismissed, setBarDismissed] = useState(false);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
   const [announcementFade, setAnnouncementFade] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    api.request('/products?categorySlug=necklaces&limit=30')
+      .then((data) => { if (mounted) setNecklaceProducts(data.products || []); })
+      .catch(() => { if (mounted) setNecklaceMenuError(true); })
+      .finally(() => { if (mounted) setNecklaceMenuLoading(false); });
+    api.request('/products?categorySlug=bangles&limit=60')
+      .then((data) => { if (mounted) setBangleProducts(data.products || []); })
+      .catch(() => { if (mounted) setBangleMenuError(true); })
+      .finally(() => { if (mounted) setBangleMenuLoading(false); });
+    api.request('/products?categorySlug=earrings&limit=60')
+      .then((data) => { if (mounted) setEarringProducts(data.products || []); })
+      .catch(() => { if (mounted) setEarringMenuError(true); })
+      .finally(() => { if (mounted) setEarringMenuLoading(false); });
+    api.request('/products?categorySlug=rings&limit=60')
+      .then((data) => { if (mounted) setRingProducts(data.products || []); })
+      .catch(() => { if (mounted) setRingMenuError(true); })
+      .finally(() => { if (mounted) setRingMenuLoading(false); });
+    api.request('/products?categorySlug=daily-wear&limit=60')
+      .then((data) => { if (mounted) setDailyWearProducts(data.products || []); })
+      .catch(() => { if (mounted) setDailyWearMenuError(true); })
+      .finally(() => { if (mounted) setDailyWearMenuLoading(false); });
+    return () => { mounted = false; };
+  }, []);
+
+  const necklaceMenuGroups = ['Gold', 'Diamond', 'Silver'].map((metalType) => ({
+    metalType,
+    products: necklaceProducts.filter((product) => getNecklaceMetalGroup(product) === metalType),
+  }));
+  const bangleMenuGroups = ['Gold', 'Diamond', 'Silver'].map((metalType) => ({
+    metalType,
+    products: bangleProducts.filter((product) => getNecklaceMetalGroup(product) === metalType),
+  }));
+  const earringMenuGroups = ['Gold', 'Diamond', 'Silver'].map((metalType) => ({
+    metalType,
+    products: earringProducts.filter((product) => getNecklaceMetalGroup(product) === metalType),
+  }));
+  const ringMenuGroups = ['Gold', 'Diamond', 'Silver', 'Rose Gold', 'Platinum Finish'].map((metalType) => ({
+    metalType,
+    products: ringProducts.filter((product) => getRingMetalGroup(product) === metalType),
+  }));
+  const dailyWearCategoryTiles = [
+    { name: 'Necklaces', category: 'Necklace' },
+    { name: 'Earrings', category: 'Earrings' },
+    { name: 'Rings', category: 'Rings' },
+    { name: 'Bangles', category: 'Bangles' },
+    { name: 'Bracelets', category: 'Bracelets' },
+    { name: 'Other', category: 'Other' },
+  ].map((tile) => ({ ...tile, product: dailyWearProducts.find((product) => product.subcategory === tile.category) }));
+  const bangleStyleGroups = [
+    { name: 'Bridal Bangles', slug: 'bridal', match: /bridal|heavy/i },
+    { name: 'Daily Wear Bangles', slug: 'daily', match: /daily|lightweight/i },
+    { name: 'Temple Bangles', slug: 'temple', match: /temple/i },
+    { name: 'Kada Bangles', slug: 'kada', match: /kada/i },
+  ].map((group) => ({ ...group, product: bangleProducts.find((product) => group.match.test(`${product.name} ${product.subcategory || ''}`)) }));
 
   // Shrink/shadow header on scroll
   useEffect(() => {
@@ -406,7 +519,95 @@ export default function Header() {
       ═══════════════════════════════════════════════════════════════════ */}
       <nav className="hidden lg:block bg-white border-b border-[#E6DFD3]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ul className="flex items-center justify-center gap-7 py-2.5">
+          <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 py-2.5 xl:gap-x-7 2xl:gap-x-9">
+            <li
+              className="group relative"
+              data-jewellery-menu
+              onMouseEnter={() => setMegaMenuOpen(true)}
+              onMouseLeave={() => setMegaMenuOpen(false)}
+              onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setMegaMenuOpen(false); }}
+            >
+              <button
+                type="button"
+                onClick={() => setMegaMenuOpen((open) => !open)}
+                onFocus={() => setMegaMenuOpen(true)}
+                aria-expanded={megaMenuOpen}
+                aria-haspopup="true"
+                className={`flex flex-col items-center gap-1 py-1 transition-colors ${megaMenuOpen ? 'text-[#8B1E2D]' : 'text-[#2B2B2B] hover:text-[#8B1E2D]'}`}
+              >
+                <Sparkles className="h-4 w-4 text-[#C2AA6A]" />
+                <span className="flex items-center gap-1 text-xs font-sans font-medium uppercase tracking-widest">Jewellery <ChevronDown className={`h-3 w-3 transition-transform duration-300 ${megaMenuOpen ? 'rotate-180' : ''}`} /></span>
+              </button>
+              <div className={`absolute left-1/2 top-full z-50 w-[min(1180px,calc(100vw-2rem))] -translate-x-1/2 pt-3 transition-all duration-300 ${megaMenuOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-2 opacity-0 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100'}`}>
+                <div className="max-h-[calc(100vh-145px)] overflow-y-auto border border-[#D8CFBD] bg-[#FBF9F4] p-5 shadow-[0_18px_55px_rgba(26,35,29,.2)] sm:p-7">
+                  <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-[#E7E0D3] pb-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[.25em] text-[#9B8050]">Rishi Lal Jewellers · Live catalogue</p>
+                      <h2 className="mt-1 font-serif text-2xl text-[#17382D] sm:text-3xl">Shop jewellery by collection</h2>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Link href="/gifting" onClick={() => setMegaMenuOpen(false)} className="inline-flex items-center gap-1.5 border border-[#C6A15B] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-[#9B8050] transition-colors hover:bg-[#C6A15B] hover:text-white">
+                        Gifting Collection
+                      </Link>
+                    </div>
+                  </div>
+                  <section className="mb-7 border-b border-[#E7E0D3] pb-6">
+                    <div className="mb-4 flex items-end justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[.2em] text-[#9B8050]">Visual collection</p><h3 className="mt-1 font-serif text-2xl text-[#17382D]">Earrings</h3></div><Link href="/earrings" onClick={() => setMegaMenuOpen(false)} className="text-[10px] uppercase tracking-[.18em] text-[#7D2934] underline underline-offset-4">View all earrings</Link></div>
+                    {earringMenuLoading && <p className="py-4 text-center text-xs text-[#66736A]">Loading earrings from the catalogue…</p>}
+                    {earringMenuError && <p className="py-4 text-center text-xs text-[#7D2934]">The live earrings collection is temporarily unavailable.</p>}
+                    {!earringMenuLoading && !earringMenuError && earringProducts.length === 0 && <p className="py-4 text-center text-xs text-[#66736A]">No published earrings are available yet.</p>}
+                    <div className="space-y-5">{earringMenuGroups.map((group) => group.products.length > 0 && <section key={group.metalType} aria-label={`${group.metalType} earrings`}><h4 className="mb-3 flex items-center gap-3 font-serif text-lg text-[#17382D]">{group.metalType} Earrings <span className="h-px flex-1 bg-[#E7E0D3]" /></h4><div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{group.products.map((product) => <EarringsMenuCard key={product._id} product={product} onClick={() => setMegaMenuOpen(false)} />)}</div></section>)}</div>
+                  </section>
+                  <section className="mb-7 border-b border-[#E7E0D3] pb-6">
+                    <div className="mb-4 flex items-end justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[.2em] text-[#9B8050]">Visual collection</p><h3 className="mt-1 font-serif text-2xl text-[#17382D]">Rings</h3></div><Link href="/rings" onClick={() => setMegaMenuOpen(false)} className="text-[10px] uppercase tracking-[.18em] text-[#7D2934] underline underline-offset-4">View all rings</Link></div>
+                    {ringMenuLoading && <p className="py-4 text-center text-xs text-[#66736A]">Loading rings from the catalogue…</p>}
+                    {ringMenuError && <p className="py-4 text-center text-xs text-[#7D2934]">The live rings collection is temporarily unavailable.</p>}
+                    {!ringMenuLoading && !ringMenuError && ringProducts.length === 0 && <p className="py-4 text-center text-xs text-[#66736A]">No published rings are available yet.</p>}
+                    <div className="space-y-5">{ringMenuGroups.map((group) => group.products.length > 0 && <section key={group.metalType} aria-label={`${group.metalType} rings`}><h4 className="mb-3 flex items-center gap-3 font-serif text-lg text-[#17382D]">{group.metalType} Rings <span className="h-px flex-1 bg-[#E7E0D3]" /></h4><div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{group.products.map((product) => <EarringsMenuCard key={product._id} product={product} onClick={() => setMegaMenuOpen(false)} />)}</div></section>)}</div>
+                  </section>
+                  {necklaceMenuLoading && <p className="py-8 text-center font-sans text-xs text-[#66736A]">Loading necklaces from the collection…</p>}
+                  {necklaceMenuError && <p className="py-8 text-center font-sans text-xs text-[#7D2934]">The live necklace collection is temporarily unavailable.</p>}
+                  {!necklaceMenuLoading && !necklaceMenuError && necklaceProducts.length === 0 && <p className="py-8 text-center font-sans text-xs text-[#66736A]">No published necklaces are available yet.</p>}
+                  <div className="space-y-6">
+                    {necklaceMenuGroups.map((group) => group.products.length > 0 && (
+                      <section key={group.metalType} aria-label={`${group.metalType} necklaces`}>
+                        <h3 className="mb-3 flex items-center gap-3 font-serif text-xl text-[#17382D]">{group.metalType} Necklaces <span className="h-px flex-1 bg-[#E7E0D3]" /></h3>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                          {group.products.map((product) => (
+                            <Link key={product._id} href={`/products/${product.slug || product._id}`} onClick={() => setMegaMenuOpen(false)} className="group/card overflow-hidden border border-[#E6DFD3] bg-white transition-shadow hover:shadow-md">
+                              <div className="relative aspect-[1.22] overflow-hidden bg-[#F2EEE5]">
+                                <Image src={product.images?.[0] || '/images/placeholder-jewelry.jpg'} alt={`${product.name} — ${product.imageType || 'product image'}`} fill sizes="(max-width: 640px) 45vw, 250px" className="object-contain p-1 transition-transform duration-700 ease-out group-hover/card:scale-105" />
+                                <span className="absolute left-2 top-2 bg-[#FBF9F4]/95 px-2 py-1 text-[7px] uppercase tracking-wider text-[#53685D]">{product.imageType || 'Image source not recorded'}</span>
+                              </div>
+                              <div className="p-2.5 sm:p-3"><p className="line-clamp-2 min-h-9 font-serif text-xs leading-snug text-[#17382D] sm:text-sm">{product.name}</p><div className="mt-1 flex items-center justify-between gap-2 font-sans text-[9px] text-[#766F61]"><span>{product.metalType || product.metal}</span><span className="shrink-0">{product.pricingType === 'price-on-request' || !product.price ? 'Price on request' : `₹${Number(product.price).toLocaleString('en-IN')}`}</span></div>{product.pricingType === 'indicative' && <p className="mt-1 text-[8px] font-medium uppercase tracking-wider text-[#826D43]">Indicative Catalogue Price</p>}<p className="mt-1 text-[8px] uppercase tracking-wider text-[#8A604F]">{getNecklaceAvailability(product)}</p></div>
+                            </Link>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+                  <div className="mt-7 border-t border-[#D8CFBD] pt-6">
+                    <div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[.2em] text-[#9B8050]">Visual collection</p><h3 className="mt-1 font-serif text-2xl text-[#17382D]">Bangles</h3></div><Link href="/bangles" onClick={() => setMegaMenuOpen(false)} className="text-[10px] uppercase tracking-[.18em] text-[#7D2934] underline underline-offset-4">View all bangles</Link></div>
+                    {bangleMenuLoading && <p className="py-5 text-center font-sans text-xs text-[#66736A]">Loading bangles from the collection…</p>}
+                    {bangleMenuError && <p className="py-5 text-center font-sans text-xs text-[#7D2934]">The live bangle collection is temporarily unavailable.</p>}
+                    {!bangleMenuLoading && !bangleMenuError && bangleProducts.length === 0 && <p className="py-5 text-center font-sans text-xs text-[#66736A]">No published bangles are available yet.</p>}
+                    <div className="space-y-6">
+                      {bangleMenuGroups.map((group) => group.products.length > 0 && <section key={group.metalType} aria-label={`${group.metalType} bangles`}><h4 className="mb-3 flex items-center gap-3 font-serif text-lg text-[#17382D]">{group.metalType} Bangles <span className="h-px flex-1 bg-[#E7E0D3]" /></h4><div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{group.products.map((product) => <Link key={product._id} href={`/products/${product.slug || product._id}`} onClick={() => setMegaMenuOpen(false)} className="group/card overflow-hidden border border-[#E6DFD3] bg-white transition-shadow hover:shadow-md"><div className="relative aspect-[1.15] overflow-hidden bg-[#F2EEE5]"><Image src={product.images?.[0] || '/images/placeholder-jewelry.jpg'} alt={`${product.name} — ${product.imageType || 'product image'}`} fill sizes="(max-width: 640px) 45vw, 220px" className="object-contain p-1 transition-transform duration-700 ease-out group-hover/card:scale-105"/><span className="absolute left-2 top-2 bg-[#FBF9F4]/95 px-2 py-1 text-[7px] uppercase tracking-wider text-[#53685D]">{product.imageType || 'Image source not recorded'}</span></div><div className="p-2.5"><p className="line-clamp-2 min-h-9 font-serif text-xs leading-snug text-[#17382D]">{product.name}</p><p className="mt-1 font-sans text-[9px] text-[#766F61]">{product.pricingType === 'price-on-request' || !product.price ? 'Price on request' : `₹${Number(product.price).toLocaleString('en-IN')}`}</p>{product.pricingType === 'indicative' && <p className="mt-0.5 text-[8px] font-medium uppercase tracking-wider text-[#826D43]">Indicative Catalogue Price</p>}<p className="mt-1 text-[8px] uppercase tracking-wider text-[#8A604F]">{getNecklaceAvailability(product)}</p></div></Link>)}</div></section>)}
+                    </div>
+                    <section className="mt-6 border-t border-[#E7E0D3] pt-5"><h4 className="mb-3 font-serif text-lg text-[#17382D]">Explore by style</h4><div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{bangleStyleGroups.filter((group) => group.product).map((group) => <Link key={group.slug} href={`/bangles?style=${group.slug}`} onClick={() => setMegaMenuOpen(false)} className="group/style overflow-hidden border border-[#E6DFD3] bg-white hover:shadow-md"><div className="relative aspect-[1.35] overflow-hidden bg-[#F2EEE5]"><Image src={group.product.images?.[0] || '/images/placeholder-jewelry.jpg'} alt={`${group.name} — AI-generated concept image`} fill sizes="(max-width: 640px) 45vw, 230px" className="object-contain p-1 transition-transform duration-700 group-hover/style:scale-105"/><span className="absolute left-2 top-2 bg-white/90 px-2 py-1 text-[7px] uppercase tracking-wider text-[#53685D]">AI-Generated Concept Image</span></div><p className="p-2.5 font-serif text-sm text-[#17382D]">{group.name}</p></Link>)}</div></section>
+                  </div>
+                  <section className="mt-7 border-t border-[#D8CFBD] pt-6">
+                    <div className="mb-4 flex flex-wrap items-end justify-between gap-3"><div><p className="text-[9px] uppercase tracking-[.2em] text-[#9B8050]">One shared live catalogue</p><h3 className="mt-1 font-serif text-2xl text-[#17382D]">Casual &amp; Daily Wear</h3></div><Link href="/daily-wear" onClick={() => setMegaMenuOpen(false)} className="text-[10px] uppercase tracking-[.18em] text-[#7D2934] underline underline-offset-4">View all daily wear</Link></div>
+                    {dailyWearMenuLoading && <p className="py-4 text-center text-xs text-[#66736A]">Loading daily wear designs…</p>}
+                    {dailyWearMenuError && <p className="py-4 text-center text-xs text-[#7D2934]">The daily wear catalogue is temporarily unavailable.</p>}
+                    {!dailyWearMenuLoading && !dailyWearMenuError && <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">{dailyWearCategoryTiles.map((tile) => tile.product && <Link key={tile.category} href={`/daily-wear?category=${encodeURIComponent(tile.category)}`} onClick={() => setMegaMenuOpen(false)} className="group/card overflow-hidden border border-[#E6DFD3] bg-white transition-shadow hover:shadow-md"><div className="relative aspect-[4/3] overflow-hidden bg-[#F2EEE5]"><SafeImage src={tile.product.images?.[0]} alt={`${tile.name} — AI-generated concept image`} fill sizes="(max-width: 640px) 45vw, 180px" className="object-contain p-2 transition-transform duration-700 ease-out group-hover/card:scale-105" fallbackSrc="/images/placeholder-jewelry.jpg"/><span className="absolute left-1 top-1 bg-white/90 px-1.5 py-1 text-[7px] uppercase tracking-wider text-[#53685D]">AI concept</span></div><p className="p-2 font-serif text-xs text-[#17382D]">Daily Wear {tile.name}</p></Link>)}</div>}
+                  </section>
+                  <div className="mt-5 flex justify-end border-t border-[#E7E0D3] pt-4">
+                    <Link href="/necklaces" onClick={() => setMegaMenuOpen(false)} className="text-[10px] uppercase tracking-[.18em] text-[#7D2934] underline underline-offset-4">View all necklaces</Link>
+                  </div>
+                </div>
+              </div>
+            </li>
             {NAV_CATEGORIES.map((cat) => {
               const IconComponent = cat.icon;
               const isGoldActive = cat.name === 'Gold' && (pathname === '/gold' || pathname === '/categories/gold');
@@ -465,6 +666,40 @@ export default function Header() {
               <p className="text-[11px] font-sans uppercase tracking-widest text-[#8B1E2D] font-bold">
                 Fine Jewelry Collections
               </p>
+              <div className="overflow-hidden border border-[#D8CFBD] bg-[#FBF9F4]">
+                <button type="button" onClick={() => setMobileJewelleryOpen((open) => !open)} aria-expanded={mobileJewelleryOpen} className="flex w-full items-center justify-between px-3 py-3 text-left text-[#17382D]">
+                  <span><span className="block font-serif text-lg">Jewellery</span><span className="mt-0.5 block font-sans text-[9px] uppercase tracking-wider text-[#82775F]">Explore jewellery collections</span></span>
+                  <ChevronDown className={`h-4 w-4 text-[#9B8050] transition-transform duration-300 ${mobileJewelleryOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <div className={`grid transition-all duration-500 ease-in-out ${mobileJewelleryOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                  <div className="overflow-hidden">
+                    <div className="space-y-3 border-t border-[#E7E0D3] p-2">
+                      {necklaceMenuLoading && <p className="py-3 text-center font-sans text-[10px] text-[#66736A]">Loading live necklaces…</p>}
+                      {necklaceMenuError && <p className="py-3 text-center font-sans text-[10px] text-[#7D2934]">Collection temporarily unavailable.</p>}
+                      {!necklaceMenuLoading && !necklaceMenuError && necklaceMenuGroups.map((group) => group.products.length > 0 && (
+                        <section key={group.metalType} aria-label={`${group.metalType} necklaces`}>
+                          <h3 className="mb-2 px-1 font-serif text-sm text-[#17382D]">{group.metalType} Necklaces</h3>
+                          <div className="grid grid-cols-2 gap-2">
+                            {group.products.map((product) => (
+                              <Link key={product._id} href={`/products/${product.slug || product._id}`} onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} className="group/card overflow-hidden border border-[#E7E0D3] bg-white">
+                                <div className="relative aspect-[1.2] overflow-hidden bg-[#F2EEE5]"><Image src={product.images?.[0] || '/images/placeholder-jewelry.jpg'} alt={`${product.name} — ${product.imageType || 'product image'}`} fill sizes="40vw" className="object-contain p-1 transition-transform duration-500 group-hover/card:scale-105" /><span className="absolute left-1 top-1 bg-white/90 px-1 py-0.5 font-sans text-[7px] uppercase tracking-wider text-[#53685D]">{product.imageType || 'Image type unknown'}</span></div>
+                                <span className="block px-2 pt-1.5 font-serif text-[11px] leading-tight text-[#17382D]">{product.name}</span>
+                                <span className="block px-2 pb-1.5 pt-1 font-sans text-[8px] text-[#766F61]">{product.pricingType === 'price-on-request' || !product.price ? 'Price on request' : `₹${Number(product.price).toLocaleString('en-IN')}`}{product.pricingType === 'indicative' ? ' · Indicative Catalogue Price' : ''}<br />{getNecklaceAvailability(product)}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        </section>
+                      ))}
+                      {!necklaceMenuLoading && !necklaceMenuError && necklaceProducts.length === 0 && <p className="py-3 text-center font-sans text-[10px] text-[#66736A]">No published necklaces are available yet.</p>}
+                      <section className="border-t border-[#D8CFBD] pt-4"><div className="mb-3 flex items-center justify-between"><h3 className="font-serif text-lg text-[#17382D]">Earrings</h3><Link href="/earrings" onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} className="text-[9px] uppercase tracking-wider text-[#7D2934] underline">View all</Link></div>{earringMenuLoading && <p className="py-3 text-center font-sans text-[10px] text-[#66736A]">Loading live earrings…</p>}{earringMenuError && <p className="py-3 text-center font-sans text-[10px] text-[#7D2934]">Earrings collection temporarily unavailable.</p>}{!earringMenuLoading && !earringMenuError && earringMenuGroups.map((group) => group.products.length > 0 && <section key={group.metalType} aria-label={`${group.metalType} earrings`}><h4 className="mb-2 px-1 font-serif text-sm text-[#17382D]">{group.metalType} Earrings</h4><div className="mb-3 grid grid-cols-2 gap-2">{group.products.map((product) => <EarringsMenuCard key={product._id} product={product} mobile onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} />)}</div></section>)}</section>
+                      <section className="border-t border-[#D8CFBD] pt-4"><div className="mb-3 flex items-center justify-between"><h3 className="font-serif text-lg text-[#17382D]">Casual &amp; Daily Wear</h3><Link href="/daily-wear" onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} className="text-[9px] uppercase tracking-wider text-[#7D2934] underline">View all</Link></div>{dailyWearMenuLoading && <p className="py-3 text-center font-sans text-[10px] text-[#66736A]">Loading live daily wear…</p>}{dailyWearMenuError && <p className="py-3 text-center font-sans text-[10px] text-[#7D2934]">Daily wear catalogue temporarily unavailable.</p>}{!dailyWearMenuLoading && !dailyWearMenuError && <div className="mb-3 grid grid-cols-2 gap-2">{dailyWearCategoryTiles.map((tile) => tile.product && <Link key={tile.category} href={`/daily-wear?category=${encodeURIComponent(tile.category)}`} onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} className="group/card overflow-hidden border border-[#E7E0D3] bg-white"><div className="relative aspect-[4/3] overflow-hidden bg-[#F2EEE5]"><SafeImage src={tile.product.images?.[0]} alt={`${tile.name} — AI-generated concept image`} fill sizes="42vw" className="object-contain p-1 transition-transform duration-500 group-hover/card:scale-105" fallbackSrc="/images/placeholder-jewelry.jpg"/></div><span className="block p-2 font-serif text-[11px] text-[#17382D]">{tile.name}</span></Link>)}</div>}</section>
+                      <section className="border-t border-[#D8CFBD] pt-4"><div className="mb-3 flex items-center justify-between"><h3 className="font-serif text-lg text-[#17382D]">Rings</h3><Link href="/rings" onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} className="text-[9px] uppercase tracking-wider text-[#7D2934] underline">View all</Link></div>{ringMenuLoading && <p className="py-3 text-center font-sans text-[10px] text-[#66736A]">Loading live rings…</p>}{ringMenuError && <p className="py-3 text-center font-sans text-[10px] text-[#7D2934]">Rings collection temporarily unavailable.</p>}{!ringMenuLoading && !ringMenuError && ringMenuGroups.map((group) => group.products.length > 0 && <section key={group.metalType} aria-label={`${group.metalType} rings`}><h4 className="mb-2 px-1 font-serif text-sm text-[#17382D]">{group.metalType} Rings</h4><div className="mb-3 grid grid-cols-2 gap-2">{group.products.map((product) => <EarringsMenuCard key={product._id} product={product} mobile onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} />)}</div></section>)}</section>
+                      <div className="border-t border-[#D8CFBD] pt-4"><div className="mb-3 flex items-center justify-between"><h3 className="font-serif text-lg text-[#17382D]">Bangles</h3><Link href="/bangles" onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} className="text-[9px] uppercase tracking-wider text-[#7D2934] underline">View all</Link></div>{bangleMenuLoading && <p className="py-3 text-center font-sans text-[10px] text-[#66736A]">Loading live bangles…</p>}{bangleMenuError && <p className="py-3 text-center font-sans text-[10px] text-[#7D2934]">Bangle collection temporarily unavailable.</p>}{!bangleMenuLoading && !bangleMenuError && bangleProducts.length === 0 && <p className="py-3 text-center font-sans text-[10px] text-[#66736A]">No published bangles are available yet.</p>}<div className="space-y-3">{bangleMenuGroups.map((group) => group.products.length > 0 && <section key={group.metalType} aria-label={`${group.metalType} bangles`}><h4 className="mb-2 px-1 font-serif text-sm text-[#17382D]">{group.metalType} Bangles</h4><div className="grid grid-cols-2 gap-2">{group.products.map((product) => <Link key={product._id} href={`/products/${product.slug || product._id}`} onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} className="group/card overflow-hidden border border-[#E7E0D3] bg-white"><div className="relative aspect-[1.2] overflow-hidden bg-[#F2EEE5]"><Image src={product.images?.[0] || '/images/placeholder-jewelry.jpg'} alt={`${product.name} — ${product.imageType || 'product image'}`} fill sizes="40vw" className="object-contain p-1 transition-transform duration-500 group-hover/card:scale-105"/><span className="absolute left-1 top-1 bg-white/90 px-1 py-0.5 font-sans text-[7px] uppercase tracking-wider text-[#53685D]">{product.imageType || 'Image type unknown'}</span></div><span className="block px-2 pt-1.5 font-serif text-[11px] leading-tight text-[#17382D]">{product.name}</span><span className="block px-2 pb-1.5 pt-1 font-sans text-[8px] text-[#766F61]">{product.pricingType === 'price-on-request' || !product.price ? 'Price on request' : `₹${Number(product.price).toLocaleString('en-IN')}`}{product.pricingType === 'indicative' ? ' · Indicative Catalogue Price' : ''}<br/>{getNecklaceAvailability(product)}</span></Link>)}</div></section>)}</div></div>
+                      <section className="border-t border-[#D8CFBD] pt-3"><h4 className="mb-2 px-1 font-serif text-sm text-[#17382D]">Shop by bangle style</h4><div className="grid grid-cols-2 gap-2">{bangleStyleGroups.filter((group) => group.product).map((group) => <Link key={group.slug} href={`/bangles?style=${group.slug}`} onClick={() => { setMobileMenuOpen(false); setMobileJewelleryOpen(false); }} className="overflow-hidden border border-[#E7E0D3] bg-white"><div className="relative aspect-[1.3] bg-[#F2EEE5]"><Image src={group.product.images?.[0] || '/images/placeholder-jewelry.jpg'} alt={`${group.name} — AI-generated concept image`} fill sizes="40vw" className="object-contain p-1"/></div><span className="block p-2 font-serif text-[11px] text-[#17382D]">{group.name}</span></Link>)}</div></section>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <ul className="space-y-3 text-base text-[#4A0B13]">
                 {NAV_CATEGORIES.map((cat) => {
                   const IconComponent = cat.icon;

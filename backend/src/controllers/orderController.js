@@ -10,7 +10,7 @@ const resolveProduct = async (identifier, item = {}) => {
   // 1. Valid MongoDB ObjectId
   if (idStr && mongoose.Types.ObjectId.isValid(idStr)) {
     try {
-      const p = await Product.findById(idStr);
+      const p = await Product.findOne({ _id: idStr, isPublished: { $ne: false } });
       if (p) return p;
     } catch (_) {}
   }
@@ -18,6 +18,7 @@ const resolveProduct = async (identifier, item = {}) => {
   // 2. Exact match on sku or slug
   if (idStr) {
     const p = await Product.findOne({
+      isPublished: { $ne: false },
       $or: [{ sku: idStr }, { slug: idStr.toLowerCase() }]
     });
     if (p) return p;
@@ -28,6 +29,7 @@ const resolveProduct = async (identifier, item = {}) => {
   if (match) {
     const num = match[1].padStart(3, '0');
     const p = await Product.findOne({
+      isPublished: { $ne: false },
       $or: [
         { sku: new RegExp(`-${num}$`, 'i') },
         { sku: new RegExp(`-${match[1]}$`, 'i') }
@@ -41,7 +43,7 @@ const resolveProduct = async (identifier, item = {}) => {
     const query = [];
     if (item.sku) query.push({ sku: item.sku });
     if (item.name) query.push({ name: item.name });
-    const p = await Product.findOne({ $or: query });
+    const p = await Product.findOne({ isPublished: { $ne: false }, $or: query });
     if (p) return p;
   }
 
@@ -93,6 +95,7 @@ exports.createOrder = async (req, res, next) => {
     // Server-side inventory & price verification: DO NOT TRUST CLIENT TOTALS!
     const validatedItems = [];
     let calculatedSubtotal = 0;
+    const requestedProducts = new Map();
 
     for (const item of items) {
       const product = await resolveProduct(item.productId || item._id, item);
@@ -104,7 +107,21 @@ exports.createOrder = async (req, res, next) => {
         });
       }
 
-      const qty = parseInt(item.quantity, 10) || 1;
+      if (product.pricingType === 'price-on-request' || product.pricingType === 'indicative' || product.priceStatus === 'indicative' || product.isOrderable === false || product.availability === 'design-enquiry' || !(Number(product.price) > 0)) {
+        return res.status(400).json({ success: false, message: `"${product.name}" needs a business-approved selling price and availability before checkout.` });
+      }
+
+      const qty = Number(item.quantity);
+      if (!Number.isSafeInteger(qty) || qty < 1) {
+        return res.status(400).json({ success: false, message: 'Each shopping bag quantity must be a positive whole number.' });
+      }
+      const selectedSize = String(item.selectedSize || 'Standard').slice(0, 40);
+      const key = `${product._id}:${selectedSize}`;
+      const existing = requestedProducts.get(key);
+      requestedProducts.set(key, { product, selectedSize, quantity: (existing?.quantity || 0) + qty });
+    }
+
+    for (const { product, selectedSize, quantity: qty } of requestedProducts.values()) {
       if (product.stock < qty) {
         return res.status(400).json({
           success: false,
@@ -120,7 +137,7 @@ exports.createOrder = async (req, res, next) => {
         image: product.images && product.images[0] ? product.images[0] : item.image,
         price: product.price, // Live server price
         quantity: qty,
-        selectedSize: item.selectedSize || 'Standard',
+        selectedSize,
         metal: product.metal,
         purity: product.purity,
         grossWeight: product.grossWeight
@@ -129,8 +146,10 @@ exports.createOrder = async (req, res, next) => {
       calculatedSubtotal += product.price * qty;
 
       // Deduct inventory stock
-      product.stock -= qty;
-      await product.save();
+      const stockUpdate = await Product.updateOne({ _id: product._id, stock: { $gte: qty } }, { $inc: { stock: -qty } });
+      if (stockUpdate.modifiedCount !== 1) {
+        return res.status(409).json({ success: false, message: `Availability changed while placing your order for "${product.name}". Please refresh your bag.` });
+      }
     }
 
     // Calculate 3% standard Indian GST on jewellery

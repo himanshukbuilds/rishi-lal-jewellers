@@ -181,33 +181,33 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-ivory-300/80">
               <li>
-                <Link href="/categories/bridal" className="hover:text-gold-300 transition-colors">
+                <Link href="/wedding" className="hover:text-gold-300 transition-colors">
                   Grand Bridal Heritage
                 </Link>
               </li>
               <li>
-                <Link href="/categories/diamond" className="hover:text-gold-300 transition-colors">
+                <Link href="/diamond" className="hover:text-gold-300 transition-colors">
                   Solitaire Diamond Rings
                 </Link>
               </li>
               <li>
-                <Link href="/categories/gold" className="hover:text-gold-300 transition-colors">
+                <Link href="/gold" className="hover:text-gold-300 transition-colors">
                   22K Temple Gold Necklaces
                 </Link>
               </li>
               <li>
-                <Link href="/categories/earrings" className="hover:text-gold-300 transition-colors">
+                <Link href="/earrings" className="hover:text-gold-300 transition-colors">
                   Kundan & Polki Jhumkas
                 </Link>
               </li>
               <li>
-                <Link href="/categories/bangles" className="hover:text-gold-300 transition-colors">
+                <Link href="/bangles" className="hover:text-gold-300 transition-colors">
                   Die-Struck Royal Kadas
                 </Link>
               </li>
               <li>
-                <Link href="/categories/gifts" className="hover:text-gold-300 transition-colors">
-                  Anniversary Fine Gifts
+                <Link href="/gifting" className="hover:text-gold-300 transition-colors">
+                  Gifting Collection
                 </Link>
               </li>
             </ul>

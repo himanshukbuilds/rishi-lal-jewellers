@@ -1,5 +1,20 @@
 const Product = require('../models/Product');
 
+exports.getAdminProducts = async (req, res, next) => {
+  try {
+    const { search, category, limit = 100 } = req.query;
+    const query = {};
+    if (category && category !== 'all') query.category = { $regex: new RegExp(String(category).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') };
+    if (search && String(search).trim()) {
+      const escaped = String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query.$or = [{ name: new RegExp(escaped, 'i') }, { sku: new RegExp(escaped, 'i') }];
+    }
+    const limitNum = Math.max(1, Math.min(200, Number.parseInt(limit, 10) || 100));
+    const products = await Product.find(query).sort({ updatedAt: -1 }).limit(limitNum);
+    res.status(200).json({ success: true, count: products.length, products });
+  } catch (err) { next(err); }
+};
+
 // @desc    Get all products with dynamic search, filters, sorting & pagination
 // @route   GET /api/products
 // @access  Public
@@ -8,11 +23,14 @@ exports.getProducts = async (req, res, next) => {
     const {
       category,
       categorySlug,
+      subcategory,
+      weightClass,
       gender,
       metal,
       purity,
       minPrice,
       maxPrice,
+      maxPriceExclusive,
       search,
       isBestseller,
       isNewArrival,
@@ -23,7 +41,13 @@ exports.getProducts = async (req, res, next) => {
       limit = 12
     } = req.query;
 
-    const query = {};
+    const query = { isPublished: { $ne: false } };
+
+    for (const [label, value] of [['minPrice', minPrice], ['maxPrice', maxPrice], ['maxPriceExclusive', maxPriceExclusive]]) {
+      if (value !== undefined && (!Number.isFinite(Number(value)) || Number(value) < 0)) {
+        return res.status(400).json({ success: false, message: `Invalid ${label} filter.` });
+      }
+    }
 
     // Category filter
     if (categorySlug && categorySlug !== 'all') {
@@ -115,8 +139,24 @@ exports.getProducts = async (req, res, next) => {
 
     // Metal filter
     if (metal && metal !== 'all') {
-      query.metal = { $regex: new RegExp(metal, 'i') };
+      const normalizedMetal = metal.trim();
+      if (/^diamond$/i.test(normalizedMetal)) {
+        query.$and = [...(query.$and || []), { $or: [{ metalType: 'Diamond' }, { 'gemstones.type': /diamond/i }, { tags: 'diamond' }] }];
+      } else {
+        query.$and = [...(query.$and || []), { $or: [{ metalType: new RegExp(`^${normalizedMetal}$`, 'i') }, { metal: new RegExp(normalizedMetal, 'i') }] }];
+      }
     }
+
+    if (subcategory && subcategory !== 'all') {
+      const styleRegex = new RegExp(subcategory.trim(), 'i');
+      query.$and = [...(query.$and || []), { $or: [
+        { subcategory: styleRegex },
+        { category: styleRegex },
+        { name: styleRegex },
+        { tags: styleRegex }
+      ] }];
+    }
+    if (weightClass && weightClass !== 'all') query.weightClass = weightClass;
 
     // Purity filter
     if (purity && purity !== 'all') {
@@ -129,6 +169,10 @@ exports.getProducts = async (req, res, next) => {
       if (minPrice) query.price.$gte = Number(minPrice);
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
+    if (maxPriceExclusive) {
+      query.price = { ...(query.price || {}), $lt: Number(maxPriceExclusive) };
+    }
+    if (minPrice || maxPrice || maxPriceExclusive) query.pricingType = { $ne: 'price-on-request' };
 
     // Special tags
     if (isBestseller === 'true') query.isBestseller = true;
@@ -166,13 +210,14 @@ exports.getProducts = async (req, res, next) => {
       query.$and = andConditions;
     } else if (search && search.trim() !== '') {
       const searchRegex = new RegExp(search.trim(), 'i');
-      query.$or = [
+      const searchClause = { $or: [
         { name: searchRegex },
         { description: searchRegex },
         { category: searchRegex },
         { sku: searchRegex },
         { tags: searchRegex }
-      ];
+      ] };
+      query.$and = [...(query.$and || []), searchClause];
     }
 
     // Sorting
@@ -212,10 +257,10 @@ exports.getProducts = async (req, res, next) => {
 // @access  Public
 exports.getProductHighlights = async (req, res, next) => {
   try {
-    const bestsellers = await Product.find({ isBestseller: true }).limit(8);
-    const newArrivals = await Product.find({ isNewArrival: true }).limit(8);
-    const bridalCollection = await Product.find({ isBridal: true }).limit(8);
-    const featured = await Product.find({ isFeatured: true }).limit(8);
+    const bestsellers = await Product.find({ isBestseller: true, isPublished: { $ne: false } }).limit(8);
+    const newArrivals = await Product.find({ isNewArrival: true, isPublished: { $ne: false } }).limit(8);
+    const bridalCollection = await Product.find({ isBridal: true, isPublished: { $ne: false } }).limit(8);
+    const featured = await Product.find({ isFeatured: true, isPublished: { $ne: false } }).limit(8);
 
     res.status(200).json({
       success: true,
@@ -270,10 +315,15 @@ exports.getProduct = async (req, res, next) => {
       });
     }
 
+    if (product.isPublished === false) {
+      return res.status(404).json({ success: false, message: 'Jewelry piece not found' });
+    }
+
     // Also fetch 4 related products in same category
     const relatedProducts = await Product.find({
       categorySlug: product.categorySlug,
-      _id: { $ne: product._id }
+      _id: { $ne: product._id },
+      isPublished: { $ne: false }
     }).limit(4);
 
     res.status(200).json({
@@ -403,4 +453,41 @@ exports.deleteProduct = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Approve indicative price and enable orderability (Admin only)
+// @route   PATCH /api/products/:id/approve-price
+// @access  Private/Admin
+exports.approveProductPrice = async (req, res, next) => {
+  try {
+    const { approvedPrice, stock = 5 } = req.body || {};
+    let product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    const price = approvedPrice !== undefined && Number(approvedPrice) > 0 ? Number(approvedPrice) : product.price;
+
+    product.price = price;
+    product.priceStatus = 'approved';
+    product.pricingType = 'business-set';
+    product.isOrderable = true;
+    product.availability = 'in-stock';
+    if (stock) product.stock = Math.max(1, Number(stock));
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Selling price for "${product.name}" approved at ₹${Number(product.price).toLocaleString('en-IN')}. Product is now orderable.`,
+      product
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 

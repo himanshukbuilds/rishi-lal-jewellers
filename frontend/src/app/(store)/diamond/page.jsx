@@ -18,6 +18,7 @@ import {
   Gem
 } from 'lucide-react';
 import { api } from '@/services/api';
+import ProductCard from '@/components/product/ProductCard';
 import { formatPrice } from '@/config/brandConfig';
 import { useWishlist } from '@/context/WishlistContext';
 
@@ -525,7 +526,7 @@ export default function DiamondLandingPage() {
 
           {/* Loading Skeleton */}
           {isLoading && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div
                   key={n}
@@ -539,73 +540,8 @@ export default function DiamondLandingPage() {
               PRODUCT GRID (6 CARDS PER ROW ON DESKTOP, MATCHING REFERENCE)
              ------------------------------------------------------------------- */}
           {!isLoading && displayedProducts.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-              {displayedProducts.map((product) => {
-                const inWishlist = isInWishlist(product._id || product.id);
-                const productImage =
-                  (product.images && product.images[0]) ||
-                  product.image ||
-                  '/images/placeholder.jpg';
-
-                return (
-                  <div
-                    key={product._id || product.id || product.slug}
-                    className="group bg-white rounded-xl border border-[#EADBCA] p-2.5 sm:p-3 flex flex-col justify-between transition-all duration-300 hover:shadow-md hover:border-[#C2AA6A]/60"
-                  >
-                    {/* Product Image Area on Warm Cream Background */}
-                    <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden bg-[#FAF4EB] mb-2.5">
-                      <Link
-                        href={`/products/${product.slug || product._id || product.id}`}
-                        className="block w-full h-full"
-                      >
-                        <Image
-                          src={productImage}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
-                          className="object-contain p-2 transition-transform duration-500 ease-out group-hover:scale-105"
-                        />
-                      </Link>
-
-                      {/* Wishlist Heart Button in Top Right */}
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleWishlist(product);
-                        }}
-                        className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center transition-all duration-200 shadow-xs cursor-pointer ${
-                          inWishlist
-                            ? 'text-red-600 bg-red-50'
-                            : 'text-[#635B50] hover:text-[#8B1E2D] hover:bg-white'
-                        }`}
-                        aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-                      >
-                        <Heart
-                          className={`w-3.5 h-3.5 ${
-                            inWishlist ? 'fill-current text-red-600' : ''
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    {/* Product Meta */}
-                    <div className="pt-0.5">
-                      <Link
-                        href={`/products/${product.slug || product._id || product.id}`}
-                        className="block group-hover:text-[#650B19] transition-colors"
-                      >
-                        <h3 className="font-serif text-xs sm:text-[13px] font-medium text-[#2A1810] leading-snug line-clamp-1">
-                          {product.name}
-                        </h3>
-                      </Link>
-
-                      <p className="font-serif text-xs sm:text-[13px] font-bold text-[#650B19] mt-1">
-                        {formatPrice(product.price)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {displayedProducts.map((product) => <ProductCard key={product._id || product.id || product.slug} product={product} />)}
             </div>
           )}
 

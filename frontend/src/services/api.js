@@ -133,6 +133,14 @@ class ApiClient {
     }
   }
 
+  async getAdminProducts(params = {}) {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') query.append(key, value);
+    });
+    return this.request(`/products/admin${query.toString() ? `?${query.toString()}` : ''}`);
+  }
+
   async getProductHighlights() {
     try {
       return await this.request('/products/highlights');
@@ -172,6 +180,13 @@ class ApiClient {
     return this.request(`/products/${id}`, {
       method: 'PUT',
       body: JSON.stringify(productData),
+    });
+  }
+
+  async approveProductPrice(id, payload = {}) {
+    return this.request(`/products/${id}/approve-price`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
     });
   }
 
@@ -245,33 +260,49 @@ class ApiClient {
         body: JSON.stringify({ message, history }),
       });
     } catch (err) {
-      console.warn('[API] Chat request failed, using local concierge fallback:', err.message);
+      console.warn('[API] Chat request failed, using local RIVA concierge fallback:', err.message);
       return {
         success: true,
-        reply: "Welcome to Rishi Lal Jewellers! ✨ I'm your personal jewelry assistant. I'm currently operating in offline concierge mode. How may I assist you with our 100% BIS Hallmarked gold, certified diamonds, or bridal collections?",
+        reply: "Hello! I'm RIVA, your personal jewellery assistant at Rishi Lal Jewellers. How may I help you discover something beautiful today?",
         products: [],
-        suggestedActions: ['Find Jewelry', 'Bridal Collection', 'Shop Under ₹50K', 'Help & Support'],
+        suggestedActions: [
+          'Explore Gold Jewellery',
+          'Find Diamond Jewellery',
+          'Discover Wedding Collections',
+          'Help me choose a necklace',
+          'Check jewellery prices',
+        ],
       };
     }
   }
 
-  // Live Precious Metal Market Prices (Gold, Silver, Diamonds)
+  // Live Precious Metal Market Prices (Gold, Silver, Diamonds) via GoldAPI.io
   async getMarketPrices(forceRefresh = false) {
     try {
-      const endpoint = forceRefresh ? '/market-prices?refresh=true' : '/market-prices';
+      const endpoint = forceRefresh ? '/metal-prices?refresh=true' : '/metal-prices';
       return await this.request(endpoint);
     } catch (err) {
       console.warn('[API] Market prices fetch error:', err.message);
       return {
         success: false,
         dataStatus: 'OFFLINE',
-        message: 'Market price server is currently offline. Please try again shortly.',
+        message: 'Live rates temporarily unavailable',
         retrievedAt: new Date().toISOString(),
-        gold: { available: false },
-        silver: { available: false },
+        gold: { available: false, message: 'Live rates temporarily unavailable' },
+        silver: { available: false, message: 'Live rates temporarily unavailable' },
         diamonds: { available: false }
       };
     }
+  }
+
+  async getGoldPrices(forceRefresh = false) {
+    const endpoint = forceRefresh ? '/metal-prices/gold?refresh=true' : '/metal-prices/gold';
+    return await this.request(endpoint);
+  }
+
+  async getSilverPrices(forceRefresh = false) {
+    const endpoint = forceRefresh ? '/metal-prices/silver?refresh=true' : '/metal-prices/silver';
+    return await this.request(endpoint);
   }
 }
 
