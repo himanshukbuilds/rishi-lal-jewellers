@@ -59,8 +59,6 @@ export default function DailyWearProducts({ showFilters = false, showViewAll = f
           {showViewAll && <Link href="/daily-wear" className="inline-flex w-fit border border-[#7D2934] px-5 py-3 text-[10px] uppercase tracking-[.18em] text-[#7D2934] transition-colors hover:bg-[#7D2934] hover:text-white">View All Daily Wear</Link>}
         </header>
 
-        <p className="mb-5 border border-[#E6DFD3] bg-white/80 px-4 py-3 text-[10px] leading-5 text-[#716D64]">Indicative Catalogue Price — Final price subject to confirmed product specifications and quotation. All images are AI-generated illustrative concepts and do not represent confirmed stock.</p>
-
         {showFilters && <div className="mb-6 grid grid-cols-1 gap-3 rounded-sm border border-[#E6DFD3] bg-white p-4 sm:grid-cols-2 lg:grid-cols-5">
           <label className="text-[10px] font-semibold uppercase tracking-wider text-[#826D43]">Category<select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 block w-full border border-[#D6CBB8] p-2 text-xs normal-case tracking-normal text-[#292923]"><option value="all">All categories</option>{CATEGORIES.map((item) => <option key={item}>{item}</option>)}</select></label>
           <label className="text-[10px] font-semibold uppercase tracking-wider text-[#826D43]">Metal<select value={metal} onChange={(e) => setMetal(e.target.value)} className="mt-1 block w-full border border-[#D6CBB8] p-2 text-xs normal-case tracking-normal text-[#292923]"><option value="all">All metals</option>{METALS.map((item) => <option key={item}>{item}</option>)}</select></label>

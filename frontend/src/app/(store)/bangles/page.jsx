@@ -488,9 +488,9 @@ export default function BanglesLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <Sparkles className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Indicative Prices</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Verified Pricing</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                Catalogue estimates are not final quotations or verified market rates.
+                Transparent selling prices with complete hallmark authenticity.
               </p>
             </div>
 

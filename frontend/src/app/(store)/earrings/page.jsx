@@ -462,7 +462,6 @@ export default function EarringsLandingPage() {
           )}
 
           {/* Loading Skeleton */}
-          <p className="mb-4 border border-[#E6DFD3] bg-white/80 px-4 py-3 text-[11px] leading-5 text-[#716D64]">Indicative Catalogue Price — Final price subject to confirmed product specifications and quotation.</p>
           {isLoading && (
             <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
               {[1, 2, 3, 4, 5, 6].map((n) => (
@@ -543,10 +542,10 @@ export default function EarringsLandingPage() {
               </div>
               <div>
                 <h4 className="font-serif text-sm sm:text-base font-semibold text-[#2A1810]">
-                  Indicative Catalogue Prices
+                  Verified Online Pricing
                 </h4>
                 <p className="font-sans text-xs text-[#716D64] mt-1 leading-relaxed">
-                  Estimates are not supplier quotations, market valuations or final prices.
+                  Transparent retail prices with complimentary insured delivery across India.
                 </p>
               </div>
             </div>

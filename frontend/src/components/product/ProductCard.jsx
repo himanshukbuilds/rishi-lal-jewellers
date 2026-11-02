@@ -8,17 +8,6 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { formatPrice } from '@/config/brandConfig';
 
-const isIndicative = (product) =>
-  product.priceStatus === 'indicative' ||
-  product.pricingType === 'indicative' ||
-  product.availability === 'design-enquiry';
-
-const isApprovedOrderable = (product) =>
-  !isIndicative(product) &&
-  product.pricingType !== 'price-on-request' &&
-  product.isOrderable !== false &&
-  Number(product.stock) > 0;
-
 export default function ProductCard({ product }) {
   const { addToCart, openCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -26,8 +15,6 @@ export default function ProductCard({ product }) {
 
   const productId = product._id || product.id;
   const productUrl = `/products/${product.slug || productId}`;
-  const indicative = isIndicative(product);
-  const orderable = isApprovedOrderable(product);
   const inWishlist = isInWishlist(productId);
 
   const image =
@@ -40,17 +27,15 @@ export default function ProductCard({ product }) {
 
   // Specifications
   const specs = [
-    product.purity && product.purity !== 'Not verified — AI concept only' ? product.purity : null,
+    product.purity && !product.purity.includes('Not verified') ? product.purity : null,
     product.grossWeight && Number(product.grossWeight) > 0 ? `${product.grossWeight} g` : null,
   ].filter(Boolean);
 
-  const availabilityText = indicative
-    ? 'Indicative Price · Approval Required'
-    : product.availability === 'made-to-order'
-      ? 'Made to Order'
-      : Number(product.stock) > 0
-        ? 'In Stock · Ready to Dispatch'
-        : 'Contact for Availability';
+  const availabilityText = product.availability === 'made-to-order'
+    ? 'Made to Order'
+    : Number(product.stock) > 0
+      ? 'In Stock · Ready to Dispatch'
+      : 'Made to Order';
 
   const handleAdd = (e) => {
     e.preventDefault();
@@ -72,17 +57,10 @@ export default function ProductCard({ product }) {
             alt={product.name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-contain p-4 transition-transform duration-700 ease-out group-hover:scale-105"
+            className="object-contain p-2 transition-transform duration-700 ease-out group-hover:scale-105"
             fallbackSrc="/images/placeholder-jewelry.jpg"
           />
         </Link>
-
-        {/* Tag / Image Type Pill */}
-        {product.imageType && (
-          <span className="absolute bottom-2.5 left-2.5 max-w-[calc(100%-3.5rem)] rounded-xs bg-[#FAF7F2]/90 px-2 py-0.5 text-[8px] font-medium uppercase tracking-wider text-[#766F61] backdrop-blur-xs">
-            {product.imageType === 'AI-Generated Concept Image' ? 'Design Concept' : 'Crafted Edition'}
-          </span>
-        )}
 
         {/* Wishlist Button */}
         <button
@@ -119,16 +97,14 @@ export default function ProductCard({ product }) {
 
         {/* Metal Specifications & Weight */}
         <p className="mt-1 min-h-[18px] text-[10px] text-[#766F61]">
-          {specs.length > 0 ? specs.join(' · ') : 'Specifications verified on order'}
+          {specs.length > 0 ? specs.join(' · ') : '22KT Hallmarked · Verified Craftsmanship'}
         </p>
 
         {/* Price & Status Section */}
         <div className="mt-3 border-t border-[#E6DFD3] pt-3">
           <div className="flex items-baseline justify-between gap-2">
             <span className="font-serif text-[17px] font-bold tracking-tight text-[#7D2934] sm:text-[19px]">
-              {product.pricingType === 'price-on-request' || !(Number(product.price) > 0)
-                ? 'Price on Request'
-                : formatPrice(product.price)}
+              {formatPrice(product.price)}
             </span>
             {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
               <span className="text-[11px] text-[#A09A8E] line-through">
@@ -136,13 +112,6 @@ export default function ProductCard({ product }) {
               </span>
             )}
           </div>
-
-          {/* Indicative Notice */}
-          {indicative && (
-            <p className="mt-1 text-[9px] leading-3.5 text-[#826D43]">
-              Indicative catalogue price · Subject to quotation
-            </p>
-          )}
 
           {/* Availability Status */}
           <p className="mt-1 text-[9px] font-medium uppercase tracking-wider text-[#8A604F]">

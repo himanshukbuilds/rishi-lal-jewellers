@@ -20,7 +20,6 @@ export default function CartDrawer() {
     total,
     itemCount,
   } = useCart();
-  const hasIndicativeItems = cartItems.some((item) => item.priceStatus === 'indicative' || item.pricingType === 'indicative' || item.availability === 'design-enquiry' || item.isOrderable === false);
 
   if (!isCartOpen) return null;
 
@@ -83,7 +82,7 @@ export default function CartDrawer() {
                   key={`${item.productId}-${item.selectedSize}`}
                   className="flex gap-4 p-3.5 rounded-sm bg-white border border-gold-200/60 shadow-sm"
                 >
-                  {/* Thumbnail */}
+                  {/* Product image on the left */}
                   <div className="relative w-20 h-20 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-300/30">
                     <SafeImage
                       src={item.image}
@@ -95,7 +94,7 @@ export default function CartDrawer() {
                     />
                   </div>
 
-                  {/* Details */}
+                  {/* Product details & specifications */}
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <div className="flex items-start justify-between gap-2">
@@ -113,11 +112,13 @@ export default function CartDrawer() {
                       <p className="text-[11px] text-charcoal-500 mt-0.5">
                         {[item.purity, item.metal, `Size: ${item.selectedSize}`].filter(Boolean).join(' · ')}
                       </p>
-                      {(item.priceStatus === 'indicative' || item.pricingType === 'indicative') && <p className="mt-1 text-[9px] font-medium uppercase tracking-wider text-[#826D43]">Indicative estimate · final price requires approval</p>}
+                      <p className="text-[11px] font-sans text-gold-800 font-medium mt-1">
+                        Unit Price: {formatPrice(item.price)}
+                      </p>
                     </div>
 
                     <div className="flex items-center justify-between mt-3 pt-2 border-t border-ivory-200">
-                      {/* Quantity Controls */}
+                      {/* Quantity Selector */}
                       <div className="flex items-center border border-gold-300/50 rounded-sm bg-ivory-50">
                         <button
                           onClick={() => updateQuantity(item.productId, item.selectedSize, item.quantity - 1)}
@@ -138,9 +139,13 @@ export default function CartDrawer() {
                         </button>
                       </div>
 
-                      <span className="font-serif text-sm font-semibold text-emerald-950">
-                        {formatPrice(item.price * item.quantity)}
-                      </span>
+                      {/* Item Subtotal */}
+                      <div className="text-right">
+                        <span className="text-[10px] text-charcoal-500 block uppercase tracking-wider font-sans">Item Subtotal</span>
+                        <span className="font-serif text-sm font-semibold text-emerald-950">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -152,7 +157,6 @@ export default function CartDrawer() {
           {cartItems.length > 0 && (
             <div className="p-6 bg-white border-t border-gold-300/40 space-y-3">
               <div className="space-y-1.5 text-xs text-charcoal-600">
-                {hasIndicativeItems && <p className="mb-2 border border-gold-300 bg-ivory-100 p-2 text-[10px] leading-4 text-charcoal-600">Indicative value only; not payable before price approval.</p>}
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span className="font-medium text-emerald-950">{formatPrice(subtotal)}</span>
@@ -168,13 +172,13 @@ export default function CartDrawer() {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span>Insured Shipping</span>
+                  <span>Shipping Charges</span>
                   <span className="text-emerald-700 font-medium uppercase text-[11px]">Complimentary</span>
                 </div>
               </div>
 
               <div className="pt-3 border-t border-gold-200 flex justify-between items-baseline">
-                <span className="font-serif text-base text-emerald-950 font-medium">{hasIndicativeItems ? 'Indicative Total' : 'Estimated Total'}</span>
+                <span className="font-serif text-base text-emerald-950 font-medium">Final Total</span>
                 <span className="font-serif text-xl font-bold text-emerald-950">{formatPrice(total)}</span>
               </div>
 
@@ -186,14 +190,14 @@ export default function CartDrawer() {
                 >
                   View Bag
                 </Link>
-                {hasIndicativeItems ? <span className="flex-[1.5] py-3 text-center bg-gray-200 text-gray-600 text-[10px] uppercase tracking-wider rounded-sm">Price approval required before checkout</span> : <Link
+                <Link
                   href="/checkout"
                   onClick={closeCart}
-                  className="flex-[1.5] py-3 text-center bg-emerald-950 text-gold-300 text-xs uppercase tracking-widest font-medium hover:bg-emerald-900 transition-colors rounded-sm flex items-center justify-center gap-2 border border-gold-400/40 shadow-sm"
+                  className="flex-[1.5] py-3 text-center bg-[#8B1E2D] hover:bg-[#5C1D26] text-white text-xs uppercase tracking-widest font-semibold rounded-sm transition-colors flex items-center justify-center gap-2 border border-[#C2AA6A]/40 shadow-sm"
                 >
-                  <span>Checkout</span>
+                  <span>PROCEED TO CHECKOUT</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </Link>}
+                </Link>
               </div>
             </div>
           )}
@@ -202,4 +206,3 @@ export default function CartDrawer() {
     </div>
   );
 }
-

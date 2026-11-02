@@ -466,11 +466,6 @@ export default function GiftingPage() {
             </label>
           </div>
 
-          {/* Indicative Notice Banner */}
-          <div className="mt-4 rounded-xs border border-[#E6DFD3] bg-white/80 p-3 text-[11px] leading-5 text-[#766F61]">
-            <span className="font-semibold text-[#826D43]">Indicative Catalogue Prices:</span> Final price is subject to confirmed specifications and quotation. All designs are crafted upon order confirmation with hallmark certification.
-          </div>
-
           {/* PRODUCT CARDS GRID */}
           <div className="mt-8">
             {isLoading && (

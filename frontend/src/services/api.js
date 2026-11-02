@@ -207,6 +207,13 @@ class ApiClient {
   }
 
   // Orders
+  async createRazorpayOrder(data) {
+    return this.request('/orders/razorpay-order', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   async createOrder(orderData) {
     return this.request('/orders', {
       method: 'POST',

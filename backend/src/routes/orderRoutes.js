@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   createOrder,
+  createRazorpayOrder,
   getMyOrders,
   getOrder,
   getAllOrders,
@@ -9,7 +10,10 @@ const {
 } = require('../controllers/orderController');
 const { protect, requireAdmin } = require('../middleware/auth');
 
-// Create order (can be authenticated customer or guest)
+// Create Razorpay order for online checkout
+router.post('/razorpay-order', protect, createRazorpayOrder);
+
+// Create order (authenticated customer or guest)
 router.post('/', protect, createOrder);
 
 // Customer specific

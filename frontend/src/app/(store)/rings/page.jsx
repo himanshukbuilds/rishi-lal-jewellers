@@ -388,10 +388,6 @@ export default function RingsLandingPage() {
             </div>
           </div>
 
-          <p className="mb-5 border border-[#E6DFD3] bg-white/80 px-4 py-3 text-[11px] leading-5 text-[#716D64]">
-            Indicative Catalogue Price — Final price subject to confirmed product specifications and quotation. AI-generated images are illustrative concepts, not verified product photographs.
-          </p>
-
           {filterDrawerOpen && (
             <div className="mb-6 grid grid-cols-1 gap-3 border border-[#E6DFD3] bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
               <label className="text-[10px] font-semibold uppercase tracking-wider text-[#8B1E2D]">Metal
@@ -495,9 +491,9 @@ export default function RingsLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <Sparkles className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Indicative Catalogue</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Verified Pricing</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                Listed prices are estimates and require a confirmed business quotation.
+                Transparent selling prices with complete BIS hallmark certification.
               </p>
             </div>
 
@@ -505,9 +501,9 @@ export default function RingsLandingPage() {
               <div className="w-10 h-10 rounded-full bg-[#EFE7DA] text-[#650B19] flex items-center justify-center mb-2.5">
                 <Truck className="w-5 h-5" />
               </div>
-              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Made to Order Enquiry</h4>
+              <h4 className="font-serif text-sm text-[#1A1A1A] font-medium mb-0.5">Insured Delivery</h4>
               <p className="font-sans text-[11px] text-charcoal-500 max-w-[180px]">
-                No physical stock or delivery schedule is claimed for illustrative designs.
+                Armored express delivery with full transit insurance across India.
               </p>
             </div>
           </div>

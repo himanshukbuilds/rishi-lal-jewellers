@@ -26,7 +26,6 @@ export default function ChatProductCard({ product, onSelect }) {
     }
   };
 
-  const isDesignEnquiry = product.priceStatus === 'indicative' || product.pricingType === 'indicative' || product.availability === 'design-enquiry';
   const formattedPrice = product.pricingType === 'price-on-request' || !(Number(product.price) > 0)
     ? 'Price on request'
     : `₹${Number(product.price).toLocaleString('en-IN')}`;
@@ -85,8 +84,6 @@ export default function ChatProductCard({ product, onSelect }) {
             </span>
           )}
         </div>
-        {product.pricingType === 'indicative' && <p className="mt-0.5 text-[8px] font-medium uppercase tracking-wider text-[#826D43]">Indicative Catalogue Price</p>}
-        {isDesignEnquiry && <p className="mt-1 text-[9px] text-[#53685D]">Indicative estimate · price approval required</p>}
 
         {/* Action Buttons */}
         <div className="mt-3 flex items-center gap-1.5 pt-1">

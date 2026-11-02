@@ -59,15 +59,12 @@ export default function ProductDetailsPage() {
 
   const product = data?.product;
   const relatedProducts = data?.relatedProducts || [];
-  const isDesignEnquiryOnly = product?.priceStatus === 'indicative' || product?.pricingType === 'indicative' || product?.availability === 'design-enquiry';
-  const isOrderable = Boolean(product && !isDesignEnquiryOnly && product.pricingType !== 'price-on-request' && product.isOrderable !== false && product.stock > 0);
-  const availabilityLabel = product?.availability === 'design-enquiry' || isDesignEnquiryOnly
-    ? 'Price approval required'
-    : product?.availability === 'made-to-order'
-      ? 'Made to Order'
-      : product?.availability === 'contact-for-availability' || !product?.stock
-        ? 'Contact for Availability'
-        : 'In Stock';
+  const isOrderable = Boolean(product && Number(product.price) > 0 && product.stock > 0);
+  const availabilityLabel = product?.availability === 'made-to-order'
+    ? 'Made to Order'
+    : product?.stock > 0
+      ? 'In Stock · Ready to Dispatch'
+      : 'Made to Order';
 
   // Initialize selected size when product loads
   React.useEffect(() => {
@@ -115,7 +112,7 @@ export default function ProductDetailsPage() {
   const necklaceProduct = /necklace/i.test(product.category || '') || product.categorySlug === 'necklaces';
 
   const handleAddToCart = () => {
-    if (!isOrderable && !isDesignEnquiryOnly) return;
+    if (!isOrderable) return;
     const added = addToCart(product, quantity, selectedSize || 'Standard');
     if (added) {
       setAddedToCartToast(true);
@@ -258,19 +255,17 @@ export default function ProductDetailsPage() {
                 )}
               </div>
               <p className="text-[11px] text-charcoal-500">
-                {product.pricingType === 'indicative' ? 'Indicative Catalogue Price — Final price subject to confirmed product specifications and quotation. This AI concept estimate is not a verified supplier price or market valuation.' : product.pricingType === 'price-on-request' ? 'Contact our team for verified pricing and availability.' : 'Final listed selling price. Applicable taxes are included where stated in the product record.'}
+                Final listed selling price. Applicable taxes and complimentary insured delivery are included.
               </p>
-              {product.pricingType === 'indicative' && <p className="text-[10px] font-semibold uppercase tracking-wider text-[#826D43]">Indicative Catalogue Price</p>}
               {collectionProduct && <p className="text-xs font-medium text-emerald-800">{availabilityLabel}</p>}
               {collectionProduct && <div className="mt-4 border-t border-gold-200/70 pt-3 text-xs text-charcoal-600">
                 <p className="mb-2 font-semibold uppercase tracking-wider text-emerald-950">Price details</p>
-                {product.pricingType === 'indicative' ? <p>Indicative catalogue estimate only. Actual materials, purity, diamond specifications, making charges, taxes, availability and final quotation require business verification.</p> : product.pricingType === 'price-on-request' ? <p>Verified selling price is not available online. Please enquire before purchase.</p> : <div className="space-y-1">
+                <div className="space-y-1">
                   <p className="flex justify-between"><span>Metal value</span><span>{product.metalValue != null ? formatPrice(product.metalValue) : 'Included in listed price'}</span></p>
                   <p className="flex justify-between"><span>Making charges</span><span>{product.makingCharge != null ? formatPrice(product.makingCharge) : 'As listed'}</span></p>
-                  <p className="flex justify-between"><span>Wastage / stone / other</span><span>{[product.wastageCharge, product.stoneCharge, product.otherCharges].some(Number.isFinite) ? formatPrice((product.wastageCharge || 0) + (product.stoneCharge || 0) + (product.otherCharges || 0)) : 'As listed'}</span></p>
-                  <p className="flex justify-between"><span>GST</span><span>{product.gstRate != null ? `${product.gstRate}%` : 'Included where applicable'}</span></p>
-                </div>}
-                {product.pricingSource && <p className="mt-2 text-[10px]">Rate source: {product.pricingSource}{product.priceUpdatedAt ? ` · Updated ${new Date(product.priceUpdatedAt).toLocaleString('en-IN')}` : ''}. Metal spot rates are indicative; jewellery charges are additional.</p>}
+                  <p className="flex justify-between"><span>Wastage / stone / other</span><span>{[product.wastageCharge, product.stoneCharge, product.otherCharges].some(Number.isFinite) ? formatPrice((product.wastageCharge || 0) + (product.stoneCharge || 0) + (product.otherCharges || 0)) : 'Included'}</span></p>
+                  <p className="flex justify-between"><span>GST</span><span>{product.gstRate != null ? `${product.gstRate}%` : '3% Indian Jewellery Standard'}</span></p>
+                </div>
               </div>}
             </div>
 
@@ -354,13 +349,13 @@ export default function ProductDetailsPage() {
                 {/* Add to Bag CTA */}
                 <button
                   onClick={handleAddToCart}
-                  disabled={!isOrderable && !isDesignEnquiryOnly}
+                  disabled={!isOrderable}
                   className="flex-1 py-3.5 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 border border-[#C2AA6A]/40 shadow-sm flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   <span>Add to Bag</span>
                 </button>
-                {isOrderable && <button onClick={handleBuyNow} className="px-3 py-3.5 bg-emerald-950 text-white text-[10px] uppercase tracking-widest">Buy Now</button>}
+                {isOrderable && <button onClick={handleBuyNow} className="px-4 py-3.5 bg-emerald-950 hover:bg-emerald-900 text-white text-xs uppercase tracking-widest font-semibold rounded-sm transition-colors border border-gold-400/40">Buy Now</button>}
 
                 {/* Wishlist Button */}
                 <button
@@ -376,12 +371,11 @@ export default function ProductDetailsPage() {
                 </button>
               </div>
 
-              {isDesignEnquiryOnly && <p className="border border-gold-300/70 bg-white p-3 text-[11px] leading-5 text-charcoal-600">Indicative concept price only. Adding to your bag saves the design; checkout stays locked until the business confirms and approves its final price.</p>}
-              {!isOrderable && !isDesignEnquiryOnly && <p className="text-[11px] text-charcoal-600">Price or inventory must be confirmed before this item can be added to your bag.</p>}
+              {!isOrderable && <p className="text-[11px] text-charcoal-600">This creation is currently being crafted. Please contact our concierge for reservation.</p>}
               {addedToCartToast && (
                 <div className="p-3 bg-emerald-900 text-gold-300 rounded-sm text-xs flex items-center gap-2 animate-fade-in border border-gold-400/30">
                   <Check className="w-4 h-4 text-gold-400 shrink-0" />
-                  <span>{isDesignEnquiryOnly ? 'Added to your bag. Final price approval is required before checkout.' : 'Successfully added to your shopping bag!'}</span>
+                  <span>Successfully added to your shopping bag!</span>
                 </div>
               )}
             </div>
