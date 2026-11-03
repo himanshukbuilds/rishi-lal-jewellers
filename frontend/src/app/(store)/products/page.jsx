@@ -99,7 +99,7 @@ function ProductsCatalogContent() {
   };
 
   const categoriesList = [
-    { id: 'all', label: 'All Jewelry' },
+    { id: 'all', label: 'All Categories' },
     { id: 'Bridal', label: 'Bridal Sets' },
     { id: 'Diamond', label: 'Diamonds' },
     { id: 'Gold', label: '22K Gold' },

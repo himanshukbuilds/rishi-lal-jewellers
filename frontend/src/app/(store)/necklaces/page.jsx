@@ -1,431 +1,92 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
-import {
-  ChevronDown,
-  ShieldCheck,
-  Gem,
-  Award,
-  Truck,
-  Plus,
-  ArrowRight,
-  Sparkles
-} from 'lucide-react';
-import ProductCard from '@/components/product/ProductCard';
+import { ArrowRight, Search, SlidersHorizontal, Sparkles } from 'lucide-react';
 import { api } from '@/services/api';
-import { formatPrice } from '@/config/brandConfig';
+import ProductCard from '@/components/product/ProductCard';
 
+const ranges = [
+  { label: 'Under ₹50,000', maxPriceExclusive: 50000 },
+  { label: '₹50,000 – ₹1,00,000', minPrice: 50000, maxPriceExclusive: 100000 },
+  { label: '₹1,00,000 – ₹2,00,000', minPrice: 100000, maxPriceExclusive: 200000 },
+  { label: '₹2,00,000 – ₹5,00,000', minPrice: 200000, maxPriceExclusive: 500000 },
+  { label: 'Above ₹5,00,000', minPrice: 500000 },
+];
+const styles = ['Bridal', 'Traditional', 'Daily Wear', 'Party Wear', 'Temple', 'Lightweight', 'Modern'];
 export default function NecklacesLandingPage() {
-  const [sort, setSort] = useState('newest');
-  const [activeSubFilter, setActiveSubFilter] = useState('all');
-
-  // Query real necklace products from API (with robust offline fallback data)
-  const { data, isLoading } = useQuery({
-    queryKey: ['necklaces-collection', sort],
-    queryFn: () =>
-      api.getProducts({
-        categorySlug: 'necklaces',
-        sort,
-        limit: 24,
-      }),
+  const [metal, setMetal] = useState('all');
+  const [purity, setPurity] = useState('all');
+  const [weightClass, setWeightClass] = useState('all');
+  const [style, setStyle] = useState('all');
+  const [rangeIndex, setRangeIndex] = useState('all');
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState('recommended');
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const selectedMetal = params.get('metal');
+    const selectedStyle = params.get('style') || params.get('subcategory');
+    if (['Gold', 'Diamond', 'Silver'].includes(selectedMetal)) setMetal(selectedMetal);
+    if (styles.includes(selectedStyle)) setStyle(selectedStyle);
+  }, []);
+  const range = rangeIndex === 'all' ? {} : ranges[Number(rangeIndex)];
+  const params = useMemo(() => ({
+    categorySlug: 'necklaces', limit: 100, metal: metal === 'all' ? undefined : metal,
+    purity: purity === 'all' ? undefined : purity,
+    weightClass: weightClass === 'all' ? undefined : weightClass,
+    subcategory: style === 'all' ? undefined : style,
+    search: search.trim() || undefined,
+    sort: sort === 'price-low' ? 'price_asc' : sort === 'price-high' ? 'price_desc' : sort === 'new' ? 'newest' : 'bestseller',
+    ...range,
+  }), [metal, purity, weightClass, style, search, sort, range]);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['necklaces-collection', params],
+    queryFn: () => api.getProducts(params),
   });
+  const products = data?.products || [];
+  const reset = () => { setMetal('all'); setPurity('all'); setWeightClass('all'); setStyle('all'); setRangeIndex('all'); setSearch(''); setSort('recommended'); };
 
-  const rawProducts = data?.products || [];
-
-  // Match the featured necklace hotspot with real database product
-  const featuredNecklace = useMemo(() => {
-    // Prefer the real pearl choker, emerald haar, or first necklace product in database
-    return (
-      rawProducts.find((p) => /pearl|choker|zubeda/i.test(p.name || '')) ||
-      rawProducts[0] || {
-        name: 'PEARL NECKLACE',
-        slug: 'basra-heritage-natural-pearl-diamond-choker',
-        price: 93500,
-        images: ['https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'],
-      }
-    );
-  }, [rawProducts]);
-
-  // Sub-filter tabs for the collection section
-  const filteredProducts = useMemo(() => {
-    if (!rawProducts.length) return [];
-    if (activeSubFilter === 'all') return rawProducts;
-    if (activeSubFilter === 'chokers') {
-      return rawProducts.filter(
-        (p) =>
-          /choker|haar|kundan|polki/i.test(p.name || '') ||
-          (p.tags && p.tags.some((t) => ['choker', 'haar', 'kundan', 'bridal'].includes(t.toLowerCase())))
-      );
-    }
-    if (activeSubFilter === 'diamond') {
-      return rawProducts.filter(
-        (p) =>
-          /diamond|mangalsutra|solitaire|pendant/i.test(p.name || '') ||
-          (p.tags && p.tags.some((t) => ['diamond', 'mangalsutra', 'pendant'].includes(t.toLowerCase())))
-      );
-    }
-    if (activeSubFilter === 'gold') {
-      return rawProducts.filter(
-        (p) =>
-          /gold|temple|lakshmi|22k/i.test(p.name || '') ||
-          /gold/i.test(p.metal || '') ||
-          (p.tags && p.tags.some((t) => ['gold', 'temple', 'traditional'].includes(t.toLowerCase())))
-      );
-    }
-    return rawProducts;
-  }, [rawProducts, activeSubFilter]);
-
-  const scrollToCollection = () => {
-    const el = document.getElementById('collection');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  return (
-    <div className="bg-[#FAF7F2] min-h-screen text-[#2A1810]">
-      {/* =========================================================================
-          HERO SECTION (Recreating Exact Reference Layout, Typography & Artwork)
-         ========================================================================= */}
-      <section className="relative overflow-hidden bg-[#D4BDA3] min-h-[580px] lg:min-h-[640px] xl:min-h-[690px] flex items-center border-b border-[#C7B096]">
-        {/* Subtle ambient lighting on studio wall */}
-        <div className="absolute inset-0 bg-radial from-[#DFCEBF]/60 via-[#D4BDA3]/90 to-[#CAA88E] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-8 lg:px-12 py-10 sm:py-14 lg:py-16 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
-            {/* -------------------------------------------------------------------
-                LEFT COLUMN: 8k Customers, Serif Heading, Supporting Text, CTA
-               ------------------------------------------------------------------- */}
-            <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center order-2 lg:order-1 pt-4 lg:pt-0">
-              {/* 8k CUSTOMERS Social Proof Badge matching reference */}
-              <div className="inline-flex items-center gap-3 w-fit mb-4 sm:mb-6">
-                {/* 3 Circular Patron Avatars */}
-                <div className="flex -space-x-2.5 overflow-hidden">
-                  <div className="relative inline-block h-8 w-8 sm:h-9 sm:w-9 rounded-full ring-2 ring-[#D4BDA3] overflow-hidden bg-[#E2D5C3]">
-                    <Image
-                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
-                      alt="Patron 1"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="relative inline-block h-8 w-8 sm:h-9 sm:w-9 rounded-full ring-2 ring-[#D4BDA3] overflow-hidden bg-[#D8C7B0]">
-                    <Image
-                      src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80"
-                      alt="Patron 2"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="relative inline-block h-8 w-8 sm:h-9 sm:w-9 rounded-full ring-2 ring-[#D4BDA3] overflow-hidden bg-[#CDB79E]">
-                    <Image
-                      src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=120&q=80"
-                      alt="Patron 3"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </div>
-
-                {/* 8k CUSTOMERS Box */}
-                <div className="bg-[#DFCEBF]/80 backdrop-blur-xs border border-[#C6B09B] rounded-sm px-2.5 py-1 flex flex-col leading-tight">
-                  <span className="font-serif font-bold text-xs sm:text-sm text-[#4A3525]">
-                    8k
-                  </span>
-                  <span className="font-sans text-[8px] sm:text-[9px] uppercase tracking-widest text-[#7D6654] font-semibold -mt-0.5">
-                    Customers
-                  </span>
-                </div>
-              </div>
-
-              {/* Main Heading: Timeless Just Like You */}
-              <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-[5.5rem] leading-[0.96] tracking-tight text-[#4A3525]">
-                <span className="block">Timeless</span>
-                <span className="block mt-1 sm:mt-2">Just Like You</span>
-              </h1>
-
-              {/* Supporting Copy */}
-              <p className="font-sans text-xs sm:text-sm lg:text-[14px] text-[#634E41] leading-relaxed max-w-md mt-6 sm:mt-8">
-                Each piece at Rishi Lal Jewellers begins as a sketch and ends, months later, as
-                something you&apos;ll hand down rather than replace. No two settings leave our bench
-                identical.
-              </p>
-
-              {/* Primary Terracotta Pill Button */}
-              <div className="mt-8 sm:mt-10">
-                <button
-                  onClick={scrollToCollection}
-                  className="inline-flex items-center gap-3 px-8 py-3.5 sm:px-9 sm:py-4 rounded-full bg-[#BA724F] hover:bg-[#A66240] text-white text-xs sm:text-sm font-sans font-medium tracking-wide transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer group"
-                >
-                  <span>Shop Necklaces</span>
-                  <span className="text-base transition-transform duration-300 group-hover:translate-x-1">
-                    →
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* -------------------------------------------------------------------
-                RIGHT COLUMN: Model Artwork with Interactive Hotspots
-               ------------------------------------------------------------------- */}
-            <div className="lg:col-span-6 xl:col-span-6 relative order-1 lg:order-2 flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-[500px] lg:max-w-[540px]">
-                {/* Model Artwork Image */}
-                <div className="relative aspect-[514/530] w-full rounded-2xl overflow-hidden shadow-2xl border border-white/20 bg-[#D4BDA3]">
-                  <Image
-                    src="/images/necklaces/model-clean.png"
-                    alt="Rishi Lal Jewellers — Timeless Necklaces"
-                    fill
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover object-center"
-                  />
-
-                  {/* Hotspot 1: Earring Glass Capsule */}
-                  <div
-                    style={{ top: '35%', left: '20%' }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group"
-                  >
-                    <div className="w-9 h-14 rounded-full bg-white/20 backdrop-blur-sm border border-white/50 flex flex-col items-center pt-1 shadow-sm transition-transform duration-300 hover:scale-105 cursor-pointer">
-                      <span className="w-4 h-4 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[10px] font-bold">
-                        +
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Hotspot 2: Ring Glass Capsule */}
-                  <div
-                    style={{ top: '60%', left: '68%' }}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 z-20 group"
-                  >
-                    <div className="w-8 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/50 flex flex-col items-center pt-1 shadow-sm transition-transform duration-300 hover:scale-105 cursor-pointer">
-                      <span className="w-4 h-4 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[10px] font-bold">
-                        +
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Hotspot 3: Floating Necklace Product Card (Matching Reference Card) */}
-                  <div
-                    style={{ bottom: '6%', left: '24%' }}
-                    className="absolute z-30"
-                  >
-                    <Link
-                      href={`/products/${featuredNecklace.slug || featuredNecklace._id}`}
-                      className="block bg-[#DDE3DE] hover:bg-[#D5DCD6] p-2.5 sm:p-3 rounded-lg shadow-xl border border-black/5 transition-transform duration-300 hover:scale-105 text-center w-28 sm:w-32 group"
-                    >
-                      {/* Product Thumbnail with + badge */}
-                      <div className="relative aspect-square w-full rounded-md overflow-hidden bg-[#FAF7F2] mb-1.5">
-                        <Image
-                          src={
-                            (featuredNecklace.images && featuredNecklace.images[0]) ||
-                            featuredNecklace.image ||
-                            '/images/placeholder.jpg'
-                          }
-                          alt={featuredNecklace.name}
-                          fill
-                          sizes="120px"
-                          className="object-contain p-1"
-                        />
-                        {/* + Badge in top right corner */}
-                        <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#1A1A1A] text-white flex items-center justify-center text-[9px] font-bold">
-                          +
-                        </span>
-                      </div>
-
-                      {/* Product Name */}
-                      <p className="font-serif text-[10px] sm:text-[11px] font-semibold text-[#2D2A26] uppercase tracking-wider truncate">
-                        {featuredNecklace.name.length > 18
-                          ? 'Pearl Necklace'
-                          : featuredNecklace.name}
-                      </p>
-
-                      {/* Real Price */}
-                      <p className="font-serif text-[10px] sm:text-[11px] text-[#4A3525] font-bold mt-0.5">
-                        {formatPrice(featuredNecklace.price)}
-                      </p>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+  return <main className="min-h-screen bg-[#FAF8F3] text-[#17382D]">
+    <section className="relative min-h-[390px] overflow-hidden bg-[#17382D] text-[#F8F3E8] sm:min-h-[470px]">
+      <Image src="/images/necklaces/model-clean.png" alt="Rishi Lal Jewellers necklace collection" fill priority sizes="100vw" className="object-cover object-center opacity-45" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#10271F]/95 via-[#10271F]/75 to-[#10271F]/10" />
+      <div className="relative mx-auto flex min-h-[390px] max-w-7xl items-center px-5 py-16 sm:min-h-[470px] sm:px-10 lg:px-16">
+        <div className="max-w-2xl">
+          <p className="mb-5 text-xs uppercase tracking-[.3em] text-[#D5BC7A]">Rishi Lal Jewellers · Fine Craftsmanship</p>
+          <h1 className="font-serif text-5xl leading-[1.04] sm:text-7xl">Necklaces, <span className="italic text-[#E4D2A2]">made memorable.</span></h1>
+          <p className="mt-6 max-w-lg text-sm leading-7 text-white/80 sm:text-base">Explore gold, diamond and silver designs shaped for celebrations, rituals and the everyday moments that become heirlooms.</p>
+          <a href="#collection" className="mt-8 inline-flex items-center gap-3 border border-[#D5BC7A] px-6 py-3 text-xs uppercase tracking-[.18em] transition-colors hover:bg-[#D5BC7A] hover:text-[#17382D]">Explore the collection <ArrowRight size={15} /></a>
         </div>
-      </section>
+      </div>
+    </section>
 
-      {/* =========================================================================
-          PRODUCT COLLECTION SECTION (#collection)
-         ========================================================================= */}
-      <section id="collection" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-          <p className="text-xs uppercase tracking-widest font-sans font-semibold text-[#BA724F] mb-2">
-            Rishi Lal Masterpieces
-          </p>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-[#4A3525]">
-            The Royal Necklace Atelier
-          </h2>
-          <div className="w-16 h-0.5 bg-[#BA724F] mx-auto mt-4 mb-4" />
-          <p className="font-sans text-xs sm:text-sm text-[#716D64] leading-relaxed">
-            From imperial seven-strand emerald haars and syndicate polki chokers to delicate everyday
-            diamond mangalsutras, each creation is sculpted in pure hallmarked gold.
-          </p>
+    <section className="mx-auto max-w-7xl px-4 py-14 sm:px-8 lg:px-12" id="collection">
+      <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div><p className="text-[11px] uppercase tracking-[.25em] text-[#9B8050]">The necklace edit</p><h2 className="mt-2 font-serif text-3xl sm:text-4xl">Find your forever piece</h2></div>
+        <label className="flex w-full items-center gap-2 border-b border-[#C9C0AE] py-2 sm:w-64"><Search size={16} className="text-[#9B8050]"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search necklaces" className="w-full bg-transparent text-sm outline-none placeholder:text-[#8C8A82]" /></label>
+      </div>
+
+      <div className="mb-8 rounded-sm border border-[#E5DFD2] bg-white/70 p-4 sm:p-5">
+        <div className="mb-4 flex items-center gap-2 text-xs uppercase tracking-[.16em] text-[#53685D]"><SlidersHorizontal size={15}/> Refine your selection</div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
+          <FilterSelect label="Metal" value={metal} onChange={setMetal} options={['all','Gold','Diamond','Silver']} />
+          <FilterSelect label="Gold purity" value={purity} onChange={setPurity} options={['all','18K','22K','24K']} />
+          <FilterSelect label="Weight" value={weightClass} onChange={setWeightClass} options={['all','Lightweight','Medium','Heavy']} />
+          <FilterSelect label="Style" value={style} onChange={setStyle} options={['all',...styles]} />
+          <label className="text-[10px] uppercase tracking-widest text-[#758076]">Price range<select value={rangeIndex} onChange={e=>setRangeIndex(e.target.value)} className="mt-1 block w-full border border-[#DED8CB] bg-[#FAF8F3] px-2 py-2.5 text-xs normal-case tracking-normal text-[#17382D]"><option value="all">All prices</option>{ranges.map((r,i)=><option key={r.label} value={i}>{r.label}</option>)}</select></label>
+          <label className="text-[10px] uppercase tracking-widest text-[#758076]">Sort by<select value={sort} onChange={e=>setSort(e.target.value)} className="mt-1 block w-full border border-[#DED8CB] bg-[#FAF8F3] px-2 py-2.5 text-xs normal-case tracking-normal text-[#17382D]"><option value="recommended">Recommended</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option><option value="new">New Arrivals</option></select></label>
+          <button onClick={reset} className="self-end px-3 py-2.5 text-xs text-[#66776C] underline underline-offset-4">Reset filters</button>
         </div>
+      </div>
 
-        {/* Filter Tabs & Sort Controls */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pb-6 mb-8 border-b border-[#E6DFD3]">
-          {/* Sub-filter tabs */}
-          <div className="flex flex-wrap items-center gap-2">
-            {[
-              { id: 'all', label: 'All Necklaces' },
-              { id: 'chokers', label: 'Royal Haars & Chokers' },
-              { id: 'diamond', label: 'Diamonds & Contemporary' },
-              { id: 'gold', label: '22KT Temple Gold' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveSubFilter(tab.id)}
-                className={`px-4 py-2 text-xs font-sans font-medium rounded-full transition-all duration-200 cursor-pointer ${
-                  activeSubFilter === tab.id
-                    ? 'bg-[#4A3525] text-white shadow-xs'
-                    : 'bg-white border border-[#E6DFD3] text-[#635B50] hover:border-[#BA724F] hover:text-[#4A3525]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Product Count & Sort Selector */}
-          <div className="flex items-center justify-between md:justify-end gap-3">
-            <span className="font-sans text-xs text-[#716D64]">
-              Showing <span className="font-bold text-[#4A3525]">{filteredProducts.length}</span> creations
-            </span>
-
-            <div className="relative">
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="appearance-none bg-white border border-[#D6CBB8] text-xs text-[#4A3525] py-2 pl-3.5 pr-8 rounded-md focus:outline-none focus:border-[#BA724F] font-sans cursor-pointer shadow-xs"
-              >
-                <option value="newest">Newest Additions</option>
-                <option value="bestseller">Bestselling First</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-                <option value="rating">Top Rated</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-[#7A6A53] absolute right-2.5 top-3 pointer-events-none" />
-            </div>
-          </div>
-        </div>
-
-        {/* Loading Skeleton */}
-        {isLoading && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-              <div
-                key={n}
-                className="animate-pulse bg-white rounded-sm aspect-[3/4] border border-[#E6DFD3]"
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Real Product Grid */}
-        {!isLoading && filteredProducts.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product._id || product.id} product={product} />
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!isLoading && filteredProducts.length === 0 && (
-          <div className="bg-white rounded-lg border border-[#E6DFD3] p-12 text-center max-w-md mx-auto my-12 shadow-xs">
-            <p className="font-serif text-lg text-[#4A3525] mb-2">
-              No creations currently match this filter.
-            </p>
-            <p className="font-sans text-xs text-[#716D64] mb-5">
-              Reset the filter to view the complete necklace atelier catalog.
-            </p>
-            <button
-              onClick={() => setActiveSubFilter('all')}
-              className="inline-block px-6 py-2.5 bg-[#4A3525] text-white text-xs uppercase tracking-widest font-semibold rounded-sm hover:bg-[#BA724F] transition-colors"
-            >
-              View All Necklaces
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* =========================================================================
-          HERITAGE ATELIER PILLARS (Luxury Trust & Guarantee Bar)
-         ========================================================================= */}
-      <section className="bg-[#EFEAE2] border-t border-[#E2DBD1] py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-full bg-white border border-[#D6CBB8] text-[#BA724F] shrink-0">
-                <ShieldCheck className="w-5 h-5 text-[#BA724F]" />
-              </div>
-              <div>
-                <h4 className="font-serif text-base font-semibold text-[#4A3525]">
-                  100% BIS Hallmarked
-                </h4>
-                <p className="font-sans text-xs text-[#716D64] mt-1 leading-relaxed">
-                  Every gram of gold is certified with a 6-digit laser HUID hallmark for unquestioned purity.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-full bg-white border border-[#D6CBB8] text-[#BA724F] shrink-0">
-                <Gem className="w-5 h-5 text-[#BA724F]" />
-              </div>
-              <div>
-                <h4 className="font-serif text-base font-semibold text-[#4A3525]">
-                  IGI & GIA Diamonds
-                </h4>
-                <p className="font-sans text-xs text-[#716D64] mt-1 leading-relaxed">
-                  Conflict-free natural solitaires and polki diamonds with international certification cards.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-full bg-white border border-[#D6CBB8] text-[#BA724F] shrink-0">
-                <Award className="w-5 h-5 text-[#BA724F]" />
-              </div>
-              <div>
-                <h4 className="font-serif text-base font-semibold text-[#4A3525]">
-                  Lifetime Buyback
-                </h4>
-                <p className="font-sans text-xs text-[#716D64] mt-1 leading-relaxed">
-                  Transparent gold buyback and exchange guarantee across all Rishi Lal Jewellers ateliers.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-full bg-white border border-[#D6CBB8] text-[#BA724F] shrink-0">
-                <Truck className="w-5 h-5 text-[#BA724F]" />
-              </div>
-              <div>
-                <h4 className="font-serif text-base font-semibold text-[#4A3525]">
-                  Insured Delivery
-                </h4>
-                <p className="font-sans text-xs text-[#716D64] mt-1 leading-relaxed">
-                  Complimentary, fully insured doorstep transit across India in our signature tamper-evident casket.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+      <div className="mb-5 flex items-center justify-between"><p className="text-sm text-[#68736A]">{isLoading ? 'Finding your pieces…' : `${data?.totalProducts ?? products.length} necklaces`}</p><p className="hidden items-center gap-1 text-[11px] text-[#8D7950] sm:flex"><Sparkles size={13}/> Thoughtfully selected designs</p></div>
+      {isError ? <div className="border border-[#E5DFD2] bg-white p-10 text-center"><h3 className="font-serif text-2xl">Collection is temporarily unavailable</h3><p className="mt-2 text-sm text-[#68736A]">Please try again in a little while.</p></div> : isLoading ? <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">{Array.from({length:8},(_,i)=><div key={i} className="aspect-[.78] animate-pulse bg-[#E9E4D9]" />)}</div> : products.length ? <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-7">
+        {products.map(product=><ProductCard key={product._id || product.slug} product={product} />)}
+      </div> : <div className="border border-[#E5DFD2] bg-white px-6 py-16 text-center"><h3 className="font-serif text-2xl">No necklaces match these filters</h3><p className="mt-2 text-sm text-[#68736A]">Try adjusting your selection to discover more designs.</p><button onClick={reset} className="mt-5 border border-[#B8AA8C] px-5 py-2 text-xs uppercase tracking-widest">Clear filters</button></div>}
+    </section>
+  </main>;
 }
+
+function FilterSelect({label,value,onChange,options}) { return <label className="text-[10px] uppercase tracking-widest text-[#758076]">{label}<select value={value} onChange={e=>onChange(e.target.value)} className="mt-1 block w-full border border-[#DED8CB] bg-[#FAF8F3] px-2 py-2.5 text-xs normal-case tracking-normal text-[#17382D]">{options.map((option,i)=><option key={option} value={option}>{i===0?'All':option}</option>)}</select></label>; }

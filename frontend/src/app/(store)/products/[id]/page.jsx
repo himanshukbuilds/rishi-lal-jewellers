@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
+import SafeImage from '@/components/common/SafeImage';
+import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import {
@@ -34,6 +35,7 @@ const Product3DViewer = dynamic(() => import('@/components/product/Product3DView
 
 export default function ProductDetailsPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params?.id;
 
   const { addToCart } = useCart();
@@ -57,6 +59,12 @@ export default function ProductDetailsPage() {
 
   const product = data?.product;
   const relatedProducts = data?.relatedProducts || [];
+  const isOrderable = Boolean(product && Number(product.price) > 0 && product.stock > 0);
+  const availabilityLabel = product?.availability === 'made-to-order'
+    ? 'Made to Order'
+    : product?.stock > 0
+      ? 'In Stock · Ready to Dispatch'
+      : 'Made to Order';
 
   // Initialize selected size when product loads
   React.useEffect(() => {
@@ -100,11 +108,22 @@ export default function ProductDetailsPage() {
 
   const inWishlist = isInWishlist(product._id);
   const images = product.images && product.images.length > 0 ? product.images : ['/images/placeholder.jpg'];
+  const collectionProduct = Boolean(product.category);
+  const necklaceProduct = /necklace/i.test(product.category || '') || product.categorySlug === 'necklaces';
 
   const handleAddToCart = () => {
-    addToCart(product, quantity, selectedSize || 'Standard');
-    setAddedToCartToast(true);
-    setTimeout(() => setAddedToCartToast(false), 2500);
+    if (!isOrderable) return;
+    const added = addToCart(product, quantity, selectedSize || 'Standard');
+    if (added) {
+      setAddedToCartToast(true);
+      setTimeout(() => setAddedToCartToast(false), 2500);
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!isOrderable) return;
+    const added = addToCart(product, quantity, selectedSize || 'Standard');
+    if (added) router.push('/checkout');
   };
 
   const handleCheckPincode = (e) => {
@@ -130,10 +149,10 @@ export default function ProductDetailsPage() {
         <div className="max-w-7xl mx-auto flex items-center gap-2 text-xs font-sans text-charcoal-500 overflow-x-auto whitespace-nowrap">
           <Link href="/" className="hover:text-emerald-950">Home</Link>
           <ChevronRight className="w-3 h-3 text-gold-600" />
-          <Link href="/products" className="hover:text-emerald-950">Jewelry</Link>
+          <Link href="/products" className="hover:text-emerald-950">Jewellery</Link>
           <ChevronRight className="w-3 h-3 text-gold-600" />
-          <Link href={`/categories/${product.categorySlug}`} className="hover:text-emerald-950">
-            {product.category}
+          <Link href={necklaceProduct ? '/necklaces' : `/categories/${product.categorySlug}`} className="hover:text-emerald-950">
+            {necklaceProduct ? 'Necklaces' : product.category}
           </Link>
           <ChevronRight className="w-3 h-3 text-gold-600" />
           <span className="font-medium text-emerald-950 truncate max-w-xs">{product.name}</span>
@@ -149,19 +168,21 @@ export default function ProductDetailsPage() {
               {product.modelUrl ? (
                 <Product3DViewer modelUrl={product.modelUrl} image={images[selectedImageIndex]} name={product.name} />
               ) : (
-                <Image
+                <SafeImage
                   src={images[selectedImageIndex]}
                   alt={product.name}
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-contain p-4 transition-all duration-300"
+                  fallbackSrc="/images/placeholder.jpg"
                 />
               )}
 
               {(product.purity || product.metalType) && <div className="absolute top-4 left-4 bg-white/95 text-[#8B1E2D] text-[11px] font-sans px-3 py-1 rounded-sm border border-[#E6DFD3]">
                 {product.purity || product.metalType}
               </div>}
+              {product.imageType && <div className="absolute bottom-3 left-3 bg-white/95 px-2.5 py-1.5 text-[9px] uppercase tracking-wider text-[#53685D]">{product.imageType}</div>}
             </div>
 
             {/* Thumbnail Row */}
@@ -177,7 +198,7 @@ export default function ProductDetailsPage() {
                         : 'border-gold-200/60 opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <Image src={img} alt={`View ${idx + 1}`} fill sizes="80px" className="object-contain p-1" />
+                    <SafeImage src={img} alt={`View ${idx + 1}`} fill sizes="80px" className="object-contain p-1" fallbackSrc="/images/placeholder.jpg" />
                   </button>
                 ))}
               </div>
@@ -187,6 +208,7 @@ export default function ProductDetailsPage() {
               <ShieldCheck className="w-4 h-4 text-[#B49A58]" />
               <span>Purity: {product.purity}</span>
             </div>}
+            {product.imageType === 'AI-Generated Concept Image' && <p className="border border-[#D8C99F] bg-[#FBF7E9] p-3 text-xs leading-5 text-[#6F5B31]">Illustrative AI-generated concept image. It does not represent a confirmed stocked item; the actual design may differ.</p>}
           </div>
 
           {/* Right: Product Details & Controls */}
@@ -219,7 +241,7 @@ export default function ProductDetailsPage() {
             <div className="p-4 bg-white rounded-sm border border-gold-300/50 shadow-sm space-y-2">
               <div className="flex items-baseline gap-3">
                 <span className="font-serif text-3xl font-bold text-emerald-950">
-                  {formatPrice(product.price)}
+                  {product.pricingType === 'price-on-request' ? 'Price on request' : formatPrice(product.price)}
                 </span>
                 {product.originalPrice && product.originalPrice > product.price && (
                   <>
@@ -233,24 +255,42 @@ export default function ProductDetailsPage() {
                 )}
               </div>
               <p className="text-[11px] text-charcoal-500">
-                (Inclusive of all taxes & 3% Indian jewellery GST. Zero making charges on select festive designs.)
+                Final listed selling price. Applicable taxes and complimentary insured delivery are included.
               </p>
+              {collectionProduct && <p className="text-xs font-medium text-emerald-800">{availabilityLabel}</p>}
+              {collectionProduct && <div className="mt-4 border-t border-gold-200/70 pt-3 text-xs text-charcoal-600">
+                <p className="mb-2 font-semibold uppercase tracking-wider text-emerald-950">Price details</p>
+                <div className="space-y-1">
+                  <p className="flex justify-between"><span>Metal value</span><span>{product.metalValue != null ? formatPrice(product.metalValue) : 'Included in listed price'}</span></p>
+                  <p className="flex justify-between"><span>Making charges</span><span>{product.makingCharge != null ? formatPrice(product.makingCharge) : 'As listed'}</span></p>
+                  <p className="flex justify-between"><span>Wastage / stone / other</span><span>{[product.wastageCharge, product.stoneCharge, product.otherCharges].some(Number.isFinite) ? formatPrice((product.wastageCharge || 0) + (product.stoneCharge || 0) + (product.otherCharges || 0)) : 'Included'}</span></p>
+                  <p className="flex justify-between"><span>GST</span><span>{product.gstRate != null ? `${product.gstRate}%` : '3% Indian Jewellery Standard'}</span></p>
+                </div>
+              </div>}
             </div>
 
             {/* Quick Specs Pill Badges */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs font-sans">
-              <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
+              {product.metalType && <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
+                <span className="text-charcoal-500 text-[10px] uppercase block">Metal Type</span>
+                <span className="font-medium text-emerald-950">{product.metalType}</span>
+              </div>}
+              {product.purity && <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
                 <span className="text-charcoal-500 text-[10px] uppercase block">Metal Purity</span>
                 <span className="font-medium text-emerald-950">{product.purity}</span>
-              </div>
-              <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
+              </div>}
+              {product.grossWeight > 0 && <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
                 <span className="text-charcoal-500 text-[10px] uppercase block">Gross Weight</span>
                 <span className="font-medium text-emerald-950">{product.grossWeight} grams</span>
-              </div>
-              <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
+              </div>}
+              {(product.netMetalWeight > 0 || product.netGoldWeight > 0) && <div className="p-2.5 bg-ivory-100 rounded-sm border border-gold-200">
                 <span className="text-charcoal-500 text-[10px] uppercase block">Net Gold Weight</span>
-                <span className="font-medium text-emerald-950">{product.netGoldWeight || product.grossWeight} grams</span>
-              </div>
+                <span className="font-medium text-emerald-950">{product.netMetalWeight || product.netGoldWeight || product.grossWeight} grams</span>
+              </div>}
+              {product.diamondWeight != null && <div><span className="text-charcoal-500 text-[10px] uppercase block">Diamond Weight</span><span className="font-medium text-emerald-950">{product.diamondWeight} ct</span></div>}
+              {product.diamondShape && <div><span className="text-charcoal-500 text-[10px] uppercase block">Diamond Shape</span><span className="font-medium text-emerald-950">{product.diamondShape}</span></div>}
+              {product.diamondColor && <div><span className="text-charcoal-500 text-[10px] uppercase block">Diamond Colour</span><span className="font-medium text-emerald-950">{product.diamondColor}</span></div>}
+              {product.diamondClarity && <div><span className="text-charcoal-500 text-[10px] uppercase block">Diamond Clarity</span><span className="font-medium text-emerald-950">{product.diamondClarity}</span></div>}
             </div>
 
             {/* Size Selector */}
@@ -309,11 +349,13 @@ export default function ProductDetailsPage() {
                 {/* Add to Bag CTA */}
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 py-3.5 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 border border-[#C2AA6A]/40 shadow-sm flex items-center justify-center gap-2"
+                  disabled={!isOrderable}
+                  className="flex-1 py-3.5 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 border border-[#C2AA6A]/40 shadow-sm flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Add to Shopping Bag</span>
+                  <span>Add to Bag</span>
                 </button>
+                {isOrderable && <button onClick={handleBuyNow} className="px-4 py-3.5 bg-emerald-950 hover:bg-emerald-900 text-white text-xs uppercase tracking-widest font-semibold rounded-sm transition-colors border border-gold-400/40">Buy Now</button>}
 
                 {/* Wishlist Button */}
                 <button
@@ -329,6 +371,7 @@ export default function ProductDetailsPage() {
                 </button>
               </div>
 
+              {!isOrderable && <p className="text-[11px] text-charcoal-600">This creation is currently being crafted. Please contact our concierge for reservation.</p>}
               {addedToCartToast && (
                 <div className="p-3 bg-emerald-900 text-gold-300 rounded-sm text-xs flex items-center gap-2 animate-fade-in border border-gold-400/30">
                   <Check className="w-4 h-4 text-gold-400 shrink-0" />

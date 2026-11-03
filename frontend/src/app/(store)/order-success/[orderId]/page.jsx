@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -105,7 +105,7 @@ export default function OrderSuccessPage() {
                 <div key={idx} className="py-3 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="relative w-14 h-14 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-200">
-                      <Image src={item.image} alt={item.name} fill sizes="56px" className="object-cover" />
+                      <SafeImage src={item.image} alt={item.name} fill sizes="56px" className="object-cover" fallbackSrc="/images/placeholder.jpg" />
                     </div>
                     <div>
                       <h3 className="font-serif text-sm font-medium text-emerald-950">

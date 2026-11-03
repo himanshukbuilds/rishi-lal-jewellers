@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { ShoppingBag, Check, ExternalLink, Sparkles } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
@@ -17,7 +17,8 @@ export default function ChatProductCard({ product, onSelect }) {
     e.preventDefault();
     e.stopPropagation();
     try {
-      addToCart(product, 1, 'Standard');
+      const wasAdded = addToCart(product, 1, 'Standard');
+      if (wasAdded === false) return;
       setAdded(true);
       setTimeout(() => setAdded(false), 2200);
     } catch (err) {
@@ -25,7 +26,9 @@ export default function ChatProductCard({ product, onSelect }) {
     }
   };
 
-  const formattedPrice = `₹${Number(product.price || 0).toLocaleString('en-IN')}`;
+  const formattedPrice = product.pricingType === 'price-on-request' || !(Number(product.price) > 0)
+    ? 'Price on request'
+    : `₹${Number(product.price).toLocaleString('en-IN')}`;
   const formattedOriginalPrice = product.originalPrice
     ? `₹${Number(product.originalPrice).toLocaleString('en-IN')}`
     : null;
@@ -37,13 +40,13 @@ export default function ChatProductCard({ product, onSelect }) {
         href={product.productUrl || `/products/${product.slug}`}
         className="relative block h-32 w-full overflow-hidden bg-ivory-100"
       >
-        <Image
+        <SafeImage
           src={imgSrc}
           alt={product.name}
           fill
           sizes="230px"
           className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
-          onError={() => setImgSrc('/images/categories/wedding.jpg')}
+          fallbackSrc="/images/categories/wedding.jpg"
         />
         {product.discountPercentage > 0 && (
           <span className="absolute left-2 top-2 rounded bg-[#4A0B13] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-[#C2AA6A]">
@@ -100,6 +103,7 @@ export default function ChatProductCard({ product, onSelect }) {
                 : 'bg-[#4A0B13] text-[#C2AA6A] hover:bg-[#8B1E2D]'
             }`}
             title="Add to Bag"
+            aria-label="Add to Bag"
           >
             {added ? (
               <Check className="h-3.5 w-3.5" />

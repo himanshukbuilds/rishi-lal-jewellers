@@ -28,6 +28,10 @@ const POLICY_KNOWLEDGE = {
   goldCoins: {
     patterns: ['gold coin', 'gold coins', 'bullion', '24k coin', '24kt coin'],
     reply: 'Our 24KT 999 pure gold bullion coins feature embossed auspicious motifs of Goddess Lakshmi and Lord Ganesha. Each coin has precision reeded edges and arrives sealed in tamper-proof certicards with official BIS hallmarks.'
+  },
+  prices: {
+    patterns: ['price', 'prices', 'rate', 'rates', 'cost', 'gold rate', 'metal prices'],
+    reply: 'Our jewelry is priced transparently based on daily precious metal rates and exact gold weights. We offer 100% BIS Hallmarked 22KT gold, 18KT diamond jewelry, and 24KT 999 gold coins with complete transparency and certified authenticity. Would you like to check prices for a specific piece or category?'
   }
 };
 
@@ -90,14 +94,26 @@ function generateConciergeFallback({ message, criteria, products, summary }) {
   // General conversational greeting / assistance
   if (text.includes('hello') || text.includes('hi') || text.includes('hey') || text.includes('namaste')) {
     return {
-      reply: "Hi! I'm Halku, your jewellery shopping assistant at Rishi Lal Jewellers. ✨ How can I help you today? Whether you are curating a grand bridal trousseau, choosing a milestone gift, or exploring certified solitaires, I am delighted to guide you.",
-      suggestedActions: ['Find Jewelry', 'Bridal Collection', 'Shop Under ₹50K', 'Silver Idols', 'Gold Coins']
+      reply: "Hello! I'm RIVA, your personal jewellery assistant at Rishi Lal Jewellers. How may I help you discover something beautiful today?",
+      suggestedActions: [
+        'Explore Gold Jewellery',
+        'Find Diamond Jewellery',
+        'Discover Wedding Collections',
+        'Help me choose a necklace',
+        'Check jewellery prices'
+      ]
     };
   }
 
   return {
-    reply: "I'm Halku, your jewellery shopping assistant at Rishi Lal Jewellers. We offer an exquisite array of 100% BIS Hallmarked 22KT gold, IGI certified natural diamonds, and heritage wedding jewelry. Tell me your preferred style, occasion, or budget, and I will be delighted to present our finest creations.",
-    suggestedActions: ['Bridal Collection', 'Solitaire Diamonds', 'Shop Under ₹50K', 'Gold Coins', 'Help & Policies']
+    reply: "Hello! I'm RIVA, your personal jewellery assistant at Rishi Lal Jewellers. We offer an exquisite array of 100% BIS Hallmarked 22KT gold, IGI certified natural diamonds, and heritage wedding jewelry. Tell me your preferred style, occasion, or budget, and I will be delighted to present our finest creations.",
+    suggestedActions: [
+      'Explore Gold Jewellery',
+      'Find Diamond Jewellery',
+      'Discover Wedding Collections',
+      'Help me choose a necklace',
+      'Check jewellery prices'
+    ]
   };
 }
 

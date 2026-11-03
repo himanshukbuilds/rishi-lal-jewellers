@@ -10,7 +10,7 @@ const resolveProduct = async (identifier, item = {}) => {
   // 1. Valid MongoDB ObjectId
   if (idStr && mongoose.Types.ObjectId.isValid(idStr)) {
     try {
-      const p = await Product.findById(idStr);
+      const p = await Product.findOne({ _id: idStr, isPublished: { $ne: false } });
       if (p) return p;
     } catch (_) {}
   }
@@ -18,6 +18,7 @@ const resolveProduct = async (identifier, item = {}) => {
   // 2. Exact match on sku or slug
   if (idStr) {
     const p = await Product.findOne({
+      isPublished: { $ne: false },
       $or: [{ sku: idStr }, { slug: idStr.toLowerCase() }]
     });
     if (p) return p;
@@ -28,6 +29,7 @@ const resolveProduct = async (identifier, item = {}) => {
   if (match) {
     const num = match[1].padStart(3, '0');
     const p = await Product.findOne({
+      isPublished: { $ne: false },
       $or: [
         { sku: new RegExp(`-${num}$`, 'i') },
         { sku: new RegExp(`-${match[1]}$`, 'i') }
@@ -41,7 +43,7 @@ const resolveProduct = async (identifier, item = {}) => {
     const query = [];
     if (item.sku) query.push({ sku: item.sku });
     if (item.name) query.push({ name: item.name });
-    const p = await Product.findOne({ $or: query });
+    const p = await Product.findOne({ isPublished: { $ne: false }, $or: query });
     if (p) return p;
   }
 
@@ -55,6 +57,114 @@ const generateOrderNumber = () => {
   return `RLJ-${dateStr}-${randomSuffix}`;
 };
 
+// @desc    Create Razorpay order based on verified database product prices
+// @route   POST /api/orders/razorpay-order
+// @access  Public / Protected
+exports.createRazorpayOrder = async (req, res, next) => {
+  try {
+    const { items, couponCode } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Your shopping bag is empty.'
+      });
+    }
+
+    let calculatedSubtotal = 0;
+
+    for (const item of items) {
+      const product = await resolveProduct(item.productId || item._id, item);
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: `Product "${item.name || 'Unknown'}" is no longer available in our collection.`
+        });
+      }
+
+      if (product.pricingType === 'price-on-request' || !(Number(product.price) > 0) || product.isOrderable === false) {
+        return res.status(400).json({
+          success: false,
+          message: `"${product.name}" does not have an approved selling price.`
+        });
+      }
+
+      const qty = Number(item.quantity);
+      if (!Number.isSafeInteger(qty) || qty < 1) {
+        return res.status(400).json({ success: false, message: 'Each quantity must be a positive whole number.' });
+      }
+
+      calculatedSubtotal += product.price * qty;
+    }
+
+    const calculatedTax = Math.round(calculatedSubtotal * 0.03);
+    let calculatedDiscount = 0;
+
+    if (couponCode && couponCode.trim()) {
+      const codeClean = couponCode.trim().toUpperCase();
+      const coupon = await Coupon.findOne({ code: codeClean, isActive: true });
+      if (coupon && calculatedSubtotal >= (coupon.minOrderValue || 0)) {
+        if (coupon.discountType === 'percentage') {
+          calculatedDiscount = Math.round((calculatedSubtotal * coupon.discountValue) / 100);
+          if (coupon.maxDiscountAmount) {
+            calculatedDiscount = Math.min(calculatedDiscount, coupon.maxDiscountAmount);
+          }
+        } else {
+          calculatedDiscount = coupon.discountValue;
+        }
+      }
+    }
+
+    const calculatedTotal = Math.max(0, calculatedSubtotal + calculatedTax - calculatedDiscount);
+    const amountInPaise = Math.round(calculatedTotal * 100);
+
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    let razorpayOrderId;
+
+    if (keyId && keySecret) {
+      const authHeader = 'Basic ' + Buffer.from(`${keyId}:${keySecret}`).toString('base64');
+      const response = await fetch('https://api.razorpay.com/v1/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify({
+          amount: amountInPaise,
+          currency: 'INR',
+          receipt: `rcpt_${Date.now()}`
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return res.status(500).json({
+          success: false,
+          message: errorData.error?.description || 'Failed to initiate Razorpay payment.'
+        });
+      }
+
+      const orderData = await response.json();
+      razorpayOrderId = orderData.id;
+    } else {
+      razorpayOrderId = `order_test_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    }
+
+    return res.status(200).json({
+      success: true,
+      razorpayOrderId,
+      amount: calculatedTotal,
+      amountInPaise,
+      currency: 'INR',
+      keyId: keyId || 'rzp_test_RishiLalJewellers'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // @desc    Create new order with server-side price & inventory validation
 // @route   POST /api/orders
 // @access  Public / Optional Auth (Supports guest or customer checkout)
@@ -66,6 +176,9 @@ exports.createOrder = async (req, res, next) => {
       items,
       couponCode,
       paymentMethod = 'card',
+      razorpayOrderId,
+      razorpayPaymentId,
+      razorpaySignature,
       notes
     } = req.body;
 
@@ -90,9 +203,38 @@ exports.createOrder = async (req, res, next) => {
       });
     }
 
+    // Duplicate order prevention if payment ID was already used
+    if (razorpayPaymentId) {
+      const existing = await Order.findOne({ razorpayPaymentId });
+      if (existing) {
+        return res.status(200).json({
+          success: true,
+          message: 'Order already recorded.',
+          order: existing
+        });
+      }
+    }
+
+    // Verify Razorpay signature if live key secret is configured
+    if (process.env.RAZORPAY_KEY_SECRET && razorpaySignature && razorpayOrderId && razorpayPaymentId) {
+      const crypto = require('crypto');
+      const expectedSignature = crypto
+        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+        .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+        .digest('hex');
+
+      if (expectedSignature !== razorpaySignature) {
+        return res.status(400).json({
+          success: false,
+          message: 'Payment authentication failed: Invalid transaction signature.'
+        });
+      }
+    }
+
     // Server-side inventory & price verification: DO NOT TRUST CLIENT TOTALS!
     const validatedItems = [];
     let calculatedSubtotal = 0;
+    const requestedProducts = new Map();
 
     for (const item of items) {
       const product = await resolveProduct(item.productId || item._id, item);
@@ -104,7 +246,21 @@ exports.createOrder = async (req, res, next) => {
         });
       }
 
-      const qty = parseInt(item.quantity, 10) || 1;
+      if (product.pricingType === 'price-on-request' || !(Number(product.price) > 0) || product.isOrderable === false) {
+        return res.status(400).json({ success: false, message: `"${product.name}" does not have an approved selling price.` });
+      }
+
+      const qty = Number(item.quantity);
+      if (!Number.isSafeInteger(qty) || qty < 1) {
+        return res.status(400).json({ success: false, message: 'Each shopping bag quantity must be a positive whole number.' });
+      }
+      const selectedSize = String(item.selectedSize || 'Standard').slice(0, 40);
+      const key = `${product._id}:${selectedSize}`;
+      const existing = requestedProducts.get(key);
+      requestedProducts.set(key, { product, selectedSize, quantity: (existing?.quantity || 0) + qty });
+    }
+
+    for (const { product, selectedSize, quantity: qty } of requestedProducts.values()) {
       if (product.stock < qty) {
         return res.status(400).json({
           success: false,
@@ -118,9 +274,9 @@ exports.createOrder = async (req, res, next) => {
         name: product.name,
         sku: product.sku,
         image: product.images && product.images[0] ? product.images[0] : item.image,
-        price: product.price, // Live server price
+        price: product.price, // Live verified server price
         quantity: qty,
-        selectedSize: item.selectedSize || 'Standard',
+        selectedSize,
         metal: product.metal,
         purity: product.purity,
         grossWeight: product.grossWeight
@@ -129,8 +285,10 @@ exports.createOrder = async (req, res, next) => {
       calculatedSubtotal += product.price * qty;
 
       // Deduct inventory stock
-      product.stock -= qty;
-      await product.save();
+      const stockUpdate = await Product.updateOne({ _id: product._id, stock: { $gte: qty } }, { $inc: { stock: -qty } });
+      if (stockUpdate.modifiedCount !== 1) {
+        return res.status(409).json({ success: false, message: `Availability changed while placing your order for "${product.name}". Please refresh your bag.` });
+      }
     }
 
     // Calculate 3% standard Indian GST on jewellery
@@ -181,6 +339,9 @@ exports.createOrder = async (req, res, next) => {
       orderStatus: 'confirmed',
       estimatedDelivery: '3 to 5 Business Days (Insured Armored Express)',
       trackingNumber,
+      razorpayOrderId: razorpayOrderId || undefined,
+      razorpayPaymentId: razorpayPaymentId || undefined,
+      razorpaySignature: razorpaySignature || undefined,
       notes
     });
 

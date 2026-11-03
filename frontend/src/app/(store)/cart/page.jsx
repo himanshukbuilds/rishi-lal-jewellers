@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import {
   ShoppingBag,
   Trash2,
@@ -11,7 +11,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Tag,
-  Check,
   X,
   Sparkles,
 } from 'lucide-react';
@@ -109,14 +108,14 @@ export default function CartPage() {
                       key={`${item.productId}-${item.selectedSize}`}
                       className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center justify-between"
                     >
-                      {/* Product Thumbnail & Details */}
+                      {/* Product Thumbnail on Left & Details */}
                       <div className="flex gap-4 items-center">
                         <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-300/40">
-                          <Image src={item.image} alt={item.name} fill sizes="100px" className="object-cover" />
+                          <SafeImage src={item.image} alt={item.name} fill sizes="100px" className="object-contain" fallbackSrc="/images/placeholder.jpg" />
                         </div>
                         <div>
                           <span className="text-[10px] font-sans text-gold-700 uppercase tracking-widest block">
-                            {item.purity || '22KT Hallmarked'} • Size: {item.selectedSize}
+                            {[item.purity, item.metal, `Size: ${item.selectedSize}`].filter(Boolean).join(' · ')}
                           </span>
                           <h3 className="font-serif text-base font-medium text-emerald-950 hover:text-gold-700 transition-colors">
                             <Link href={`/products/${item.productId}`}>{item.name}</Link>
@@ -124,8 +123,8 @@ export default function CartPage() {
                           <p className="text-xs text-charcoal-500 font-sans mt-0.5">
                             SKU: {item.sku}
                           </p>
-                          <p className="text-xs font-serif font-bold text-emerald-950 sm:hidden mt-2">
-                            {formatPrice(item.price)} each
+                          <p className="text-xs font-sans text-gold-800 font-medium mt-1">
+                            Unit Price: {formatPrice(item.price)}
                           </p>
                         </div>
                       </div>
@@ -155,14 +154,10 @@ export default function CartPage() {
 
                         {/* Line Total */}
                         <div className="text-right min-w-[90px]">
+                          <span className="text-[10px] text-charcoal-500 uppercase tracking-wider font-sans block">Subtotal</span>
                           <span className="font-serif text-base font-bold text-emerald-950 block">
                             {formatPrice(item.price * item.quantity)}
                           </span>
-                          {item.quantity > 1 && (
-                            <span className="text-[10px] text-charcoal-500 font-sans block">
-                              ({formatPrice(item.price)} each)
-                            </span>
-                          )}
                         </div>
 
                         {/* Remove */}
@@ -288,7 +283,7 @@ export default function CartPage() {
                     </div>
                   )}
                   <div className="flex justify-between items-center">
-                    <span>Insured Armored Delivery</span>
+                    <span>Shipping Charges</span>
                     <span className="text-emerald-800 font-semibold text-[11px] uppercase">
                       Complimentary (₹0)
                     </span>
@@ -296,7 +291,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="pt-4 border-t border-gold-200 flex justify-between items-baseline">
-                  <span className="font-serif text-base font-semibold text-emerald-950">Grand Total</span>
+                  <span className="font-serif text-base font-semibold text-emerald-950">Final Total</span>
                   <span className="font-serif text-2xl font-bold text-emerald-950">{formatPrice(total)}</span>
                 </div>
 
@@ -305,7 +300,7 @@ export default function CartPage() {
                     href="/checkout"
                     className="w-full py-4 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2 border border-[#C2AA6A]/40 group"
                   >
-                    <span>Proceed to Luxury Checkout</span>
+                    <span>PROCEED TO CHECKOUT</span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </div>
@@ -328,4 +323,3 @@ export default function CartPage() {
     </div>
   );
 }
-

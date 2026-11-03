@@ -8,6 +8,12 @@ import { SlidersHorizontal, ChevronDown, ArrowLeft, ShieldCheck, Gem } from 'luc
 import ProductCard from '@/components/product/ProductCard';
 import { api } from '@/services/api';
 import NecklacesLandingPage from '../../necklaces/page';
+import GoldLandingPage from '../../gold/page';
+import DiamondLandingPage from '../../diamond/page';
+import EarringsLandingPage from '../../earrings/page';
+import RingsLandingPage from '../../rings/page';
+import BanglesLandingPage from '../../bangles/page';
+import BridalCollectionPage from '@/components/bridal/BridalCollectionPage';
 
 const categoryBanners = {
   traditional: { title: 'Traditional Wear', tagline: 'Classic gold jewelry with a heritage soul', desc: 'Discover heritage inspired necklaces, jhumkas, bangles and timeless gold creations.', bannerImg: '/images/categories/traditional.jpg' },
@@ -107,6 +113,30 @@ export default function CategoryPage() {
     return <NecklacesLandingPage />;
   }
 
+  if (slug === 'gold') {
+    return <GoldLandingPage />;
+  }
+
+  if (slug === 'diamond') {
+    return <DiamondLandingPage />;
+  }
+
+  if (slug === 'earrings') {
+    return <EarringsLandingPage />;
+  }
+
+  if (slug === 'rings') {
+    return <RingsLandingPage />;
+  }
+
+  if (slug === 'bangles') {
+    return <BanglesLandingPage />;
+  }
+
+  if (slug === 'bridal') {
+    return <BridalCollectionPage />;
+  }
+
   const [sort, setSort] = useState('newest');
 
   const banner = categoryBanners[slug] || {
@@ -148,11 +178,11 @@ export default function CategoryPage() {
       <div className="relative bg-[#F1ECE3] text-[#292923] py-9 sm:py-12 px-4 sm:px-6 lg:px-8 overflow-hidden border-b border-[#E6DFD3]">
         <div className="max-w-7xl mx-auto relative z-10 text-center">
           <Link
-            href="/products"
+            href="/"
             className="inline-flex items-center gap-1.5 text-xs text-[#8B1E2D] hover:text-[#4A0B13] uppercase tracking-widest font-sans mb-3 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>All Jewelry Collections</span>
+            <span>Return to Home</span>
           </Link>
           <h1 className="font-serif text-3xl sm:text-5xl font-medium tracking-tight text-[#292923]">
             {banner.title}

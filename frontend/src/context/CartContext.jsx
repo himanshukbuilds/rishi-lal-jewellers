@@ -15,11 +15,35 @@ export const CartProvider = ({ children }) => {
 
   // Restore cart from localStorage on client mount
   useEffect(() => {
+    let mounted = true;
     try {
       const stored = localStorage.getItem('rishilal_cart') || localStorage.getItem('aurelia_cart');
       const storedCoupon = localStorage.getItem('rishilal_coupon') || localStorage.getItem('aurelia_coupon');
       if (stored) {
-        setCartItems(JSON.parse(stored));
+        const restoredItems = JSON.parse(stored);
+        setCartItems(restoredItems);
+        if (Array.isArray(restoredItems) && restoredItems.length) {
+          Promise.all(restoredItems.map(async (item) => {
+            try {
+              const result = await api.getProduct(item.productId);
+              const product = result?.product;
+              if (!product) return item;
+              return {
+                ...item,
+                name: product.name,
+                price: product.price,
+                image: product.images?.[0] || item.image,
+                metal: product.metal,
+                purity: product.purity,
+                pricingType: product.pricingType || 'business-set',
+                priceStatus: product.priceStatus || 'approved',
+                isOrderable: product.isOrderable !== false,
+                availability: product.availability,
+                imageType: product.imageType,
+              };
+            } catch (_) { return item; }
+          })).then((freshItems) => { if (mounted) setCartItems(freshItems); });
+        }
       }
       if (storedCoupon) {
         setCoupon(JSON.parse(storedCoupon));
@@ -29,6 +53,7 @@ export const CartProvider = ({ children }) => {
     } finally {
       setIsLoaded(true);
     }
+    return () => { mounted = false; };
   }, []);
 
   // Persist cart whenever it changes
@@ -51,43 +76,49 @@ export const CartProvider = ({ children }) => {
 
   // Add Item to Cart
   const addToCart = useCallback((product, quantity = 1, selectedSize = 'Standard') => {
+    if (!product || !(product._id || product.id)) return false;
     const authToken = localStorage.getItem('rishilal_token') || localStorage.getItem('aurelia_token');
     if (!authToken) {
       openLogin({ source: 'protected-action', onSuccess: () => addToCart(product, quantity, selectedSize) });
       return;
     }
+    const newItem = {
+      productId: product._id || product.id,
+      name: product.name,
+      sku: product.sku,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.images && product.images[0] ? product.images[0] : '/images/placeholder-jewelry.jpg',
+      selectedSize: selectedSize || product.availableSizes?.[0] || 'Standard',
+      quantity: Math.max(1, quantity),
+      metal: product.metal,
+      purity: product.purity,
+      grossWeight: product.grossWeight,
+      pricingType: product.pricingType || 'business-set',
+      priceStatus: product.priceStatus || 'approved',
+      isOrderable: product.isOrderable !== false,
+      availability: product.availability,
+      imageType: product.imageType,
+    };
     setCartItems((prevItems) => {
       const existingIndex = prevItems.findIndex(
-        (item) => item.productId === (product._id || product.id) && item.selectedSize === selectedSize
+        (item) => item.productId === newItem.productId && item.selectedSize === newItem.selectedSize
       );
 
       if (existingIndex > -1) {
         const updated = [...prevItems];
         updated[existingIndex] = {
           ...updated[existingIndex],
+          ...newItem,
           quantity: updated[existingIndex].quantity + quantity,
         };
         return updated;
       }
-
-      const newItem = {
-        productId: product._id || product.id,
-        name: product.name,
-        sku: product.sku,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        image: product.images && product.images[0] ? product.images[0] : '/images/placeholder-jewelry.jpg',
-        selectedSize: selectedSize || (product.availableSizes ? product.availableSizes[0] : 'Standard'),
-        quantity: Math.max(1, quantity),
-        metal: product.metal,
-        purity: product.purity,
-        grossWeight: product.grossWeight,
-      };
-
       return [...prevItems, newItem];
     });
 
     setIsCartOpen(true);
+    return true;
   }, [openLogin]);
 
   // Remove Item

@@ -87,7 +87,7 @@ const CAMPAIGN_SLIDES = [
     headline: 'Made for Your Forever',
     subtext: 'Imperial jadau chokers, syndicate polki collars, and Tanjore temple sets crafted for the Indian bride’s eternal promise.',
     cta: 'Discover Bridal',
-    ctaLink: '/categories/bridal',
+    ctaLink: '/wedding',
     theme: 'bridal', // Dusty Rose (#DEB1A8) + Deep Velvet Crimson (#4A0B13) + Gold (#C2AA6A)
     bgGradient: 'from-[#2D050B] via-[#731422] to-[#4A0B13]',
     cardBorder: 'border-[#DEB1A8]/30',
@@ -109,7 +109,7 @@ const CAMPAIGN_SLIDES = [
     headline: 'Little Luxuries, Every Day',
     subtext: 'Delicate 18KT gold huggies, diamond tennis bracelets, and feather-light pendants designed for your everyday elegance.',
     cta: 'Shop Daily Wear',
-    ctaLink: '/products?category=Gold',
+    ctaLink: '/daily-wear',
     theme: 'daily', // White (#FFFFFF) + Muted Crimson (#A83244) + Soft Blush (#E8C0B8)
     bgGradient: 'from-[#8B1E2D] via-[#A83244] to-[#4A0B13]',
     cardBorder: 'border-[#E8C0B8]/30',

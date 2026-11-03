@@ -82,7 +82,7 @@ export default function BridalShowcase() {
             {/* Actions */}
             <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <Link
-                href="/categories/bridal"
+                href="/wedding"
                 className="px-8 py-3.5 bg-[#C2AA6A] hover:bg-[#D8C596] text-[#4A0B13] text-xs uppercase tracking-[0.2em] font-bold rounded-sm transition-colors flex items-center justify-center gap-2 group shadow-gold-glow"
               >
                 <span>Explore Bridal Sets</span>

@@ -14,8 +14,8 @@ const {
  *  3. Rapaport Diamond Price Index - Diamond wholesale matrix
  */
 
-// 15-minute in-memory cache to prevent hitting provider rate limits
-const CACHE_TTL_MS = 15 * 60 * 1000;
+// 10-minute in-memory cache to prevent hitting provider rate limits (10-15 minutes interval)
+const CACHE_TTL_MS = 10 * 60 * 1000;
 let priceCache = {
   data: null,
   timestamp: 0,
@@ -158,47 +158,68 @@ async function fetchIbjaRates() {
  * Fetches real-time spot bullion quotes from GoldAPI.io
  */
 async function fetchGoldApiRates() {
+  const apiKey = (process.env.GOLDAPI_KEY || GOLDAPI_KEY || '').trim();
+  if (!apiKey) {
+    throw new Error('GOLDAPI_KEY is not configured in backend/.env');
+  }
+
   const headers = {
-    'x-access-token': GOLDAPI_KEY,
+    'x-access-token': apiKey,
     'Content-Type': 'application/json'
   };
 
-  // Fetch Gold (XAU/INR) and Silver (XAG/INR) in parallel, supporting both endpoint routes
+  // Fetch Gold (XAU/INR) and Silver (XAG/INR) in parallel
   const [goldRes, silverRes] = await Promise.all([
-    fetch('https://www.goldapi.io/api/XAU/INR', { headers, signal: AbortSignal.timeout(8000) })
-      .catch(() => fetch('https://www.goldapi.io/api/price/XAU/INR', { headers, signal: AbortSignal.timeout(8000) })),
-    fetch('https://www.goldapi.io/api/XAG/INR', { headers, signal: AbortSignal.timeout(8000) })
-      .catch(() => fetch('https://www.goldapi.io/api/price/XAG/INR', { headers, signal: AbortSignal.timeout(8000) }))
+    fetch('https://www.goldapi.io/api/XAU/INR', { headers, signal: AbortSignal.timeout(9000) }),
+    fetch('https://www.goldapi.io/api/XAG/INR', { headers, signal: AbortSignal.timeout(9000) })
   ]);
 
   if (!goldRes || !goldRes.ok) {
-    const errText = goldRes ? await goldRes.text().catch(() => '') : 'Network failed';
+    const errText = goldRes ? await goldRes.text().catch(() => '') : 'Network connection failed';
     throw new Error(`GoldAPI.io Gold request failed (${goldRes?.status || 500}): ${errText}`);
   }
 
   const goldData = await goldRes.json();
   const silverData = silverRes?.ok ? await silverRes.json().catch(() => null) : null;
 
-  const rate24k = goldData.price_gram_24k || goldData.melt_price_per_gram?.['24k'] || goldData.price_per_unit?.gram;
-  const rate22k = goldData.price_gram_22k || goldData.melt_price_per_gram?.['22k'] || (rate24k ? rate24k * (22 / 24) : null);
-  const rate18k = goldData.price_gram_18k || goldData.melt_price_per_gram?.['18k'] || (rate24k ? rate24k * (18 / 24) : null);
+  // Extract purity-specific gram prices, calculating from 24K spot price if purity-specific field is missing
+  const rate24k = typeof goldData.price_gram_24k === 'number' && goldData.price_gram_24k > 0
+    ? goldData.price_gram_24k
+    : (goldData.price ? goldData.price / 31.1034768 : null);
 
-  const silverPerGram = silverData?.price_gram_24k || silverData?.price_per_unit?.gram || (silverData?.price ? silverData.price / 31.1035 : null);
-  const silverPerKg = silverPerGram ? silverPerGram * 1000 : (silverData?.price_per_unit?.kilogram || null);
+  if (!rate24k) {
+    throw new Error('GoldAPI.io returned invalid or unparseable gold rate');
+  }
+
+  const rate22k = typeof goldData.price_gram_22k === 'number' && goldData.price_gram_22k > 0
+    ? goldData.price_gram_22k
+    : rate24k * (22 / 24);
+
+  const rate18k = typeof goldData.price_gram_18k === 'number' && goldData.price_gram_18k > 0
+    ? goldData.price_gram_18k
+    : rate24k * (18 / 24);
+
+  // Silver per gram and per kg
+  const silverPerGram = silverData && typeof silverData.price_gram_24k === 'number' && silverData.price_gram_24k > 0
+    ? silverData.price_gram_24k
+    : (silverData && silverData.price ? silverData.price / 31.1034768 : null);
+
+  const silverPerKg = silverPerGram ? silverPerGram * 1000 : null;
 
   const sourceTime = goldData.datetime || (goldData.timestamp ? new Date(goldData.timestamp * 1000).toISOString() : new Date().toISOString());
 
   return {
-    provider: 'GoldAPI.io (Live Bullion Exchange Feed)',
-    providerType: 'Real-Time Spot Bullion Exchange Rate',
+    provider: 'GoldAPI.io',
+    providerType: 'Indicative live spot rate',
     sourceTimestamp: sourceTime,
     session: 'Live Continuous Market',
     gold: {
       available: true,
+      metal: 'Gold',
       currency: 'INR',
       symbol: '₹',
-      benchmark: 'International Spot Bullion (XAU/INR, London/MCX parity)',
-      disclaimer: 'Live spot market quote converted to Indian Rupees. Retail jewelry purchases include making charges, state hallmark fees, and 3% GST.',
+      benchmark: 'Indicative live spot rate (GoldAPI.io)',
+      disclaimer: 'Indicative live spot rate converted to Indian Rupees. Retail jewelry purchases include craftsmanship, making charges, and applicable GST.',
       rates: {
         '24k': {
           purity: '24 Karat (999 Purity)',
@@ -222,13 +243,14 @@ async function fetchGoldApiRates() {
     },
     silver: {
       available: Boolean(silverPerGram && silverPerGram > 0),
+      metal: 'Silver',
       currency: 'INR',
       symbol: '₹',
       purity: '999 Fine Silver (XAG/INR)',
       perGram: silverPerGram ? Math.round(silverPerGram * 100) / 100 : null,
       perKg: silverPerKg ? Math.round(silverPerKg * 100) / 100 : null,
-      benchmark: 'International Spot Silver Bullion',
-      disclaimer: 'Live wholesale spot benchmark rate for physical silver bullion in Indian Rupees.'
+      benchmark: 'Indicative live spot rate (GoldAPI.io)',
+      disclaimer: 'Indicative live spot rate for physical silver bullion in Indian Rupees.'
     }
   };
 }
@@ -299,49 +321,51 @@ async function getMarketPrices(forceRefresh = false, diamondSpecs = {}) {
     };
   }
 
-  // 2. Determine which provider to call
-  const hasIbja = Boolean(IBJA_ACCESS_TOKEN && IBJA_ACCESS_TOKEN.trim());
-  const hasGoldApi = Boolean(GOLDAPI_KEY && GOLDAPI_KEY.trim());
+  // 2. Determine which provider to call (Prioritize GoldAPI.io)
+  const rawGoldApiKey = (process.env.GOLDAPI_KEY || GOLDAPI_KEY || '').trim();
+  const hasGoldApi = Boolean(rawGoldApiKey);
+  const rawIbjaToken = (process.env.IBJA_ACCESS_TOKEN || IBJA_ACCESS_TOKEN || '').trim();
+  const hasIbja = Boolean(rawIbjaToken);
 
-  if (!hasIbja && !hasGoldApi) {
+  if (!hasGoldApi && !hasIbja) {
     return {
-      success: true,
+      success: false,
       dataStatus: 'UNCONFIGURED',
-      message: 'Precious metal market provider credentials not configured. Please add IBJA_ACCESS_TOKEN or GOLDAPI_KEY to backend/.env to activate live Indian bullion rates.',
-      provider: 'Unconfigured (Awaiting Provider Key)',
+      message: 'Live rates temporarily unavailable (GOLDAPI_KEY not configured)',
+      provider: 'GoldAPI.io',
       retrievedAt: new Date().toISOString(),
       gold: {
         available: false,
-        message: 'Gold benchmark data is awaiting provider activation (IBJA_ACCESS_TOKEN or GOLDAPI_KEY).'
+        message: 'Live rates temporarily unavailable'
       },
       silver: {
         available: false,
-        message: 'Silver benchmark data is awaiting provider activation.'
+        message: 'Live rates temporarily unavailable'
       },
       diamonds: getDiamondStatus(diamondSpecs)
     };
   }
 
-  // 3. Attempt retrieval from configured provider
+  // 3. Attempt retrieval from configured provider (Prioritizing GoldAPI.io)
   let freshRates = null;
   let providerError = null;
 
-  if (hasIbja) {
-    try {
-      freshRates = await fetchIbjaRates();
-    } catch (err) {
-      console.warn('[MarketPriceService] IBJA request error:', err.message);
-      providerError = err.message;
-    }
-  }
-
-  // Fallback to GoldAPI if IBJA failed or was not configured
-  if (!freshRates && hasGoldApi) {
+  if (hasGoldApi) {
     try {
       freshRates = await fetchGoldApiRates();
     } catch (err) {
       console.warn('[MarketPriceService] GoldAPI request error:', err.message);
       providerError = err.message;
+    }
+  }
+
+  // Fallback to IBJA if GoldAPI was not configured or failed
+  if (!freshRates && hasIbja) {
+    try {
+      freshRates = await fetchIbjaRates();
+    } catch (err) {
+      console.warn('[MarketPriceService] IBJA request error:', err.message);
+      if (!providerError) providerError = err.message;
     }
   }
 
@@ -381,16 +405,89 @@ async function getMarketPrices(forceRefresh = false, diamondSpecs = {}) {
   return {
     success: false,
     dataStatus: 'PROVIDER_ERROR',
-    message: `Unable to retrieve live market rates from configured provider: ${providerError || 'Unknown provider error'}.`,
+    message: 'Live rates temporarily unavailable',
+    provider: 'GoldAPI.io',
     retrievedAt: new Date().toISOString(),
-    gold: { available: false },
-    silver: { available: false },
+    gold: {
+      available: false,
+      message: 'Live rates temporarily unavailable'
+    },
+    silver: {
+      available: false,
+      message: 'Live rates temporarily unavailable'
+    },
     diamonds: getDiamondStatus(diamondSpecs)
+  };
+}
+
+/**
+ * Returns structured gold-only price payload
+ */
+async function getGoldPrices(forceRefresh = false) {
+  const allPrices = await getMarketPrices(forceRefresh);
+  if (!allPrices.gold?.available) {
+    return {
+      success: false,
+      metal: 'Gold',
+      currency: 'INR',
+      dataStatus: allPrices.dataStatus,
+      message: allPrices.message || 'Live rates temporarily unavailable',
+      isCached: Boolean(allPrices.isCached),
+      lastUpdated: allPrices.sourceTimestamp || allPrices.retrievedAt
+    };
+  }
+  return {
+    success: true,
+    metal: 'Gold',
+    currency: 'INR',
+    symbol: '₹',
+    rates: allPrices.gold.rates,
+    provider: allPrices.provider,
+    providerType: allPrices.providerType,
+    benchmark: allPrices.gold.benchmark,
+    lastUpdated: allPrices.sourceTimestamp || allPrices.retrievedAt,
+    isCached: Boolean(allPrices.isCached),
+    dataStatus: allPrices.dataStatus
+  };
+}
+
+/**
+ * Returns structured silver-only price payload
+ */
+async function getSilverPrices(forceRefresh = false) {
+  const allPrices = await getMarketPrices(forceRefresh);
+  if (!allPrices.silver?.available) {
+    return {
+      success: false,
+      metal: 'Silver',
+      currency: 'INR',
+      dataStatus: allPrices.dataStatus,
+      message: allPrices.message || 'Live rates temporarily unavailable',
+      isCached: Boolean(allPrices.isCached),
+      lastUpdated: allPrices.sourceTimestamp || allPrices.retrievedAt
+    };
+  }
+  return {
+    success: true,
+    metal: 'Silver',
+    currency: 'INR',
+    symbol: '₹',
+    purity: allPrices.silver.purity,
+    perGram: allPrices.silver.perGram,
+    perKg: allPrices.silver.perKg,
+    provider: allPrices.provider,
+    providerType: allPrices.providerType,
+    benchmark: allPrices.silver.benchmark,
+    lastUpdated: allPrices.sourceTimestamp || allPrices.retrievedAt,
+    isCached: Boolean(allPrices.isCached),
+    dataStatus: allPrices.dataStatus
   };
 }
 
 module.exports = {
   getMarketPrices,
+  getGoldPrices,
+  getSilverPrices,
   fetchIbjaRates,
   fetchGoldApiRates,
   getDiamondStatus

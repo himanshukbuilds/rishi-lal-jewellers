@@ -1,9 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, Crown, Gem, Gift, HelpCircle, ShieldCheck } from 'lucide-react';
+import { Sparkles, Crown, Gem, Gift, HelpCircle, ShieldCheck, Heart, Tag } from 'lucide-react';
 
 const ACTION_ICONS = {
+  'Explore Gold Jewellery': Crown,
+  'Find Diamond Jewellery': Gem,
+  'Discover Wedding Collections': Heart,
+  'Help me choose a necklace': Sparkles,
+  'Check jewellery prices': Tag,
   'Find Jewelry': Gem,
   'Bridal Collection': Crown,
   'Shop Under ₹50K': Sparkles,

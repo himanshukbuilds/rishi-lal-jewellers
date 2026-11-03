@@ -42,12 +42,21 @@ export default function LivePreciousMetalsPrices() {
       setMarketData(data);
     } catch (err) {
       console.warn('Failed to load market rates:', err);
-      setError('Unable to retrieve market prices. Please try again shortly.');
+      setError('Live rates temporarily unavailable. Please try again shortly.');
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
   };
+
+  // Auto-fetch on mount and periodically refresh every 10 minutes
+  useEffect(() => {
+    fetchRates(false);
+    const interval = setInterval(() => {
+      fetchRates(false);
+    }, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleToggle = () => {
     if (!isExpanded && !marketData) {
@@ -81,19 +90,19 @@ export default function LivePreciousMetalsPrices() {
                     <span className="h-1.5 w-1.5 rounded-full bg-[#C2AA6A] animate-pulse" />
                     Market rates • India
                   </span>
-                  {marketData?.dataStatus === 'CURRENT' && (
+                  {marketData?.dataStatus === 'CURRENT' && marketData?.gold?.available && (
                     <span className="rounded bg-emerald-900/60 border border-emerald-400/30 px-2 py-0.5 text-[10px] font-medium text-emerald-200">
-                      Official Benchmark
+                      Indicative Live Spot Rate
                     </span>
                   )}
                   {marketData?.dataStatus === 'STALE' && (
                     <span className="rounded bg-amber-900/60 border border-amber-400/30 px-2 py-0.5 text-[10px] font-medium text-amber-200">
-                      Cached Benchmark
+                      Cached Spot Rate
                     </span>
                   )}
-                  {marketData?.dataStatus === 'UNCONFIGURED' && (
+                  {(!marketData?.gold?.available || marketData?.dataStatus === 'UNCONFIGURED' || marketData?.dataStatus === 'PROVIDER_ERROR') && !isLoading && (
                     <span className="rounded bg-amber-950/60 border border-[#C2AA6A]/40 px-2 py-0.5 text-[10px] font-medium text-[#E4D4A7]">
-                      Provider Setup Required
+                      Live rates temporarily unavailable
                     </span>
                   )}
                 </div>
@@ -103,7 +112,7 @@ export default function LivePreciousMetalsPrices() {
                 </h2>
 
                 <p className="font-sans text-xs text-white/80 sm:text-sm">
-                  Check the latest available gold, silver and diamond market benchmark rates.
+                  Indicative live spot rates powered by GoldAPI.io.
                 </p>
               </div>
 
@@ -226,7 +235,7 @@ export default function LivePreciousMetalsPrices() {
                               Gold Rates
                             </h3>
                             <p className="text-[10px] text-white/60">
-                              Official Indian Bullion Benchmark
+                              Indicative live spot rate
                             </p>
                           </div>
                         </div>
@@ -305,20 +314,20 @@ export default function LivePreciousMetalsPrices() {
                         <div className="mt-4 flex-1 space-y-3">
                           <div className="rounded-lg bg-white/5 p-3 border border-white/5 flex items-center justify-between">
                             <span className="text-xs font-semibold text-white">24K Pure Gold (999)</span>
-                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Awaiting Provider Feed</span>
+                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Live rates temporarily unavailable</span>
                           </div>
                           <div className="rounded-lg bg-[#C2AA6A]/10 p-3 border border-[#C2AA6A]/30 flex items-center justify-between">
                             <span className="text-xs font-semibold text-white">22K Jewelry Gold (916)</span>
-                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Awaiting Provider Feed</span>
+                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Live rates temporarily unavailable</span>
                           </div>
                           <div className="rounded-lg bg-white/5 p-3 border border-white/5 flex items-center justify-between">
                             <span className="text-xs font-semibold text-white">18K Diamond Gold (750)</span>
-                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Awaiting Provider Feed</span>
+                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Live rates temporarily unavailable</span>
                           </div>
 
                           <div className="rounded-lg bg-black/25 p-3 text-center text-xs text-white/70">
                             <p className="text-[11px]">
-                              Configure <code className="text-[#C2AA6A]">IBJA_ACCESS_TOKEN</code> or <code className="text-[#C2AA6A]">GOLDAPI_KEY</code> in <code className="text-white">backend/.env</code> to stream live rates.
+                              Real-time bullion spot rates from GoldAPI.io.
                             </p>
                             <Link
                               href="/products?category=Gold"
@@ -343,7 +352,7 @@ export default function LivePreciousMetalsPrices() {
                               Silver Rates
                             </h3>
                             <p className="text-[10px] text-white/60">
-                              Physical Bullion Benchmark
+                              Indicative live spot rate
                             </p>
                           </div>
                         </div>
@@ -398,16 +407,16 @@ export default function LivePreciousMetalsPrices() {
                         <div className="mt-4 flex-1 space-y-3">
                           <div className="rounded-lg bg-white/5 p-3.5 border border-white/5 flex items-center justify-between">
                             <span className="text-xs font-semibold text-white">Pure Silver 999 (Per Gram)</span>
-                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Awaiting Provider Feed</span>
+                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Live rates temporarily unavailable</span>
                           </div>
                           <div className="rounded-lg bg-white/5 p-3.5 border border-white/5 flex items-center justify-between">
                             <span className="text-xs font-semibold text-white">Silver Bullion (Per Kilogram)</span>
-                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Awaiting Provider Feed</span>
+                            <span className="text-[11px] text-[#E4D4A7]/70 italic">Live rates temporarily unavailable</span>
                           </div>
 
                           <div className="rounded-lg bg-black/25 p-3 text-center text-xs text-white/70">
                             <p className="text-[11px]">
-                              Configure <code className="text-[#C2AA6A]">IBJA_ACCESS_TOKEN</code> or <code className="text-[#C2AA6A]">GOLDAPI_KEY</code> in backend configuration.
+                              Real-time bullion spot rates from GoldAPI.io.
                             </p>
                             <Link
                               href="/categories/silver-idols"

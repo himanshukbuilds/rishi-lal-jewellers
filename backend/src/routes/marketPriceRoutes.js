@@ -16,8 +16,14 @@ const priceLimiter = rateLimit({
   }
 });
 
-// GET /api/market-prices
+// GET /api/metal-prices (or /api/market-prices) - All Precious Metals
 router.get('/', priceLimiter, marketPriceController.getPreciousMetalPrices);
+
+// GET /api/metal-prices/gold - Gold only (24K, 22K, 18K per gram & 10g)
+router.get('/gold', priceLimiter, marketPriceController.getGoldPrices);
+
+// GET /api/metal-prices/silver - Silver only (per gram & per kg)
+router.get('/silver', priceLimiter, marketPriceController.getSilverPrices);
 
 module.exports = router;
 

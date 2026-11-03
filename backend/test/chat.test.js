@@ -81,7 +81,7 @@ test('handleChatMessage controller rejects empty and overlength messages with 40
   assert.strictEqual(longBody.success, false);
 });
 
-test('handleChatMessage introduces Halku identity on greeting query', async () => {
+test('handleChatMessage introduces RIVA identity on greeting query', async () => {
   const { handleChatMessage } = require('../src/controllers/chatController');
 
   let statusCode = null;
@@ -101,5 +101,5 @@ test('handleChatMessage introduces Halku identity on greeting query', async () =
   await handleChatMessage(mockReq, mockRes);
   assert.strictEqual(statusCode, 200);
   assert.strictEqual(responseData.success, true);
-  assert.ok(responseData.reply.includes('Halku'));
+  assert.ok(responseData.reply.includes('RIVA'));
 });

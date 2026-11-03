@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
+import SafeImage from '@/components/common/SafeImage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Package,
@@ -285,7 +285,7 @@ export default function AdminOrdersPage() {
                   <div key={idx} className="py-2.5 flex items-center justify-between gap-4 text-xs font-sans">
                     <div className="flex items-center gap-3">
                       <div className="relative w-12 h-12 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-200">
-                        <Image src={it.image} alt={it.name} fill sizes="48px" className="object-cover" />
+                        <SafeImage src={it.image} alt={it.name} fill sizes="48px" className="object-cover" fallbackSrc="/images/placeholder.jpg" />
                       </div>
                       <div>
                         <span className="font-medium text-emerald-950 block">{it.name}</span>

@@ -47,9 +47,16 @@ const rightColumnCategories = [
 ];
 
 function CategoryCard({ category }) {
+  const href =
+    category.slug === 'bridal' || category.slug === 'wedding'
+      ? '/wedding'
+      : category.slug === 'daily-wear'
+        ? '/daily-wear'
+        : `/categories/${category.slug}`;
+
   return (
     <Link
-      href={`/categories/${category.slug}`}
+      href={href}
       aria-label={category.name}
       className={`group relative isolate block w-full overflow-hidden rounded-xl sm:rounded-2xl bg-[#26050B] shadow-sm transition-shadow duration-300 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C2AA6A] ${category.heightClass}`}
     >
