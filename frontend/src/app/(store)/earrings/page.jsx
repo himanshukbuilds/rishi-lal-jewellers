@@ -336,8 +336,8 @@ export default function EarringsLandingPage() {
       {/* =========================================================================
           EARRINGS COLLECTION SECTION (#collection) — WARM IVORY ATELIER
          ========================================================================= */}
-      <section id="collection" className="bg-[#F8F1E7] border-b border-[#E8DFD3] py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="collection" className="bg-[#F8F1E7] border-b border-[#E8DFD3] py-8 sm:py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           
           {/* Section Header Row */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10 pb-6 border-b border-[#E6DFD3]">
@@ -463,7 +463,7 @@ export default function EarringsLandingPage() {
 
           {/* Loading Skeleton */}
           {isLoading && (
-            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div
                   key={n}
@@ -477,7 +477,7 @@ export default function EarringsLandingPage() {
               PRODUCT GRID (FOUR COLUMNS ON LARGE DESKTOP)
              ------------------------------------------------------------------- */}
           {!isLoading && displayedProducts.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {displayedProducts.map((product) => <ProductCard key={product._id || product.id || product.slug} product={product} />)}
             </div>
           )}

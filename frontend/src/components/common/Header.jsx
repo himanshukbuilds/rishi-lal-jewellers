@@ -241,7 +241,7 @@ export default function Header() {
           ROW 1: PROMOTIONAL ANNOUNCEMENT BAR (Section 3)
       ═══════════════════════════════════════════════════════════════════ */}
       {!barDismissed && (
-        <div className="bg-[#8B1E2D] text-white px-4 py-2 text-xs tracking-wider border-b border-[#C2AA6A]/20 font-sans">
+        <div className="bg-[#8B1E2D] text-white px-2 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs tracking-wider border-b border-[#C2AA6A]/20 font-sans">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             {/* Left: Trust badge */}
             <div className="hidden sm:flex items-center gap-2 text-[11px] text-white/90 flex-shrink-0">
@@ -250,22 +250,22 @@ export default function Header() {
             </div>
 
             {/* Center: Rotating announcement */}
-            <div className="flex-1 flex justify-center">
+            <div className="flex-1 flex justify-center min-w-0 px-2">
               <div
-                className={`flex items-center gap-1.5 font-medium text-xs transition-opacity duration-400 ${
+                className={`flex items-center gap-1.5 font-medium text-[11px] sm:text-xs transition-opacity duration-400 min-w-0 ${
                   announcementFade ? 'opacity-100' : 'opacity-0'
                 }`}
                 style={{ transitionDuration: '400ms' }}
               >
-                <Sparkles className="w-3 h-3 text-[#C2AA6A] animate-pulse" />
-                <span className="tracking-wide text-white">{ANNOUNCEMENT_MESSAGES[announcementIndex]}</span>
+                <Sparkles className="w-3 h-3 text-[#C2AA6A] animate-pulse shrink-0" />
+                <span className="tracking-wide text-white truncate">{ANNOUNCEMENT_MESSAGES[announcementIndex]}</span>
               </div>
             </div>
 
             {/* Right: Close button */}
             <button
               onClick={() => setBarDismissed(true)}
-              className="flex-shrink-0 ml-4 p-0.5 text-white/70 hover:text-[#C2AA6A] transition-colors"
+              className="flex-shrink-0 ml-1 sm:ml-4 p-0.5 text-white/70 hover:text-[#C2AA6A] transition-colors"
               aria-label="Dismiss announcement bar"
             >
               <X className="w-3.5 h-3.5" />
@@ -279,20 +279,20 @@ export default function Header() {
       ═══════════════════════════════════════════════════════════════════ */}
       <div
         className={`bg-white border-b border-[#E6DFD3] transition-all duration-300 ${
-          isScrolled ? 'py-2 shadow-md shadow-black/5' : 'py-3.5'
+          isScrolled ? 'py-1.5 sm:py-2 shadow-md shadow-black/5' : 'py-2.5 sm:py-3.5'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
           {/* LEFT: Brand Logo */}
-          <div className="flex items-center flex-shrink-0">
+          <div className="flex items-center flex-shrink-0 min-w-0">
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 mr-2 text-[#4A0B13] hover:text-[#C2AA6A] transition-colors"
+              className="lg:hidden p-1.5 sm:p-2 mr-1 sm:mr-2 text-[#4A0B13] hover:text-[#C2AA6A] transition-colors shrink-0"
               aria-label="Open Navigation Menu"
               aria-expanded={mobileMenuOpen}
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
             <BrandLogo showTagline={!isScrolled} size={isScrolled ? 'sm' : 'md'} />
@@ -320,14 +320,14 @@ export default function Header() {
           </div>
 
           {/* RIGHT: Action Icons */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <div className="flex items-center gap-0.5 sm:gap-1.5 md:gap-2 flex-shrink-0">
             {/* Mobile Search Button */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
-              className="lg:hidden p-2 text-[#4A0B13] hover:text-[#C2AA6A] transition-colors"
+              className="lg:hidden p-1.5 sm:p-2 text-[#4A0B13] hover:text-[#C2AA6A] transition-colors"
               aria-label="Search Catalog"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
             {/* Precious Metal Rates Link (desktop) */}
@@ -745,7 +745,20 @@ export default function Header() {
             {/* Drawer Footer */}
             <div className="p-4 bg-[#F8F5EF] border-t border-[#E6DFD3] font-sans text-xs text-charcoal-600">
               <p className="font-semibold text-[#4A0B13] mb-1">Concierge Hotline</p>
-              <p>{BRAND_CONFIG.contact.phone}</p>
+              <div className="space-y-0.5">
+                <a
+                  href={`tel:${BRAND_CONFIG.contact.phoneRaw}`}
+                  className="block font-medium text-emerald-950 hover:text-[#8B1E2D] transition-colors"
+                >
+                  {BRAND_CONFIG.contact.phone}
+                </a>
+                <a
+                  href={`tel:${BRAND_CONFIG.contact.phoneSecondaryRaw}`}
+                  className="block font-medium text-emerald-950 hover:text-[#8B1E2D] transition-colors"
+                >
+                  {BRAND_CONFIG.contact.phoneSecondary}
+                </a>
+              </div>
               <p className="text-[11px] text-charcoal-500 mt-2">
                 100% BIS Hallmarked • Insured Armored Shipping
               </p>

@@ -349,7 +349,7 @@ export default function AccountDashboardPage() {
                   required
                   value={addressForm.street}
                   onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })}
-                  placeholder="e.g. 14 Colaba Causeway"
+                  placeholder="e.g. 14 Main Road"
                   className="w-full px-3 py-2 border border-gold-300 rounded-sm"
                 />
               </div>

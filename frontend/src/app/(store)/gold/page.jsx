@@ -322,7 +322,7 @@ export default function GoldLandingPage() {
               {/* ---------------------------------------------------------------
                   OVERLAPPING SECONDARY PHOTOGRAPH (Lower Right of Main Photo)
                  --------------------------------------------------------------- */}
-              <div className="absolute right-3 sm:right-6 lg:-right-8 bottom-4 sm:bottom-6 z-20 w-36 sm:w-44 md:w-48 lg:w-48 aspect-[3/4] rounded-sm overflow-hidden shadow-2xl border border-[#D6B36A]/50 bg-[#153A32] transition-transform duration-500 hover:scale-105">
+              <div className="absolute right-3 sm:right-6 lg:right-0 xl:-right-6 bottom-4 sm:bottom-6 z-20 w-36 sm:w-44 md:w-48 lg:w-48 aspect-[3/4] rounded-sm overflow-hidden shadow-2xl border border-[#D6B36A]/50 bg-[#153A32] transition-transform duration-500 hover:scale-105">
                 <Image
                   src={slide.secondaryImage}
                   alt={slide.secondaryAlt}
@@ -441,8 +441,8 @@ export default function GoldLandingPage() {
       {/* =========================================================================
           GOLD COLLECTION SECTION (#collection) — WARM IVORY EDITORIAL ATELIER
          ========================================================================= */}
-      <section id="collection" className="bg-[#F8F1E7] border-b border-[#E8DFD3] py-12 sm:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="collection" className="bg-[#F8F1E7] border-b border-[#E8DFD3] py-8 sm:py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           
           {/* Section Header Row */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 sm:mb-10 pb-6 border-b border-[#E6DFD3]">
@@ -591,7 +591,7 @@ export default function GoldLandingPage() {
 
           {/* Loading Skeleton */}
           {isLoading && (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-6 sm:grid-cols-3 lg:grid-cols-4">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div
                   key={n}
@@ -605,7 +605,7 @@ export default function GoldLandingPage() {
               PRODUCT GRID (6 CARDS PER ROW ON DESKTOP, MATCHING REFERENCE)
              ------------------------------------------------------------------- */}
           {!isLoading && displayedProducts.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-6 sm:grid-cols-3 lg:grid-cols-4">
               {displayedProducts.map((product) => <ProductCard key={product._id || product.id || product.slug} product={product} />)}
             </div>
           )}

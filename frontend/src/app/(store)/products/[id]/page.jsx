@@ -159,7 +159,7 @@ export default function ProductDetailsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* Left: Multi-Image Gallery */}
           <div className="space-y-4">
@@ -324,51 +324,76 @@ export default function ProductDetailsPage() {
 
             {/* Quantity Selector & Primary Actions */}
             <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-4">
-                {/* Quantity */}
-                <div className="flex items-center border border-gold-300 rounded-sm bg-white">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+                <div className="flex items-center gap-2.5">
+                  {/* Quantity */}
+                  <div className="flex items-center border border-gold-300 rounded-sm bg-white">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="p-2 sm:p-2.5 text-charcoal-600 hover:text-emerald-950 transition-colors"
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="px-3 text-xs font-medium text-emerald-950">
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="p-2 sm:p-2.5 text-charcoal-600 hover:text-emerald-950 transition-colors"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Wishlist Button (Mobile inline with quantity, desktop at end) */}
                   <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-2.5 text-charcoal-600 hover:text-emerald-950 transition-colors"
-                    aria-label="Decrease quantity"
+                    onClick={() => toggleWishlist(product)}
+                    className={`sm:hidden p-2.5 rounded-sm border transition-colors flex items-center justify-center ${
+                      inWishlist
+                        ? 'bg-red-50 text-red-600 border-red-200'
+                        : 'bg-white text-charcoal-700 border-gold-300 hover:text-red-600'
+                    }`}
+                    aria-label="Wishlist toggle"
                   >
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <span className="px-3 text-xs font-medium text-emerald-950">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="p-2.5 text-charcoal-600 hover:text-emerald-950 transition-colors"
-                    aria-label="Increase quantity"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
+                    <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current text-red-600' : ''}`} />
                   </button>
                 </div>
 
-                {/* Add to Bag CTA */}
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!isOrderable}
-                  className="flex-1 py-3.5 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 border border-[#C2AA6A]/40 shadow-sm flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Add to Bag</span>
-                </button>
-                {isOrderable && <button onClick={handleBuyNow} className="px-4 py-3.5 bg-emerald-950 hover:bg-emerald-900 text-white text-xs uppercase tracking-widest font-semibold rounded-sm transition-colors border border-gold-400/40">Buy Now</button>}
+                {/* Primary CTA Buttons */}
+                <div className="flex flex-1 items-center gap-2">
+                  {/* Add to Bag CTA */}
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!isOrderable}
+                    className="flex-1 py-3 sm:py-3.5 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-[11px] sm:text-xs uppercase tracking-wider sm:tracking-[0.2em] font-semibold rounded-sm transition-all duration-300 border border-[#C2AA6A]/40 shadow-sm flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <ShoppingBag className="w-4 h-4 shrink-0" />
+                    <span>Add to Bag</span>
+                  </button>
+                  {isOrderable && (
+                    <button
+                      onClick={handleBuyNow}
+                      className="flex-1 sm:flex-initial px-4 sm:px-5 py-3 sm:py-3.5 bg-emerald-950 hover:bg-emerald-900 text-white text-[11px] sm:text-xs uppercase tracking-wider sm:tracking-widest font-semibold rounded-sm transition-colors border border-gold-400/40 text-center"
+                    >
+                      Buy Now
+                    </button>
+                  )}
 
-                {/* Wishlist Button */}
-                <button
-                  onClick={() => toggleWishlist(product)}
-                  className={`p-3.5 rounded-sm border transition-colors ${
-                    inWishlist
-                      ? 'bg-red-50 text-red-600 border-red-200'
-                      : 'bg-white text-charcoal-700 border-gold-300 hover:text-red-600'
-                  }`}
-                  aria-label="Wishlist toggle"
-                >
-                  <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current text-red-600' : ''}`} />
-                </button>
+                  {/* Wishlist Button (Desktop view) */}
+                  <button
+                    onClick={() => toggleWishlist(product)}
+                    className={`hidden sm:flex p-3.5 rounded-sm border transition-colors items-center justify-center ${
+                      inWishlist
+                        ? 'bg-red-50 text-red-600 border-red-200'
+                        : 'bg-white text-charcoal-700 border-gold-300 hover:text-red-600'
+                    }`}
+                    aria-label="Wishlist toggle"
+                  >
+                    <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current text-red-600' : ''}`} />
+                  </button>
+                </div>
               </div>
 
               {!isOrderable && <p className="text-[11px] text-charcoal-600">This creation is currently being crafted. Please contact our concierge for reservation.</p>}
@@ -519,7 +544,7 @@ export default function ProductDetailsPage() {
                 You May Also Admire
               </h2>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
               {relatedProducts.map((rel) => (
                 <ProductCard key={rel._id} product={rel} />
               ))}

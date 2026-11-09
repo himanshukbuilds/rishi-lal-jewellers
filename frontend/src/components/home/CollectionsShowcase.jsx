@@ -27,11 +27,11 @@ export default function CollectionsShowcase() {
         </header>
 
         {/* Asymmetrical 2-Column Collection Layout matching Tanishq Reference */}
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:gap-6">
           {/* Card 1: Left Column — Tall Vertical Card (Under ₹50K) */}
           <Link
             href="/products?maxPrice=50000"
-            className="group relative isolate block h-[420px] w-full overflow-hidden rounded-2xl border border-black/5 bg-[#4A0B13] shadow-sm transition-all duration-500 hover:shadow-xl sm:h-[520px] md:h-full md:min-h-[580px] lg:min-h-[620px]"
+            className="group relative isolate block h-[260px] w-full overflow-hidden rounded-2xl border border-black/5 bg-[#4A0B13] shadow-sm transition-all duration-500 hover:shadow-xl sm:h-[400px] md:h-full md:min-h-[560px] lg:min-h-[620px]"
           >
             <Image
               src="/images/collections/under-50k.jpg"
@@ -46,8 +46,8 @@ export default function CollectionsShowcase() {
             <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-transparent opacity-50" />
 
             {/* Typography overlay at the bottom */}
-            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end p-6 text-center text-white sm:p-8 lg:p-12">
-              <h3 className="font-serif text-3xl font-normal tracking-wide text-white drop-shadow-md transition-transform duration-300 group-hover:-translate-y-1 sm:text-4xl lg:text-5xl">
+            <div className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end p-5 text-center text-white sm:p-8 lg:p-12">
+              <h3 className="font-serif text-2xl font-normal tracking-wide text-white drop-shadow-md transition-transform duration-300 group-hover:-translate-y-1 sm:text-3xl lg:text-5xl">
                 Under ₹50K
               </h3>
               <div className="mt-2.5 flex items-center gap-1.5 opacity-0 transition-all duration-300 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
@@ -60,11 +60,11 @@ export default function CollectionsShowcase() {
           </Link>
 
           {/* Right Column — Two Shorter Stacked Cards */}
-          <div className="flex flex-col gap-5 lg:gap-6">
+          <div className="flex flex-col gap-4 sm:gap-5 lg:gap-6">
             {/* Card 2: Top-Right (Silver Idols) */}
             <Link
               href="/categories/silver-idols"
-              className="group relative isolate block h-[260px] w-full overflow-hidden rounded-2xl border border-black/5 bg-[#4A0B13] shadow-sm transition-all duration-500 hover:shadow-xl sm:h-[280px] md:h-[280px] lg:h-[298px]"
+              className="group relative isolate block h-[180px] w-full overflow-hidden rounded-2xl border border-black/5 bg-[#4A0B13] shadow-sm transition-all duration-500 hover:shadow-xl sm:h-[240px] md:h-[270px] lg:h-[298px]"
             >
               <Image
                 src="/images/collections/silver-idols.jpg"
@@ -77,8 +77,8 @@ export default function CollectionsShowcase() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent transition-opacity duration-500 group-hover:opacity-90" />
               <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-40" />
 
-              <div className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end p-6 text-center text-white sm:p-7">
-                <h3 className="font-serif text-2xl font-normal tracking-wide text-white drop-shadow-md transition-transform duration-300 group-hover:-translate-y-1 sm:text-3xl lg:text-4xl">
+              <div className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end p-4 text-center text-white sm:p-7">
+                <h3 className="font-serif text-xl font-normal tracking-wide text-white drop-shadow-md transition-transform duration-300 group-hover:-translate-y-1 sm:text-2xl lg:text-4xl">
                   Silver Idols
                 </h3>
                 <div className="mt-2 flex items-center gap-1.5 opacity-0 transition-all duration-300 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0">
@@ -93,7 +93,7 @@ export default function CollectionsShowcase() {
             {/* Card 3: Bottom-Right (Gold Coins) */}
             <Link
               href="/categories/gold-coins"
-              className="group relative isolate block h-[260px] w-full overflow-hidden rounded-2xl border border-black/5 bg-[#4A0B13] shadow-sm transition-all duration-500 hover:shadow-xl sm:h-[280px] md:h-[280px] lg:h-[298px]"
+              className="group relative isolate block h-[180px] w-full overflow-hidden rounded-2xl border border-black/5 bg-[#4A0B13] shadow-sm transition-all duration-500 hover:shadow-xl sm:h-[240px] md:h-[270px] lg:h-[298px]"
             >
               <Image
                 src="/images/collections/gold-coins.jpg"

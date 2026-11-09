@@ -198,8 +198,8 @@ export default function CategoryPage() {
       </div>
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between pb-6 mb-6 border-b border-gold-200">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex items-center justify-between pb-5 sm:pb-6 mb-5 sm:mb-6 border-b border-gold-200">
           <p className="font-sans text-xs text-charcoal-600">
             Showing <span className="font-bold text-emerald-950">{products.length}</span> creations in {banner.title}
           </p>
@@ -225,7 +225,7 @@ export default function CategoryPage() {
 
         {/* Loading */}
         {isLoading && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
               <div key={n} className="animate-pulse bg-white rounded-sm aspect-[3/4] border border-gold-200/50" />
             ))}
@@ -234,7 +234,7 @@ export default function CategoryPage() {
 
         {/* Product Grid */}
         {!isLoading && products.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
             {products.map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}

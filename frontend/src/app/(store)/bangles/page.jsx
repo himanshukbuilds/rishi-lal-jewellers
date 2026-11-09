@@ -359,8 +359,8 @@ export default function BanglesLandingPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           COLLECTION SECTION: Warm Ivory Background (#F8F1E7)
       ═══════════════════════════════════════════════════════════════════ */}
-      <section id="collection" className="w-full bg-[#F8F1E7] py-10 sm:py-14 scroll-mt-20">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="collection" className="w-full bg-[#F8F1E7] py-8 sm:py-12 md:py-14 scroll-mt-20">
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8">
           
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#E6DFD3] mb-8">
@@ -431,7 +431,7 @@ export default function BanglesLandingPage() {
               PRODUCT GRID: 6-COLUMN RESPONSIVE LAYOUT MATCHING REFERENCE
           ═════════════════════════════════════════════════════════════════ */}
           {isLoading ? (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-6 sm:grid-cols-3 lg:grid-cols-4">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="bg-white rounded-xs p-3 animate-pulse border border-[#E6DFD3]">
                   <div className="w-full h-32 bg-[#EBE4D8] rounded-xs mb-3" />
@@ -455,7 +455,7 @@ export default function BanglesLandingPage() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-6 sm:grid-cols-3 lg:grid-cols-4">
               {displayedProducts.map((product) => <ProductCard key={product._id || product.id || product.slug} product={product} />)}
             </div>
           )}

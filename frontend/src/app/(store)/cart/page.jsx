@@ -57,7 +57,7 @@ export default function CartPage() {
 
   return (
     <div className="bg-ivory-50 min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {/* Title */}
         <div className="text-center max-w-xl mx-auto mb-10">
           <p className="font-sans text-xs uppercase tracking-[0.25em] text-gold-700 font-semibold mb-1">
@@ -106,11 +106,11 @@ export default function CartPage() {
                   {cartItems.map((item) => (
                     <div
                       key={`${item.productId}-${item.selectedSize}`}
-                      className="p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center justify-between"
+                      className="p-3.5 sm:p-6 flex flex-col sm:flex-row gap-3 sm:gap-6 items-start sm:items-center justify-between"
                     >
                       {/* Product Thumbnail on Left & Details */}
-                      <div className="flex gap-4 items-center">
-                        <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-300/40">
+                      <div className="flex gap-3 sm:gap-4 items-center">
+                        <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-sm overflow-hidden bg-ivory-100 shrink-0 border border-gold-300/40">
                           <SafeImage src={item.image} alt={item.name} fill sizes="100px" className="object-contain" fallbackSrc="/images/placeholder.jpg" />
                         </div>
                         <div>

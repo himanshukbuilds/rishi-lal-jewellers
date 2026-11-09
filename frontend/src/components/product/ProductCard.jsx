@@ -71,18 +71,18 @@ export default function ProductCard({ product }) {
             toggleWishlist(product);
           }}
           aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-          className={`absolute right-2.5 top-2.5 z-10 grid h-8 w-8 place-items-center rounded-full bg-white/95 shadow-sm transition-all duration-300 hover:scale-110 ${
+          className={`absolute right-1.5 top-1.5 sm:right-2.5 sm:top-2.5 z-10 grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-full bg-white/95 shadow-sm transition-all duration-300 hover:scale-110 ${
             inWishlist ? 'text-[#7D2934]' : 'text-[#766F61] hover:text-[#7D2934]'
           }`}
         >
-          <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />
+          <Heart className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${inWishlist ? 'fill-current' : ''}`} />
         </button>
       </div>
 
       {/* Product Content Details */}
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-4 md:p-5">
         {/* Category & Metal Tag */}
-        <p className="min-h-4 text-[9px] font-semibold uppercase tracking-[.18em] text-[#9B8050]">
+        <p className="min-h-3.5 sm:min-h-4 text-[8px] sm:text-[9px] font-semibold uppercase tracking-wider sm:tracking-[.18em] text-[#9B8050] truncate">
           {categoryLabel}
           {metalDisplay ? ` · ${metalDisplay}` : ''}
         </p>
@@ -90,55 +90,55 @@ export default function ProductCard({ product }) {
         {/* Product Title */}
         <Link
           href={productUrl}
-          className="mt-1.5 block min-h-[42px] font-serif text-[14px] leading-snug text-[#17382D] transition-colors hover:text-[#7D2934] sm:text-[15px]"
+          className="mt-1 sm:mt-1.5 block min-h-[32px] sm:min-h-[40px] font-serif text-xs sm:text-[14px] md:text-[15px] leading-tight sm:leading-snug text-[#17382D] transition-colors hover:text-[#7D2934]"
         >
           <span className="line-clamp-2">{product.name}</span>
         </Link>
 
         {/* Metal Specifications & Weight */}
-        <p className="mt-1 min-h-[18px] text-[10px] text-[#766F61]">
+        <p className="mt-0.5 sm:mt-1 min-h-[16px] sm:min-h-[18px] text-[9px] sm:text-[10px] text-[#766F61] truncate">
           {specs.length > 0 ? specs.join(' · ') : '22KT Hallmarked · Verified Craftsmanship'}
         </p>
 
         {/* Price & Status Section */}
-        <div className="mt-3 border-t border-[#E6DFD3] pt-3">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="font-serif text-[17px] font-bold tracking-tight text-[#7D2934] sm:text-[19px]">
+        <div className="mt-2 sm:mt-3 border-t border-[#E6DFD3] pt-2 sm:pt-3">
+          <div className="flex items-baseline justify-between gap-1 sm:gap-2">
+            <span className="font-serif text-[15px] sm:text-[17px] md:text-[19px] font-bold tracking-tight text-[#7D2934]">
               {formatPrice(product.price)}
             </span>
             {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
-              <span className="text-[11px] text-[#A09A8E] line-through">
+              <span className="text-[10px] sm:text-[11px] text-[#A09A8E] line-through">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
           </div>
 
           {/* Availability Status */}
-          <p className="mt-1 text-[9px] font-medium uppercase tracking-wider text-[#8A604F]">
+          <p className="mt-0.5 sm:mt-1 text-[8px] sm:text-[9px] font-medium uppercase tracking-wider text-[#8A604F] truncate">
             {availabilityText}
           </p>
         </div>
 
         {/* Standardized ADD TO BAG Action */}
-        <div className="mt-4 pt-1">
+        <div className="mt-2.5 sm:mt-4 pt-0.5 sm:pt-1">
           <button
             type="button"
             onClick={handleAdd}
-            className={`flex h-10 w-full items-center justify-center gap-2 rounded-xs px-4 text-[10px] font-semibold uppercase tracking-[.18em] transition-all duration-300 ${
+            className={`flex h-8 sm:h-9 md:h-10 w-full items-center justify-center gap-1.5 sm:gap-2 rounded-xs px-2 sm:px-4 text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider sm:tracking-[.18em] transition-all duration-300 ${
               added
                 ? 'border border-[#9B8050] bg-[#17382D] text-[#E7D19A]'
                 : 'border border-[#7D2934] bg-[#7D2934] text-white hover:bg-[#5C1D26] hover:shadow-md'
             }`}
           >
-            {added ? <Check className="h-4 w-4" /> : <ShoppingBag className="h-4 w-4" />}
-            <span>{added ? 'Added to Bag' : 'Add to Bag'}</span>
+            {added ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" /> : <ShoppingBag className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />}
+            <span className="truncate">{added ? 'Added to Bag' : 'Add to Bag'}</span>
           </button>
 
           {added && (
             <button
               type="button"
               onClick={openCart}
-              className="mt-1.5 w-full text-center text-[9px] uppercase tracking-wider text-[#7D2934] underline underline-offset-2"
+              className="mt-1 sm:mt-1.5 w-full text-center text-[8px] sm:text-[9px] uppercase tracking-wider text-[#7D2934] underline underline-offset-2"
             >
               View Shopping Bag
             </button>

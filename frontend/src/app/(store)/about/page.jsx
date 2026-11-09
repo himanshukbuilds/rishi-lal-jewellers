@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ShieldCheck, Gem, Hammer, Sparkles, Heart } from 'lucide-react';
+import Link from 'next/link';
+import { ShieldCheck, Gem, Hammer, Sparkles, Heart, MapPin, Phone, Mail } from 'lucide-react';
 import { BRAND_CONFIG } from '@/config/brandConfig';
 
 export default function AboutPage() {
@@ -75,8 +76,84 @@ export default function AboutPage() {
             <Hammer className="w-6 h-6 text-emerald-900" />
             <h3 className="font-serif text-base font-semibold text-emerald-950">Bespoke Atelier Service</h3>
             <p className="text-xs text-charcoal-600 font-sans leading-relaxed">
-              Personalized wedding trousseau consultations with our master gemologists in Mumbai and New Delhi.
+              Personalized wedding trousseau consultations with our master gemologists at our boutique in Baharagora, Jharkhand.
             </p>
+          </div>
+        </div>
+
+        {/* Boutique Visit Card */}
+        <div className="bg-white p-8 rounded-sm border border-gold-300 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+              <span className="text-gold-700 font-bold uppercase tracking-widest text-[11px] block mb-1">
+                Experience Our Creations
+              </span>
+              <h3 className="font-serif text-2xl text-emerald-950 font-normal">
+                Visit Rishi Lal Jewellers
+              </h3>
+              <p className="text-xs text-charcoal-600 font-sans mt-2 leading-relaxed">
+                We warmly welcome you to experience our bridal jewellery and gold collections in person. Our knowledgeable advisors are ready to assist you in selecting timeless family heirlooms.
+              </p>
+              <div className="mt-4 space-y-2 text-xs font-sans text-charcoal-700">
+                <div className="flex items-start gap-2.5">
+                  <MapPin className="w-4 h-4 text-gold-700 shrink-0 mt-0.5" />
+                  <a
+                    href={BRAND_CONFIG.flagshipStore.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#8B1E2D] transition-colors leading-relaxed underline underline-offset-2"
+                  >
+                    {BRAND_CONFIG.flagshipStore.formattedAddress}
+                  </a>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Phone className="w-4 h-4 text-gold-700 shrink-0" />
+                  <span>
+                    Call:{' '}
+                    <a
+                      href={`tel:${BRAND_CONFIG.contact.phoneRaw}`}
+                      className="font-medium text-emerald-950 hover:text-[#8B1E2D] underline underline-offset-2"
+                    >
+                      {BRAND_CONFIG.contact.phone}
+                    </a>
+                    {' / '}
+                    <a
+                      href={`tel:${BRAND_CONFIG.contact.phoneSecondaryRaw}`}
+                      className="font-medium text-emerald-950 hover:text-[#8B1E2D] underline underline-offset-2"
+                    >
+                      {BRAND_CONFIG.contact.phoneSecondary}
+                    </a>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <Mail className="w-4 h-4 text-gold-700 shrink-0" />
+                  <a
+                    href={`mailto:${BRAND_CONFIG.contact.email}`}
+                    className="hover:text-[#8B1E2D] underline underline-offset-2"
+                  >
+                    {BRAND_CONFIG.contact.email}
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 md:justify-end">
+              <a
+                href={BRAND_CONFIG.flagshipStore.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-wider font-semibold rounded-sm text-center transition-colors shadow-sm flex items-center justify-center gap-2"
+              >
+                <MapPin className="w-4 h-4 text-gold-300" />
+                <span>Google Maps Location</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+              <Link
+                href="/contact"
+                className="px-6 py-3 border border-emerald-950 text-emerald-950 hover:bg-emerald-950 hover:text-white text-xs uppercase tracking-wider font-semibold rounded-sm text-center transition-colors"
+              >
+                Contact Concierge
+              </Link>
+            </div>
           </div>
         </div>
       </div>

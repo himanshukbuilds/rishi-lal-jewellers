@@ -352,8 +352,8 @@ export default function GiftingPage() {
       </section>
 
       {/* SECTION 3: EXPLORE ALL GIFTS (All 30 Products with Dynamic MongoDB API) */}
-      <section id="gifting-products-grid" className="py-14 sm:py-20" aria-labelledby="all-gifts-heading">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section id="gifting-products-grid" className="py-10 sm:py-16 md:py-20" aria-labelledby="all-gifts-heading">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 border-b border-[#E6DFD3] pb-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#9B8050]">
@@ -469,7 +469,7 @@ export default function GiftingPage() {
           {/* PRODUCT CARDS GRID */}
           <div className="mt-8">
             {isLoading && (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-6 sm:grid-cols-3 lg:grid-cols-4">
                 {Array.from({ length: 8 }, (_, i) => (
                   <div key={i} className="aspect-[3/4] animate-pulse rounded-sm bg-[#EEE7DC]" />
                 ))}
@@ -484,7 +484,7 @@ export default function GiftingPage() {
             )}
 
             {!isLoading && filteredProducts.length > 0 && (
-              <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 items-stretch gap-2.5 sm:gap-4 md:gap-6 md:grid-cols-3 lg:grid-cols-4">
                 {filteredProducts.map((product) => (
                   <ProductCard key={product._id || product.sku} product={product} />
                 ))}

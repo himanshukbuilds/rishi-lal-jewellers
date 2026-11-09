@@ -19,7 +19,7 @@ const POLICY_KNOWLEDGE = {
   },
   storeLocation: {
     patterns: ['store', 'showroom', 'visit', 'address', 'location', 'phone', 'contact', 'hours'],
-    reply: 'You are warmly invited to visit our flagship boutique at 124 Heritage Lane, Karol Bagh, New Delhi (Open Mon-Sun 10:30 AM – 8:30 PM). You can also reach our jewelry concierge directly at +91 98765 43210 or care@rishilaljewellers.com.'
+    reply: 'You are warmly invited to visit our boutique at Rajlabandh, Main Road, Baharagora, East Singhbhum, Jharkhand – 832101 (Open Mon-Sun 10:00 AM – 8:00 PM). You can also reach our jewelry concierge directly at +91 98353 22525 / +91 94315 43122 or rishilaljewellers@gmail.com.'
   },
   silverIdols: {
     patterns: ['silver idol', 'silver idols', 'ganesh', 'ganesha', 'lakshmi idol', 'silver murti'],
@@ -202,7 +202,7 @@ exports.handleChatMessage = async (req, res, next) => {
     console.error('[ChatController] Error processing chat message:', error);
     return res.status(500).json({
       success: false,
-      reply: "I'm having trouble assisting you right now. Please try again shortly or contact our concierge team at +91 98765 43210.",
+      reply: "I'm having trouble assisting you right now. Please try again shortly or contact our concierge team at +91 98353 22525 / +91 94315 43122 or rishilaljewellers@gmail.com.",
       products: [],
       suggestedActions: ['Find Jewelry', 'Bridal Collection', 'Shop Under ₹50K', 'Help & Support']
     });

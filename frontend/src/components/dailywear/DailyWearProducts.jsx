@@ -48,18 +48,18 @@ export default function DailyWearProducts({ showFilters = false, showViewAll = f
   }, [data?.products, category, metal, priceRange, search, sort]);
 
   return (
-    <section id={id} className="bg-[#FAF7F2] py-12 sm:py-16" aria-labelledby="daily-wear-products-heading">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <header className="mb-7 flex flex-col gap-4 border-b border-[#E6DFD3] pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <section id={id} className="bg-[#FAF7F2] py-8 sm:py-12 md:py-16" aria-labelledby="daily-wear-products-heading">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+        <header className="mb-6 sm:mb-7 flex flex-col gap-3 sm:gap-4 border-b border-[#E6DFD3] pb-5 sm:pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[.24em] text-[#9B8050]">Comfortable, considered designs</p>
-            <h2 id="daily-wear-products-heading" className="font-serif text-3xl text-[#17382D] sm:text-4xl">Everyday Elegance</h2>
-            <p className="mt-2 max-w-xl text-sm text-[#716D64]">Discover lightweight jewellery designed to make every day special.</p>
+            <p className="mb-1 sm:mb-2 text-[9px] sm:text-[10px] font-semibold uppercase tracking-[.20em] sm:tracking-[.24em] text-[#9B8050]">Comfortable, considered designs</p>
+            <h2 id="daily-wear-products-heading" className="font-serif text-2xl sm:text-3xl md:text-4xl text-[#17382D]">Everyday Elegance</h2>
+            <p className="mt-1 sm:mt-2 max-w-xl text-xs sm:text-sm text-[#716D64]">Discover lightweight jewellery designed to make every day special.</p>
           </div>
-          {showViewAll && <Link href="/daily-wear" className="inline-flex w-fit border border-[#7D2934] px-5 py-3 text-[10px] uppercase tracking-[.18em] text-[#7D2934] transition-colors hover:bg-[#7D2934] hover:text-white">View All Daily Wear</Link>}
+          {showViewAll && <Link href="/daily-wear" className="inline-flex w-fit border border-[#7D2934] px-4 sm:px-5 py-2.5 sm:py-3 text-[9px] sm:text-[10px] uppercase tracking-[.18em] text-[#7D2934] transition-colors hover:bg-[#7D2934] hover:text-white">View All Daily Wear</Link>}
         </header>
 
-        {showFilters && <div className="mb-6 grid grid-cols-1 gap-3 rounded-sm border border-[#E6DFD3] bg-white p-4 sm:grid-cols-2 lg:grid-cols-5">
+        {showFilters && <div className="mb-6 grid grid-cols-1 gap-2.5 sm:gap-3 rounded-sm border border-[#E6DFD3] bg-white p-3 sm:p-4 sm:grid-cols-2 lg:grid-cols-5">
           <label className="text-[10px] font-semibold uppercase tracking-wider text-[#826D43]">Category<select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 block w-full border border-[#D6CBB8] p-2 text-xs normal-case tracking-normal text-[#292923]"><option value="all">All categories</option>{CATEGORIES.map((item) => <option key={item}>{item}</option>)}</select></label>
           <label className="text-[10px] font-semibold uppercase tracking-wider text-[#826D43]">Metal<select value={metal} onChange={(e) => setMetal(e.target.value)} className="mt-1 block w-full border border-[#D6CBB8] p-2 text-xs normal-case tracking-normal text-[#292923]"><option value="all">All metals</option>{METALS.map((item) => <option key={item}>{item}</option>)}</select></label>
           <label className="text-[10px] font-semibold uppercase tracking-wider text-[#826D43]">Price<select value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className="mt-1 block w-full border border-[#D6CBB8] p-2 text-xs normal-case tracking-normal text-[#292923]"><option value="all">All prices</option><option value="under5000">Under ₹5,000</option><option value="5000-10000">₹5,000 – ₹10,000</option><option value="10000-20000">₹10,000 – ₹20,000</option><option value="above20000">Above ₹20,000</option></select></label>
@@ -67,11 +67,11 @@ export default function DailyWearProducts({ showFilters = false, showViewAll = f
           <label className="text-[10px] font-semibold uppercase tracking-wider text-[#826D43]">Search<span className="relative mt-1 block"><Search className="absolute left-2 top-2 h-4 w-4 text-[#9B8050]"/><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search jewellery" className="w-full border border-[#D6CBB8] py-2 pl-8 pr-2 text-xs normal-case tracking-normal text-[#292923]"/></span></label>
         </div>}
 
-        {isLoading && <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: showFilters ? 8 : 4 }, (_, i) => <div key={i} className="aspect-[3/4] animate-pulse bg-[#EEE7DC]" />)}</div>}
-        {isError && !isLoading && <p className="border border-[#E6DFD3] bg-white p-8 text-center text-sm text-[#716D64]">The Daily Wear collection is temporarily unavailable.</p>}
+        {isLoading && <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: showFilters ? 8 : 4 }, (_, i) => <div key={i} className="aspect-[3/4] animate-pulse bg-[#EEE7DC]" />)}</div>}
+        {isError && !isLoading && <p className="border border-[#E6DFD3] bg-white p-6 sm:p-8 text-center text-xs sm:text-sm text-[#716D64]">The Daily Wear collection is temporarily unavailable.</p>}
         {!isLoading && !isError && products.length > 0 && <>
-          <p className="mb-4 text-xs text-[#716D64]">Showing {products.length} designs</p>
-          <div className="grid grid-cols-2 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{products.map((product) => <ProductCard key={product._id} product={product} />)}</div>
+          <p className="mb-3 sm:mb-4 text-xs text-[#716D64]">Showing {products.length} designs</p>
+          <div className="grid grid-cols-2 items-stretch gap-2.5 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">{products.map((product) => <ProductCard key={product._id} product={product} />)}</div>
         </>}
         {!isLoading && !isError && products.length === 0 && <div className="border border-[#E6DFD3] bg-white p-10 text-center"><h3 className="font-serif text-xl text-[#17382D]">No designs found</h3><p className="mt-2 text-sm text-[#716D64]">Try another category, metal or search.</p><button type="button" onClick={() => { setCategory('all'); setMetal('all'); setPriceRange('all'); setSort('recommended'); setSearch(''); }} className="mt-4 text-xs uppercase tracking-wider text-[#7D2934] underline">Reset filters</button></div>}
       </div>

@@ -38,25 +38,24 @@ const BridalRibbons = dynamic(() => import('./BridalRibbons'), { ssr: false });
 const CAMPAIGN_SLIDES = [
   {
     id: 1,
-    tag: 'GRAND HERITAGE COLLECTION',
+    layout: 'fullbleed',
+    tag: 'THE WEDDING COLLECTION',
     badge: 'A RISHI LAL SIGNATURE',
-    headline: 'Elegance That Lasts Forever',
-    subtext: 'Masterfully hand-forged in 22KT hallmarked gold. Heirloom designs sculpted to celebrate life’s grandest milestones.',
-    cta: 'Explore Collection',
-    ctaLink: '/products',
-    theme: 'gold', // Champagne Gold (#C2AA6A) + Warm Beige (#F8F5EF) + Royal Ruby (#8B1E2D)
-    bgGradient: 'from-[#4A0B13] via-[#731422] to-[#8B1E2D]',
-    cardBorder: 'border-[#C2AA6A]/35',
+    headline: 'A Beautiful Beginning',
+    subtext: 'Discover exquisite bridal jewellery crafted to make your most special moments unforgettable.',
+    cta: 'Explore Wedding Collection',
+    ctaLink: '/wedding',
+    theme: 'bridal-hero',
+    bgGradient: 'from-[#2D1A10] via-[#3E2318] to-[#1A0F0A]',
+    ambientOverlay: 'bg-gradient-to-r from-[#200A10]/50 via-transparent to-[#200A10]/50',
+    cardBorder: 'border-[#C2AA6A]/30',
     tagColor: 'text-[#C2AA6A]',
     titleColor: 'text-[#FFFFFF]',
     subtextColor: 'text-[#F8F5EF]/90',
     ctaClass: 'bg-[#C2AA6A] hover:bg-[#D8C596] text-[#4A0B13] font-semibold shadow-gold-glow',
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1600&q=85',
-    imageAlt: 'Model adorned in 22KT gold temple jhumkas and artisanal jewelry',
-    features: [
-      { icon: ShieldCheck, text: '100% BIS Hallmarked (HUID)' },
-      { icon: Award, text: 'Zero Hidden Charges' },
-    ],
+    image: '/images/banners/wedding-homepage-hero.jpg',
+    imageAlt: 'Rishi Lal Jewellers Wedding Collection - Exquisite bridal jewellery crafted to make your most special moments unforgettable',
+    features: [],
   },
   {
     id: 2,
@@ -82,24 +81,27 @@ const CAMPAIGN_SLIDES = [
   },
   {
     id: 3,
-    tag: 'THE ROYAL WEDDING PAVILION',
-    badge: 'HAUTE BRIDAL EDITIONS',
-    headline: 'Made for Your Forever',
-    subtext: 'Imperial jadau chokers, syndicate polki collars, and Tanjore temple sets crafted for the Indian bride’s eternal promise.',
-    cta: 'Discover Bridal',
-    ctaLink: '/wedding',
-    theme: 'bridal', // Dusty Rose (#DEB1A8) + Deep Velvet Crimson (#4A0B13) + Gold (#C2AA6A)
-    bgGradient: 'from-[#2D050B] via-[#731422] to-[#4A0B13]',
-    cardBorder: 'border-[#DEB1A8]/30',
-    tagColor: 'text-[#DEB1A8]',
+    layout: 'fullbleed',
+    tag: 'EVERYDAY ELEGANCE',
+    badge: 'A RISHI LAL SIGNATURE',
+    headline: 'Timeless Jewellery for Every Occasion',
+    subtext: 'Discover a curated collection of gold, diamond and precious jewellery for life’s special moments.',
+    cta: 'Explore Collections',
+    ctaLink: '/products',
+    theme: 'everyday-elegance',
+    bgGradient: 'from-[#04150D] via-[#022013] to-[#1F170B]',
+    ambientOverlay: 'bg-gradient-to-r from-[#04150D]/80 via-transparent to-[#1F170B]/70',
+    cardBorder: 'border-[#C2AA6A]/35',
+    tagColor: 'text-[#C2AA6A]',
     titleColor: 'text-[#FFFFFF]',
-    subtextColor: 'text-[#FAF2F0]/90',
-    ctaClass: 'bg-[#C2AA6A] hover:bg-[#D8C596] text-[#4A0B13] font-semibold shadow-gold-glow',
-    image: '/images/categories/bridal.jpg',
-    imageAlt: 'Indian bridal trousseau featuring uncut polki diamonds and Zambian emerald choker',
+    subtextColor: 'text-[#F8F5EF]/90',
+    ctaClass: 'bg-[#C2AA6A] hover:bg-[#D8C596] text-[#0B2014] font-semibold shadow-gold-glow',
+    image: '/images/banners/everyday-elegance-banner.jpg',
+    imageAlt: 'Everyday Elegance - Timeless Jewellery for Every Occasion by Rishi Lal Jewellers',
     features: [
-      { icon: Award, text: 'Bespoke Trousseau Consultation' },
-      { icon: Truck, text: 'Armored Insured Delivery' },
+      { icon: Award, text: 'Certified Purity' },
+      { icon: ShieldCheck, text: 'Trusted Since Years' },
+      { icon: Truck, text: 'Secure Delivery' },
     ],
   },
   {
@@ -299,49 +301,92 @@ export default function HeroCarousel() {
                     }
                   `}
                   style={{
-                    // Cinematic aspect ratio matching luxury retail banners (approx 2.4:1 on desktop)
                     minHeight: '340px',
                   }}
                 >
+                  {/* ═══════ FULLBLEED EDITORIAL BANNER LAYOUT (slides 1, 3) ═══════ */}
+                  {slide.layout === 'fullbleed' ? (
+                    <Link
+                      href={slide.ctaLink}
+                      className="block relative w-full h-[340px] sm:h-[380px] md:h-[420px] lg:h-[460px] cursor-pointer group overflow-hidden"
+                      aria-label={slide.cta || 'Explore Collections'}
+                    >
+                      {/* Ambient luxury backdrop that fills the entire card container with matching tone */}
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                        <Image
+                          src={slide.image}
+                          alt=""
+                          fill
+                          priority={index === 0}
+                          className="object-cover object-center blur-2xl scale-110 opacity-70 brightness-95"
+                          unoptimized
+                        />
+                        <div className={`absolute inset-0 ${slide.ambientOverlay || 'bg-gradient-to-r from-[#200A10]/50 via-transparent to-[#200A10]/50'}`} />
+                        <div className="absolute inset-0 bg-black/10" />
+                      </div>
+
+                      {/* Main sharp, pixel-perfect bridal banner image with zero distortion and zero cut-off */}
+                      <div className="relative z-10 w-full h-full flex items-center justify-center">
+                        <Image
+                          src={slide.image}
+                          alt={slide.imageAlt}
+                          fill
+                          priority={index === 0}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1400px"
+                          quality={100}
+                          className={`
+                            object-contain object-center
+                            transition-transform duration-[1.2s] ease-out
+                            ${isActive ? 'scale-100' : 'scale-[0.99]'}
+                          `}
+                          unoptimized
+                        />
+                      </div>
+
+                      {/* Subtle golden shimmer hover border accent */}
+                      <div className="absolute inset-0 border border-[#C2AA6A]/20 rounded-xl sm:rounded-2xl lg:rounded-3xl pointer-events-none group-hover:border-[#C2AA6A]/50 transition-colors duration-500" />
+                    </Link>
+                  ) : (
+                  /* ═══════ ORIGINAL SPLIT LAYOUT (slides 2–6) ═══════ */
                   <div className="flex flex-col md:flex-row items-stretch min-h-[340px] sm:min-h-[380px] md:min-h-[420px] lg:min-h-[460px]">
                     {/* ──────────────────────────────────────────────────
                         LEFT / CONTENT COLUMN (Editorial Copy & CTAs)
                     ────────────────────────────────────────────────── */}
-                    <div className="relative z-10 flex flex-col justify-between w-full md:w-[48%] lg:w-[45%] p-6 sm:p-8 md:p-10 lg:p-12 text-ivory-50">
+                    <div className="relative z-10 flex flex-col justify-between w-full md:w-[48%] lg:w-[45%] p-4 sm:p-6 md:p-10 lg:p-12 text-ivory-50">
                       <div>
                         {/* Top Badge (Tanishq 'A Tata Product' inspired luxury mark) */}
-                        <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <div className="flex items-center gap-2 mb-2 sm:mb-4">
                           <span className="w-1.5 h-1.5 rotate-45 bg-gold-400 inline-block" />
-                          <span className="font-sans text-[10px] sm:text-xs uppercase tracking-[0.28em] font-semibold text-gold-300">
+                          <span className="font-sans text-[10px] sm:text-xs uppercase tracking-[0.22em] sm:tracking-[0.28em] font-semibold text-gold-300">
                             {slide.badge}
                           </span>
                         </div>
 
                         {/* Campaign Subtitle Tag */}
-                        <p className={`font-sans text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] mb-2 ${slide.tagColor}`}>
+                        <p className={`font-sans text-[10px] sm:text-xs font-bold uppercase tracking-[0.16em] sm:tracking-[0.2em] mb-1.5 sm:mb-2 ${slide.tagColor}`}>
                           {slide.tag}
                         </p>
 
                         {/* Grand Editorial Headline */}
-                        <h2 className={`font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal leading-[1.08] tracking-tight ${slide.titleColor}`}>
+                        <h2 className={`font-serif text-xl sm:text-2xl md:text-3xl lg:text-5xl font-normal leading-tight md:leading-[1.08] tracking-tight ${slide.titleColor}`}>
                           {slide.headline}
                         </h2>
 
                         {/* Thin Gold Dividing Accent */}
-                        <div className="w-12 sm:w-16 h-0.5 bg-gradient-to-r from-gold-400 to-transparent my-3 sm:my-4" />
+                        <div className="w-10 sm:w-16 h-0.5 bg-gradient-to-r from-gold-400 to-transparent my-2.5 sm:my-4" />
 
                         {/* Subtext description */}
-                        <p className={`font-sans text-xs sm:text-sm font-light leading-relaxed max-w-md ${slide.subtextColor}`}>
+                        <p className={`font-sans text-[11px] sm:text-xs md:text-sm font-light leading-relaxed max-w-md ${slide.subtextColor}`}>
                           {slide.subtext}
                         </p>
 
                         {/* Call to Action Button */}
-                        <div className="mt-5 sm:mt-6 lg:mt-8 flex items-center gap-4">
+                        <div className="mt-4 sm:mt-6 lg:mt-8 flex items-center gap-4">
                           <Link
                             href={slide.ctaLink}
                             className={`
-                              inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-3.5
-                              text-xs uppercase tracking-[0.2em] font-bold rounded-full
+                              inline-flex items-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3.5
+                              text-[11px] sm:text-xs uppercase tracking-[0.16em] sm:tracking-[0.2em] font-bold rounded-full
                               transition-all duration-300 group
                               ${slide.ctaClass}
                             `}
@@ -405,6 +450,7 @@ export default function HeroCarousel() {
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
               </div>
             );
@@ -412,14 +458,14 @@ export default function HeroCarousel() {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            PREVIOUS & NEXT ARROWS (Frosted Glass Floating Circles)
+            PREVIOUS & NEXT ARROWS (Desktop & Tablet — Mobile uses Touch Swipe)
         ═══════════════════════════════════════════════════════════════════ */}
         <button
           onClick={goPrev}
           className="
             absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 z-20
             w-10 h-10 sm:w-12 sm:h-12
-            flex items-center justify-center
+            hidden md:flex items-center justify-center
             bg-white/90 hover:bg-white text-[#4A0B13] hover:text-[#C2AA6A]
             backdrop-blur-md rounded-full shadow-lg hover:shadow-xl
             border border-[#C2AA6A]/40
@@ -436,7 +482,7 @@ export default function HeroCarousel() {
           className="
             absolute right-2 sm:right-4 md:right-8 top-1/2 -translate-y-1/2 z-20
             w-10 h-10 sm:w-12 sm:h-12
-            flex items-center justify-center
+            hidden md:flex items-center justify-center
             bg-white/90 hover:bg-white text-[#4A0B13] hover:text-[#C2AA6A]
             backdrop-blur-md rounded-full shadow-lg hover:shadow-xl
             border border-[#C2AA6A]/40
@@ -570,6 +616,15 @@ export default function HeroCarousel() {
           animation-name: carouselProgress;
           animation-timing-function: linear;
           animation-fill-mode: forwards;
+        }
+
+        /* Accessibility: Respect reduced-motion preference */
+        @media (prefers-reduced-motion: reduce) {
+          .carousel-slide,
+          .animate-carousel-progress {
+            animation: none !important;
+            transition: none !important;
+          }
         }
       `}</style>
     </section>

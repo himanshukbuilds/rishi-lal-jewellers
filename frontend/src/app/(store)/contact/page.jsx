@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle2, MessageSquare } from 'lucide-react';
 import { BRAND_CONFIG } from '@/config/brandConfig';
+import VisitOurStoreSection from '@/components/store/VisitOurStoreSection';
 
 const contactSchema = z.object({
   fullName: z.string().min(2, 'Please enter your name'),
@@ -51,6 +52,10 @@ export default function ContactPage() {
         </div>
       </div>
 
+      {/* Experience the Elegance – Visit Our Store Section */}
+      <VisitOurStoreSection />
+
+      {/* Contact Details & Inquiry Section */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left: Contact Info & Boutique Hours */}
@@ -67,30 +72,76 @@ export default function ContactPage() {
             <div className="space-y-4">
               <div className="flex items-start gap-3.5 p-4 bg-white rounded-sm border border-gold-200">
                 <MapPin className="w-5 h-5 text-gold-700 shrink-0 mt-0.5" />
-                <div>
+                <div className="flex-1">
                   <h4 className="font-serif font-semibold text-emerald-950 text-sm">Boutique Address</h4>
                   <p className="text-charcoal-600 mt-1 leading-relaxed">
-                    {BRAND_CONFIG.flagshipStore.addressLine1}, {BRAND_CONFIG.flagshipStore.addressLine2}, {BRAND_CONFIG.flagshipStore.city}, {BRAND_CONFIG.flagshipStore.state} - {BRAND_CONFIG.flagshipStore.postalCode}
+                    {BRAND_CONFIG.flagshipStore.formattedAddress}
                   </p>
+                  <a
+                    href={BRAND_CONFIG.flagshipStore.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 mt-2.5 text-xs font-semibold text-[#8B1E2D] hover:text-[#4A0B13] transition-colors underline underline-offset-4"
+                  >
+                    <span>Open in Google Maps</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5 p-4 bg-white rounded-sm border border-gold-200">
                 <Phone className="w-5 h-5 text-gold-700 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-serif font-semibold text-emerald-950 text-sm">Concierge Hotline & WhatsApp</h4>
-                  <p className="text-charcoal-600 mt-1">Direct: {BRAND_CONFIG.contact.phone}</p>
-                  <p className="text-charcoal-600">Toll-Free India: {BRAND_CONFIG.contact.tollFree}</p>
-                  <p className="text-emerald-800 font-medium mt-1">WhatsApp Concierge: {BRAND_CONFIG.contact.whatsapp}</p>
+                <div className="flex-1">
+                  <h4 className="font-serif font-semibold text-emerald-950 text-sm">Direct Contact Numbers</h4>
+                  <div className="mt-1 space-y-1">
+                    <p className="text-charcoal-600">
+                      Primary:{' '}
+                      <a
+                        href={`tel:${BRAND_CONFIG.contact.phoneRaw}`}
+                        className="text-emerald-950 font-semibold hover:text-[#8B1E2D] transition-colors underline underline-offset-2"
+                      >
+                        {BRAND_CONFIG.contact.phone}
+                      </a>
+                    </p>
+                    <p className="text-charcoal-600">
+                      Secondary:{' '}
+                      <a
+                        href={`tel:${BRAND_CONFIG.contact.phoneSecondaryRaw}`}
+                        className="text-emerald-950 font-semibold hover:text-[#8B1E2D] transition-colors underline underline-offset-2"
+                      >
+                        {BRAND_CONFIG.contact.phoneSecondary}
+                      </a>
+                    </p>
+                    <p className="text-emerald-800 font-medium pt-1">
+                      WhatsApp Concierge:{' '}
+                      <a
+                        href={`https://wa.me/91${BRAND_CONFIG.contact.whatsappRaw}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline font-semibold"
+                      >
+                        {BRAND_CONFIG.contact.whatsapp}
+                      </a>
+                    </p>
+                  </div>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5 p-4 bg-white rounded-sm border border-gold-200">
                 <Mail className="w-5 h-5 text-gold-700 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-serif font-semibold text-emerald-950 text-sm">Electronic Correspondence</h4>
-                  <p className="text-charcoal-600 mt-1">Concierge: {BRAND_CONFIG.contact.email}</p>
-                  <p className="text-charcoal-600">Client Care: {BRAND_CONFIG.contact.supportEmail}</p>
+                <div className="flex-1">
+                  <h4 className="font-serif font-semibold text-emerald-950 text-sm">Official Email</h4>
+                  <div className="mt-1 space-y-1">
+                    <p className="text-charcoal-600">
+                      Concierge &amp; Orders:{' '}
+                      <a
+                        href={`mailto:${BRAND_CONFIG.contact.email}`}
+                        className="text-emerald-950 font-semibold hover:text-[#8B1E2D] transition-colors underline underline-offset-2"
+                      >
+                        {BRAND_CONFIG.contact.email}
+                      </a>
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -99,7 +150,7 @@ export default function ContactPage() {
                 <div>
                   <h4 className="font-serif font-semibold text-emerald-950 text-sm">Salon Hours</h4>
                   <p className="text-charcoal-600 mt-1">{BRAND_CONFIG.contact.hours}</p>
-                  <p className="text-gold-700 mt-0.5 italic">Private salon visits available by prior appointment.</p>
+                  <p className="text-gold-700 mt-0.5 italic">Visit our boutique for bespoke bridal jewellery consultations.</p>
                 </div>
               </div>
             </div>
@@ -210,6 +261,46 @@ export default function ContactPage() {
                 </button>
               </form>
             )}
+          </div>
+        </div>
+
+        {/* Interactive Google Map Section */}
+        <div className="mt-16 bg-white p-6 sm:p-8 rounded-sm border border-gold-300 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <span className="text-gold-700 font-bold uppercase tracking-widest text-[11px] block mb-1">
+                Store Location & Directions
+              </span>
+              <h3 className="font-serif text-2xl font-semibold text-emerald-950">
+                Visit Rishi Lal Jewellers
+              </h3>
+              <p className="text-xs text-charcoal-600 font-sans mt-1">
+                {BRAND_CONFIG.flagshipStore.formattedAddress}
+              </p>
+            </div>
+            <a
+              href={BRAND_CONFIG.flagshipStore.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#8B1E2D] hover:bg-[#4A0B13] text-white text-xs uppercase tracking-wider font-semibold rounded-sm transition-colors shrink-0 shadow-sm"
+            >
+              <MapPin className="w-4 h-4 text-gold-300" />
+              <span>Get Directions</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+
+          <div className="w-full h-80 sm:h-96 rounded-sm overflow-hidden border border-gold-200 bg-ivory-100 relative shadow-inner">
+            <iframe
+              title="Rishi Lal Jewellers Google Maps Location"
+              src={BRAND_CONFIG.flagshipStore.mapsEmbedUrl}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
           </div>
         </div>
       </div>

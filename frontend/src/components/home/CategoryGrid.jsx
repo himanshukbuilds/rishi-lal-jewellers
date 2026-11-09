@@ -10,7 +10,7 @@ const leftColumnCategories = [
     slug: 'bridal',
     image: '/images/categories/bridal.jpg',
     alt: 'Bridal jewellery collection',
-    heightClass: 'h-[320px] sm:h-[380px] lg:h-[420px]',
+    heightClass: 'h-[220px] sm:h-[320px] md:h-[380px] lg:h-[420px]',
     objectPosition: 'object-[center_20%]',
     priority: true,
   },
@@ -19,7 +19,7 @@ const leftColumnCategories = [
     slug: 'traditional',
     image: '/images/categories/traditional.jpg',
     alt: 'Traditional Indian jewellery collection',
-    heightClass: 'h-[400px] sm:h-[460px] lg:h-[540px]',
+    heightClass: 'h-[260px] sm:h-[380px] md:h-[460px] lg:h-[540px]',
     objectPosition: 'object-[center_20%]',
     priority: false,
   },
@@ -31,7 +31,7 @@ const rightColumnCategories = [
     slug: 'daily-wear',
     image: '/images/categories/daily-wear.jpg',
     alt: 'Casual and daily wear jewellery collection',
-    heightClass: 'h-[400px] sm:h-[460px] lg:h-[540px]',
+    heightClass: 'h-[260px] sm:h-[380px] md:h-[460px] lg:h-[540px]',
     objectPosition: 'object-[center_20%]',
     priority: true,
   },
@@ -40,7 +40,7 @@ const rightColumnCategories = [
     slug: 'ethnic',
     image: '/images/categories/ethnic.png',
     alt: 'Ethnic and festive jewellery collection',
-    heightClass: 'h-[320px] sm:h-[380px] lg:h-[420px]',
+    heightClass: 'h-[220px] sm:h-[320px] md:h-[380px] lg:h-[420px]',
     objectPosition: 'object-[center_25%]',
     priority: false,
   },
@@ -82,8 +82,8 @@ function CategoryCard({ category }) {
       />
 
       {/* Centered serif category title positioned cleanly in the bottom vignette */}
-      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center justify-end px-4 pb-5 pt-0 text-center sm:pb-6 lg:pb-7">
-        <h3 className="font-serif text-2xl font-normal tracking-wide text-white drop-shadow-md transition-transform duration-300 group-hover:-translate-y-1 sm:text-3xl lg:text-4xl">
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center justify-end px-3 pb-4 pt-0 text-center sm:px-4 sm:pb-6 lg:pb-7">
+        <h3 className="font-serif text-xl font-normal tracking-wide text-white drop-shadow-md transition-transform duration-300 group-hover:-translate-y-1 sm:text-3xl lg:text-4xl">
           {category.name}
         </h3>
       </div>

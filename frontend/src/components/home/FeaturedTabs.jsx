@@ -40,12 +40,12 @@ export default function FeaturedTabs() {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center justify-center gap-2 sm:gap-4 overflow-x-auto pb-4 mb-10 no-scrollbar">
+        <div className="flex items-center justify-start sm:justify-center gap-2 sm:gap-4 overflow-x-auto pb-3 mb-8 sm:mb-10 px-1 sm:px-0 no-scrollbar">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-2.5 rounded-full text-xs font-sans uppercase tracking-[0.15em] font-semibold transition-all whitespace-nowrap ${
+              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-xs font-sans uppercase tracking-[0.12em] sm:tracking-[0.15em] font-semibold transition-all whitespace-nowrap shrink-0 ${
                 activeTab === tab.id
                   ? 'bg-[#8B1E2D] text-white shadow-xs border border-[#C2AA6A]/40'
                   : 'bg-[#F8F5EF] text-[#454545] hover:bg-[#F4EEDB] hover:text-[#4A0B13]'
@@ -58,7 +58,7 @@ export default function FeaturedTabs() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse bg-[#F8F5EF] rounded-sm aspect-[3/4] border border-[#E6DFD3]" />
             ))}
@@ -67,7 +67,7 @@ export default function FeaturedTabs() {
 
         {/* Products Grid */}
         {!isLoading && currentProducts.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6">
             {currentProducts.slice(0, 8).map((product) => (
               <ProductCard key={product._id} product={product} />
             ))}

@@ -1,12 +1,12 @@
 import React from 'react';
-import BridalCollectionPage from '@/components/bridal/BridalCollectionPage';
+import WeddingBookExperience from '@/components/wedding/WeddingBookExperience';
 
 export const metadata = {
-  title: 'Royal Wedding Collection | Rishi Lal Jewellers',
-  description: 'Celebrate your forever with exquisite royal wedding jewellery, handcrafted bridal gold necklaces, wedding earrings, royal bangles, and bridal sets.',
+  title: 'The Wedding Book Collection | Seven Royal Bridal Traditions | Rishi Lal Jewellers',
+  description:
+    'Experience our interactive luxury wedding album. Discover 7 royal Indian bridal traditions — Rajasthani, Punjabi, Marathi, Bengali, Telugu, Tamil, and Metro brides with bespoke 22KT gold & polki heirlooms.',
 };
 
 export default function WeddingPage() {
-  return <BridalCollectionPage />;
+  return <WeddingBookExperience />;
 }
-

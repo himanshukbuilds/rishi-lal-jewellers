@@ -159,13 +159,13 @@ function ProductsCatalogContent() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Controls Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-gold-200">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-5 sm:pb-6 mb-5 sm:mb-6 border-b border-gold-200">
+          <div className="flex items-center justify-between sm:justify-start gap-3">
             <button
               onClick={() => setMobileFiltersOpen(true)}
-              className="lg:hidden px-4 py-2 bg-white border border-gold-300 rounded-sm text-xs font-sans uppercase tracking-wider font-medium text-emerald-950 flex items-center gap-2 shadow-sm"
+              className="lg:hidden px-3.5 py-2 bg-white border border-gold-300 rounded-sm text-xs font-sans uppercase tracking-wider font-medium text-emerald-950 flex items-center gap-2 shadow-sm"
             >
               <SlidersHorizontal className="w-3.5 h-3.5 text-gold-700" />
               <span>Filters</span>
@@ -176,9 +176,9 @@ function ProductsCatalogContent() {
           </div>
 
           {/* Search & Sort Controls */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Live Search */}
-            <div className="relative w-48 sm:w-64">
+            <div className="relative flex-1 sm:w-64 sm:flex-initial">
               <input
                 type="text"
                 placeholder="Search jewelry..."
@@ -198,7 +198,7 @@ function ProductsCatalogContent() {
             </div>
 
             {/* Sort Dropdown */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
@@ -348,7 +348,7 @@ function ProductsCatalogContent() {
           <main className="lg:col-span-3">
             {/* Loading State */}
             {isLoading && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
                 {[1, 2, 3, 4, 5, 6].map((n) => (
                   <div
                     key={n}
@@ -396,7 +396,7 @@ function ProductsCatalogContent() {
 
             {/* Product Grid */}
             {!isLoading && products.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
                 {products.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))}
@@ -410,7 +410,7 @@ function ProductsCatalogContent() {
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/60" onClick={() => setMobileFiltersOpen(false)} />
-          <div className="fixed inset-y-0 right-0 w-4/5 max-w-sm bg-white shadow-2xl p-6 overflow-y-auto space-y-6 z-50">
+          <div className="fixed inset-y-0 right-0 w-full sm:w-4/5 max-w-sm bg-white shadow-2xl p-4 sm:p-6 overflow-y-auto space-y-6 z-50">
             <div className="flex items-center justify-between pb-4 border-b border-gold-200">
               <h3 className="font-serif text-lg font-semibold text-emerald-950">Filters</h3>
               <button onClick={() => setMobileFiltersOpen(false)} className="p-1 text-charcoal-500">

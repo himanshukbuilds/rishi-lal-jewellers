@@ -32,13 +32,13 @@ export default function CartDrawer() {
         aria-hidden="true"
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
         <div className="w-screen max-w-md bg-ivory-50 shadow-2xl flex flex-col border-l border-gold-300/40">
           {/* Header */}
-          <div className="p-6 bg-emerald-950 text-ivory-50 flex items-center justify-between border-b border-gold-400/30">
+          <div className="p-4 sm:p-6 bg-emerald-950 text-ivory-50 flex items-center justify-between border-b border-gold-400/30">
             <div className="flex items-center gap-3">
               <ShoppingBag className="w-5 h-5 text-gold-400" />
-              <h2 className="font-serif text-xl tracking-wide font-medium">Your Shopping Bag</h2>
+              <h2 className="font-serif text-lg sm:text-xl tracking-wide font-medium">Your Shopping Bag</h2>
               <span className="text-xs px-2 py-0.5 rounded-full bg-gold-400/20 text-gold-300 font-sans">
                 {itemCount} {itemCount === 1 ? 'item' : 'items'}
               </span>
@@ -53,13 +53,13 @@ export default function CartDrawer() {
           </div>
 
           {/* Insured Shipping Progress Bar */}
-          <div className="bg-emerald-900/40 px-6 py-2.5 flex items-center gap-2 text-xs text-gold-300 border-b border-gold-400/20">
+          <div className="bg-emerald-900/40 px-4 sm:px-6 py-2 sm:py-2.5 flex items-center gap-2 text-xs text-gold-300 border-b border-gold-400/20">
             <ShieldCheck className="w-4 h-4 text-gold-400 shrink-0" />
             <span>100% Insured Armored Transit included with your order</span>
           </div>
 
           {/* Item List */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-3 sm:space-y-4">
             {cartItems.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-12">
                 <div className="w-20 h-20 rounded-full bg-ivory-200/80 flex items-center justify-center text-gold-700 mb-4 border border-gold-300/40">
@@ -155,7 +155,7 @@ export default function CartDrawer() {
 
           {/* Footer Summary */}
           {cartItems.length > 0 && (
-            <div className="p-6 bg-white border-t border-gold-300/40 space-y-3">
+            <div className="p-4 sm:p-6 bg-white border-t border-gold-300/40 space-y-3">
               <div className="space-y-1.5 text-xs text-charcoal-600">
                 <div className="flex justify-between">
                   <span>Subtotal</span>

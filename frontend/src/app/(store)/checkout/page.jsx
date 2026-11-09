@@ -315,8 +315,8 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="bg-ivory-50 min-h-screen py-10 sm:py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="bg-ivory-50 min-h-screen py-8 sm:py-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {/* Title */}
         <div className="text-center max-w-xl mx-auto mb-10">
           <p className="font-sans text-xs uppercase tracking-[0.25em] text-gold-700 font-semibold mb-1">
@@ -340,7 +340,7 @@ export default function CheckoutPage() {
             {/* Left 2 Columns: Shipping & Payment Details */}
             <div className="lg:col-span-2 space-y-8">
               {/* Step 1: Contact Information */}
-              <div className="bg-white p-6 rounded-sm border border-gold-300/50 shadow-sm space-y-4">
+              <div className="bg-white p-4 sm:p-6 rounded-sm border border-gold-300/50 shadow-sm space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-gold-200">
                   <h2 className="font-serif text-lg font-semibold text-emerald-950 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-emerald-950 text-gold-300 text-xs flex items-center justify-center font-sans font-bold">
@@ -410,7 +410,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Step 2: Shipping Destination */}
-              <div className="bg-white p-6 rounded-sm border border-gold-300/50 shadow-sm space-y-4">
+              <div className="bg-white p-4 sm:p-6 rounded-sm border border-gold-300/50 shadow-sm space-y-4">
                 <div className="pb-3 border-b border-gold-200">
                   <h2 className="font-serif text-lg font-semibold text-emerald-950 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-emerald-950 text-gold-300 text-xs flex items-center justify-center font-sans font-bold">
@@ -428,7 +428,7 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       {...register('street')}
-                      placeholder="e.g. 42 Heritage Manor, Colaba Causeway"
+                      placeholder="e.g. 42 Heritage Manor, Main Road"
                       className="w-full px-3 py-2 text-xs border border-gold-300 rounded-sm focus:outline-none focus:border-gold-600 text-emerald-950 font-sans"
                     />
                     {errors.street && (
@@ -501,7 +501,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Step 3: Payment Method */}
-              <div className="bg-white p-6 rounded-sm border border-gold-300/50 shadow-sm space-y-4">
+              <div className="bg-white p-4 sm:p-6 rounded-sm border border-gold-300/50 shadow-sm space-y-4">
                 <div className="pb-3 border-b border-gold-200">
                   <h2 className="font-serif text-lg font-semibold text-emerald-950 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-emerald-950 text-gold-300 text-xs flex items-center justify-center font-sans font-bold">
@@ -607,7 +607,7 @@ export default function CheckoutPage() {
 
             {/* Right Column: Order Review & Placement */}
             <div className="space-y-6">
-              <div className="bg-white p-6 rounded-sm border border-gold-300/50 shadow-sm space-y-4">
+              <div className="bg-white p-4 sm:p-6 rounded-sm border border-gold-300/50 shadow-sm space-y-4">
                 <h3 className="font-serif text-lg font-semibold text-emerald-950 pb-3 border-b border-gold-200">
                   Review Shopping Bag ({cartItems.length})
                 </h3>

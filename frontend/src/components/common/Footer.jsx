@@ -52,7 +52,7 @@ export default function Footer() {
   return (
     <footer className="bg-emerald-950 text-ivory-100 border-t border-gold-400/30 font-sans">
       {/* 1. Trust Pillars Showcase */}
-      <div className="border-b border-gold-400/20 bg-emerald-900/40 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="border-b border-gold-400/20 bg-emerald-900/40 py-6 sm:py-8 px-3 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="flex items-start gap-3.5">
             <div className="p-2.5 rounded-full bg-emerald-950 border border-gold-400/30 text-gold-400 shrink-0">
@@ -113,8 +113,8 @@ export default function Footer() {
       </div>
 
       {/* 2. Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-10">
           {/* Brand Column (2 spans on lg) */}
           <div className="lg:col-span-2 space-y-4">
             <BrandLogo variant="light" size="lg" />
@@ -123,18 +123,46 @@ export default function Footer() {
               Rishi Lal Jewellers crafts rare heirlooms in 22KT hallmarked gold and certified solitaires for life’s grandest celebrations.
             </p>
 
-            <div className="pt-2 space-y-2 text-xs text-ivory-300/80">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-gold-400 shrink-0" />
-                <span>{BRAND_CONFIG.flagshipStore.name}, {BRAND_CONFIG.flagshipStore.city}</span>
+            <div className="pt-2 space-y-2.5 text-xs text-ivory-300/80">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
+                <a
+                  href={BRAND_CONFIG.flagshipStore.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-gold-300 transition-colors leading-relaxed"
+                  title="View on Google Maps"
+                >
+                  {BRAND_CONFIG.flagshipStore.formattedAddress}
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-gold-400 shrink-0" />
-                <span>Concierge: {BRAND_CONFIG.contact.phone}</span>
+                <span>
+                  Concierge:{' '}
+                  <a
+                    href={`tel:${BRAND_CONFIG.contact.phoneRaw}`}
+                    className="hover:text-gold-300 transition-colors font-medium text-ivory-100"
+                  >
+                    {BRAND_CONFIG.contact.phone}
+                  </a>
+                  {' / '}
+                  <a
+                    href={`tel:${BRAND_CONFIG.contact.phoneSecondaryRaw}`}
+                    className="hover:text-gold-300 transition-colors font-medium text-ivory-100"
+                  >
+                    {BRAND_CONFIG.contact.phoneSecondary}
+                  </a>
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-gold-400 shrink-0" />
-                <span>{BRAND_CONFIG.contact.email}</span>
+                <a
+                  href={`mailto:${BRAND_CONFIG.contact.email}`}
+                  className="hover:text-gold-300 transition-colors text-ivory-100"
+                >
+                  {BRAND_CONFIG.contact.email}
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gold-400 shrink-0" />

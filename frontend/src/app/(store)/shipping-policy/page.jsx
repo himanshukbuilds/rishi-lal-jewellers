@@ -43,7 +43,14 @@ export default function ShippingPolicyPage() {
         <section className="space-y-2">
           <h2 className="font-serif text-base font-semibold text-emerald-950">4. Delivery Inspection</h2>
           <p>
-            Patrons are requested to inspect the external tamper-proof seal before providing the delivery confirmation OTP to the armored courier representative. In the unlikely event that the outer seal appears breached, please refuse delivery and immediately alert our concierge at {BRAND_CONFIG.contact.phone}.
+            Patrons are requested to inspect the external tamper-proof seal before providing the delivery confirmation OTP to the armored courier representative. In the unlikely event that the outer seal appears breached, please refuse delivery and immediately alert our concierge at{' '}
+            <a href={`tel:${BRAND_CONFIG.contact.phoneRaw}`} className="underline font-semibold text-emerald-950 hover:text-[#8B1E2D]">
+              {BRAND_CONFIG.contact.phone}
+            </a>{' '}
+            or{' '}
+            <a href={`tel:${BRAND_CONFIG.contact.phoneSecondaryRaw}`} className="underline font-semibold text-emerald-950 hover:text-[#8B1E2D]">
+              {BRAND_CONFIG.contact.phoneSecondary}
+            </a>.
           </p>
         </section>
       </div>

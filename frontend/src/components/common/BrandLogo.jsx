@@ -20,12 +20,12 @@ export default function BrandLogo({
   const [imageError, setImageError] = useState(false);
 
   const sizeMap = {
-    sm: { img: 38, text: 'text-base sm:text-lg', sub: 'text-[9px]' },
-    md: { img: 48, text: 'text-xl sm:text-2xl', sub: 'text-[10px]' },
-    lg: { img: 64, text: 'text-2xl sm:text-3xl', sub: 'text-xs' },
+    sm: { imgClass: 'w-7 h-7 sm:w-9 sm:h-9', text: 'text-xs sm:text-sm md:text-base', sub: 'text-[8px] sm:text-[9px]' },
+    md: { imgClass: 'w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12', text: 'text-sm sm:text-base md:text-xl lg:text-2xl', sub: 'text-[9px] sm:text-[10px]' },
+    lg: { imgClass: 'w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16', text: 'text-base sm:text-xl md:text-2xl lg:text-3xl', sub: 'text-[10px] sm:text-xs' },
   };
 
-  const { img, text, sub } = sizeMap[size] || sizeMap.md;
+  const { imgClass, text, sub } = sizeMap[size] || sizeMap.md;
 
   const textColor =
     variant === 'light'
@@ -44,38 +44,37 @@ export default function BrandLogo({
   return (
     <Link
       href="/"
-      className={`inline-flex items-center gap-2.5 sm:gap-3 group transition-opacity hover:opacity-95 ${className}`}
+      className={`inline-flex items-center gap-2 sm:gap-3 group transition-opacity hover:opacity-95 min-w-0 max-w-full ${className}`}
       aria-label={`${BRAND_CONFIG.name} Home`}
     >
-      <div className="relative flex items-center justify-center rounded-full overflow-hidden p-0.5 border border-gold-400/50 bg-ivory-50 shadow-xs transition-transform duration-300 group-hover:scale-105 shrink-0">
+      <div className={`relative flex items-center justify-center rounded-full overflow-hidden p-0.5 border border-gold-400/50 bg-ivory-50 shadow-xs transition-transform duration-300 group-hover:scale-105 shrink-0 ${imgClass}`}>
         {!imageError && BRAND_CONFIG.logo.image ? (
           <Image
             src={BRAND_CONFIG.logo.image}
             alt={BRAND_CONFIG.logo.alt}
-            width={img}
-            height={img}
-            className="object-contain rounded-full"
+            width={64}
+            height={64}
+            className="w-full h-full object-contain rounded-full"
             priority
             onError={() => setImageError(true)}
           />
         ) : (
           <div
-            style={{ width: img, height: img }}
-            className="flex items-center justify-center bg-emerald-950 text-gold-300 font-serif font-bold text-sm rounded-full border border-gold-400/40"
+            className="w-full h-full flex items-center justify-center bg-emerald-950 text-gold-300 font-serif font-bold text-xs sm:text-sm rounded-full border border-gold-400/40"
           >
             RL
           </div>
         )}
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col min-w-0">
         <span
-          className={`font-serif tracking-[0.16em] sm:tracking-[0.20em] font-semibold uppercase transition-colors leading-tight ${textColor} ${text}`}
+          className={`font-serif tracking-[0.10em] sm:tracking-[0.16em] md:tracking-[0.20em] font-semibold uppercase transition-colors leading-tight truncate ${textColor} ${text}`}
         >
           {BRAND_CONFIG.name}
         </span>
         {showTagline && (
           <span
-            className={`font-sans uppercase tracking-[0.24em] font-medium transition-colors ${subColor} ${sub}`}
+            className={`font-sans uppercase tracking-[0.16em] sm:tracking-[0.24em] font-medium transition-colors hidden sm:block truncate ${subColor} ${sub}`}
           >
             {BRAND_CONFIG.tagline}
           </span>
