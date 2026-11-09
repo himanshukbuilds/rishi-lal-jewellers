@@ -119,8 +119,11 @@ const CAMPAIGN_SLIDES = [
     titleColor: 'text-[#FFFFFF]',
     subtextColor: 'text-[#F8F5EF]/90',
     ctaClass: 'bg-[#FFFFFF] hover:bg-[#F8F5EF] text-[#8B1E2D] font-semibold border border-[#A83244]/30 shadow-md',
-    image: 'https://images.unsplash.com/photo-1611591475152-473523dd665e?auto=format&fit=crop&w=1600&q=85',
-    imageAlt: 'Fluid diamond tennis bracelet and minimalist gold creations',
+    image: '/images/banners/little-luxuries-jewelry.jpg',
+    imageAlt: 'Everyday Elegance - Diamond pendant necklace, floral earrings and bracelet in 18KT gold',
+    noVignette: true,
+    noWatermark: true,
+    objectPosition: 'object-center',
     features: [
       { icon: Sparkles, text: 'Tarnish-Resistant Solid Gold' },
       { icon: RotateCcw, text: '15-Day Exchange Privileges' },
@@ -416,20 +419,24 @@ export default function HeroCarousel() {
                         High-fashion jewelry model visual with seamless blend
                     ────────────────────────────────────────────────── */}
                     <div className="relative w-full md:w-[52%] lg:w-[55%] min-h-[220px] md:min-h-full overflow-hidden">
-                      {/* Gradient Vignette to merge image smoothly with the left dark background */}
-                      <div
-                        className="absolute inset-0 z-10 pointer-events-none hidden md:block"
-                        style={{
-                          background: `linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.6) 25%, transparent 60%)`,
-                        }}
-                      />
-                      {/* Mobile bottom-to-top gradient for legibility */}
-                      <div
-                        className="absolute inset-0 z-10 pointer-events-none md:hidden"
-                        style={{
-                          background: `linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.4) 50%, transparent 100%)`,
-                        }}
-                      />
+                      {!slide.noVignette && (
+                        <>
+                          {/* Gradient Vignette to merge image smoothly with the left dark background */}
+                          <div
+                            className="absolute inset-0 z-10 pointer-events-none hidden md:block"
+                            style={{
+                              background: `linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.6) 25%, transparent 60%)`,
+                            }}
+                          />
+                          {/* Mobile bottom-to-top gradient for legibility */}
+                          <div
+                            className="absolute inset-0 z-10 pointer-events-none md:hidden"
+                            style={{
+                              background: `linear-gradient(to top, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.4) 50%, transparent 100%)`,
+                            }}
+                          />
+                        </>
+                      )}
 
                       <Image
                         src={slide.image}
@@ -437,17 +444,19 @@ export default function HeroCarousel() {
                         fill
                         priority={index === 0}
                         sizes="(max-width: 768px) 100vw, 55vw"
-                        className="object-cover object-center transition-transform duration-1000 ease-out hover:scale-105"
+                        className={`object-cover ${slide.objectPosition || 'object-center'} transition-transform duration-1000 ease-out hover:scale-105`}
                         unoptimized
                       />
 
                       {slide.theme === 'bridal' && isActive && <BridalRibbons />}
 
                       {/* Subtle Rishi Lal Watermark Crest */}
-                      <div className="absolute top-4 right-4 z-10 hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-ivory-200 text-[10px] uppercase tracking-widest">
-                        <Sparkles className="w-3 h-3 text-gold-400" />
-                        <span>RISHI LAL ATELIER</span>
-                      </div>
+                      {!slide.noWatermark && (
+                        <div className="absolute top-4 right-4 z-10 hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/30 backdrop-blur-md border border-white/10 text-ivory-200 text-[10px] uppercase tracking-widest">
+                          <Sparkles className="w-3 h-3 text-gold-400" />
+                          <span>RISHI LAL ATELIER</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   )}
