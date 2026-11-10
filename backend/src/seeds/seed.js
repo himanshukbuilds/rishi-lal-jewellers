@@ -615,11 +615,21 @@ const couponsData = [
   }
 ];
 
-async function seedDatabase() {
+async function seedDatabase(options = {}) {
   try {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isCloudDb = Boolean(process.env.MONGODB_URI && process.env.MONGODB_URI.includes('mongodb+srv'));
+    const forceReset = options.forceReset || process.env.ALLOW_DB_RESET === 'true';
+
+    if ((isProduction || isCloudDb) && !forceReset) {
+      console.warn('[Seed] SAFETY GUARD: Automatic collection clearing and demo seeding is BLOCKED on cloud/Atlas or production databases.');
+      console.warn('[Seed] To protect existing data, seedDatabase() has been aborted. If you explicitly wish to reset, pass ALLOW_DB_RESET=true.');
+      return false;
+    }
+
     console.log('[Seed] Commencing Rishi Lal Jewellers luxury catalog seeding...');
 
-    // Clear existing collections
+    // Clear existing collections only when running in allowed local environment
     await User.deleteMany({});
     await Category.deleteMany({});
     await Product.deleteMany({});

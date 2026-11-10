@@ -25,10 +25,36 @@ app.use(
   })
 );
 
-// CORS configuration for Next.js frontend
+// CORS configuration supporting local development, configured CLIENT_URL, and Vercel domains
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  process.env.CLIENT_URL,
+  process.env.APP_BASE_URL,
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()) : [])
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, server-to-server, curl)
+      if (!origin) return callback(null, true);
+
+      // Check explicit allowed origins
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+
+      // Allow Vercel preview and production deployments (*.vercel.app)
+      try {
+        const url = new URL(origin);
+        if (url.hostname.endsWith('.vercel.app') || url.hostname === 'localhost') {
+          return callback(null, true);
+        }
+      } catch (e) {
+        // invalid origin url format
+      }
+
+      callback(new Error(`CORS policy does not allow access from origin: ${origin}`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

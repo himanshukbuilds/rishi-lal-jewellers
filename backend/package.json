@@ -7,6 +7,10 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node src/seeds/seed.js",
+    "backup:atlas": "node src/scripts/backupAtlas.js",
+    "migrate:atlas": "node src/scripts/migrateLocalToAtlas.js --execute",
+    "migrate:atlas:dry": "node src/scripts/migrateLocalToAtlas.js",
+    "test:integration": "node src/scripts/testAtlasIntegration.js",
     "test": "node --test"
   },
   "keywords": [

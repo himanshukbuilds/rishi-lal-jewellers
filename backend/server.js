@@ -13,11 +13,20 @@ const startServer = async () => {
     // 1. Connect to Database (Live Mongo or in-memory fallback)
     await connectDB();
 
-    // 2. Check if database needs auto-seeding
+    // 2. Database verification (Auto-seeding is strictly disabled in production & cloud Atlas environments)
     const productCount = await Product.countDocuments();
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isCloudDb = Boolean(process.env.MONGODB_URI && process.env.MONGODB_URI.includes('mongodb+srv'));
+    const allowAutoSeed = process.env.AUTO_SEED === 'true';
+
     if (productCount === 0) {
-      console.log('[Server] Database is empty. Auto-seeding initial luxury catalog...');
-      await seedDatabase();
+      if (!isProduction && !isCloudDb && allowAutoSeed) {
+        console.log('[Server] Local development database is empty and AUTO_SEED=true. Auto-seeding initial catalog...');
+        await seedDatabase();
+      } else {
+        console.log('[Server] Database has 0 products. Automatic demo seeding is DISABLED to protect cloud/production data.');
+        console.log('[Server] To populate products, run the dedicated migration script or add products via Admin Dashboard.');
+      }
     } else {
       console.log(`[Server] Database verified: ${productCount} jewelry creations loaded.`);
     }

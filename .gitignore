@@ -18,6 +18,14 @@ dist/
 # Uploads and temporary data
 backend/uploads/*
 !backend/uploads/.gitkeep
+backend/backups/
+scratch/
+.vercel
+
+# Certificates & keys
+*.pem
+*.key
+*.cert
 
 # Logs
 npm-debug.log*

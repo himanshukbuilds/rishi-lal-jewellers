@@ -3,15 +3,31 @@ const { MONGODB_URI } = require('./constants');
 
 let memoryServerInstance = null;
 
+const maskUri = (uri) => {
+  if (!uri) return '';
+  return uri.replace(/:\/\/([^:]+):([^@]+)@/, '://$1:****@');
+};
+
 const connectDB = async () => {
+  const isCloudDb = Boolean(MONGODB_URI && MONGODB_URI.includes('mongodb+srv'));
+  const isProduction = process.env.NODE_ENV === 'production';
+
   try {
-    // Attempt standard connection to MongoDB with a short timeout
+    // Attempt standard connection to MongoDB
     await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 2500,
+      serverSelectionTimeoutMS: isCloudDb ? 15000 : 5000,
+      connectTimeoutMS: isCloudDb ? 15000 : 5000,
     });
-    console.log(`[Database] Connected to external MongoDB successfully: ${MONGODB_URI}`);
+    console.log(`[Database] Connected to MongoDB successfully: ${maskUri(MONGODB_URI)}`);
   } catch (primaryErr) {
-    console.warn(`[Database] External MongoDB connection failed (${primaryErr.message}). Launching high-reliability embedded demonstration Mongo...`);
+    // In production or cloud environments, never fallback to in-memory database to prevent data loss
+    if (isProduction || isCloudDb) {
+      console.error(`[Database] FATAL: Connection to cloud MongoDB failed (${primaryErr.message}).`);
+      console.error('[Database] In-memory fallback is disabled for cloud/production to prevent data loss.');
+      throw primaryErr;
+    }
+
+    console.warn(`[Database] Local MongoDB connection failed (${primaryErr.message}). Launching local in-memory demonstration instance...`);
     try {
       const { MongoMemoryServer } = require('mongodb-memory-server');
       memoryServerInstance = await MongoMemoryServer.create({
