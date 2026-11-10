@@ -11,6 +11,7 @@ import BrandStory from '@/components/home/BrandStory';
 import CraftsmanshipHeritage from '@/components/home/CraftsmanshipHeritage';
 import GiftGuide from '@/components/home/GiftGuide';
 import Testimonials from '@/components/home/Testimonials';
+import VisitOurStoreSection from '@/components/store/VisitOurStoreSection';
 import NewsletterSection from '@/components/home/NewsletterSection';
 import TrustBar from '@/components/home/TrustBar';
 
@@ -29,6 +30,7 @@ export default function HomePage() {
       <GiftGuide />
       <CraftsmanshipHeritage />
       <Testimonials />
+      <VisitOurStoreSection />
       <NewsletterSection />
       <TrustBar />
     </div>
