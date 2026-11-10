@@ -22,7 +22,7 @@ const GENDER_COLLECTIONS = [
     href: '/categories/men',
     image: '/images/gender/men.jpg',
     alt: 'Sophisticated Indian men wearing luxury gold chains, bracelets and signet rings',
-    itemCount: '6+ Creations',
+    itemCount: '30 Creations',
   },
   {
     id: 'kids',
@@ -31,7 +31,7 @@ const GENDER_COLLECTIONS = [
     href: '/categories/kids',
     image: '/images/gender/kids.jpg',
     alt: 'Joyful Indian mother and young daughter wearing delicate heirloom children jewellery',
-    itemCount: '4+ Creations',
+    itemCount: '30 Creations',
   },
 ];
 

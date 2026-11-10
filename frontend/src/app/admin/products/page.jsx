@@ -276,7 +276,18 @@ export default function AdminProductsPage() {
     const payload = {
       name: trimmedName,
       category: formData.category,
-      categorySlug: formData.category.toLowerCase(),
+      categorySlug:
+        formData.category === "Men's Jewellery"
+          ? 'men'
+          : formData.category === "Kids' Jewellery"
+          ? 'kids'
+          : formData.category.toLowerCase(),
+      gender:
+        formData.category === "Men's Jewellery"
+          ? 'men'
+          : formData.category === "Kids' Jewellery"
+          ? 'kids'
+          : (formData.gender || 'women'),
       price: formData.pricingType === 'price-on-request' ? 0 : priceNum,
       originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
       metal: formData.metal,
@@ -378,6 +389,8 @@ export default function AdminProductsPage() {
             <option value="Rings">Rings</option>
             <option value="Necklaces">Necklaces</option>
             <option value="Bangles">Bangles</option>
+            <option value="Men's Jewellery">Men's Jewellery</option>
+            <option value="Kids' Jewellery">Kids' Jewellery</option>
             <option value="Gifts">Gifts</option>
           </select>
         </div>
@@ -581,6 +594,8 @@ export default function AdminProductsPage() {
                     <option value="Rings">Rings</option>
                     <option value="Necklaces">Necklaces</option>
                     <option value="Bangles">Bangles</option>
+                    <option value="Men's Jewellery">Men's Jewellery</option>
+                    <option value="Kids' Jewellery">Kids' Jewellery</option>
                     <option value="Gifts">Gifts</option>
                   </select>
                 </div>
@@ -599,6 +614,7 @@ export default function AdminProductsPage() {
                     <option value="18K White Gold">18K White Gold</option>
                     <option value="18K Rose Gold">18K Rose Gold</option>
                     <option value="Platinum 950">Platinum 950</option>
+                    <option value="925 Sterling Silver">925 Sterling Silver</option>
                   </select>
                 </div>
 

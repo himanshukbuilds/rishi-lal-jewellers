@@ -14,6 +14,8 @@ import EarringsLandingPage from '../../earrings/page';
 import RingsLandingPage from '../../rings/page';
 import BanglesLandingPage from '../../bangles/page';
 import BridalCollectionPage from '@/components/bridal/BridalCollectionPage';
+import MensCollectionPage from '@/components/mens/MensCollectionPage';
+import KidsCollectionPage from '@/components/kids/KidsCollectionPage';
 
 const categoryBanners = {
   traditional: { title: 'Traditional Wear', tagline: 'Classic gold jewelry with a heritage soul', desc: 'Discover heritage inspired necklaces, jhumkas, bangles and timeless gold creations.', bannerImg: '/images/categories/traditional.jpg' },
@@ -135,6 +137,14 @@ export default function CategoryPage() {
 
   if (slug === 'bridal') {
     return <BridalCollectionPage />;
+  }
+
+  if (slug === 'men' || slug === 'mens') {
+    return <MensCollectionPage />;
+  }
+
+  if (slug === 'kids' || slug === 'children') {
+    return <KidsCollectionPage />;
   }
 
   const [sort, setSort] = useState('newest');

@@ -16,6 +16,7 @@ import {
   Sparkles,
   TrendingUp,
   ShieldCheck,
+  Shield,
   LogOut,
   Package,
   LayoutDashboard,
@@ -28,6 +29,7 @@ import {
   Circle,
   Sun,
   Gift,
+  Baby,
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import { BRAND_CONFIG } from '@/config/brandConfig';
@@ -53,6 +55,8 @@ const NAV_CATEGORIES = [
   { name: 'Bangles', href: '/bangles', icon: Circle },
   { name: 'Casual Wear', href: '/daily-wear', icon: Sun },
   { name: 'Wedding', href: '/wedding', icon: Heart },
+  { name: 'Men', href: '/men', icon: Shield },
+  { name: 'Kids', href: '/kids', icon: Baby },
   { name: 'Gifting', href: '/gifting', icon: Gift },
 ];
 
@@ -614,7 +618,9 @@ export default function Header() {
               const isNecklaceActive = cat.name === 'Necklaces' && (pathname === '/necklaces' || pathname === '/categories/necklaces');
               const isRingsActive = cat.name === 'Rings' && (pathname === '/rings' || pathname === '/categories/rings');
               const isBanglesActive = cat.name === 'Bangles' && (pathname === '/bangles' || pathname === '/categories/bangles');
-              const isActive = isGoldActive || isDiamondActive || isEarringsActive || isNecklaceActive || isRingsActive || isBanglesActive || pathname === cat.href || (cat.href !== '/products' && pathname?.startsWith(cat.href));
+              const isMenActive = cat.name === 'Men' && (pathname === '/men' || pathname === '/categories/men');
+              const isKidsActive = cat.name === 'Kids' && (pathname === '/kids' || pathname === '/categories/kids');
+              const isActive = isGoldActive || isDiamondActive || isEarringsActive || isNecklaceActive || isRingsActive || isBanglesActive || isMenActive || isKidsActive || pathname === cat.href || (cat.href !== '/products' && pathname?.startsWith(cat.href));
               return (
                 <li key={cat.name}>
                   <Link
