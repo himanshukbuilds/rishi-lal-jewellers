@@ -2,7 +2,7 @@ services:
   - type: web
     name: rishi-lal-jewellers-api
     env: node
-    plan: starter
+    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
