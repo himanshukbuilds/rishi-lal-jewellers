@@ -363,10 +363,9 @@ export default function WeddingBookExperience() {
                     alt={`${currentBride.title} - Rishi Lal Jewellers`}
                     fill
                     priority
-                    quality={100}
+                    quality={85}
                     sizes="(max-width: 1440px) 100vw, 1440px"
                     className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.01]"
-                    unoptimized
                   />
 
                   {/* Top Badge */}
@@ -463,7 +462,6 @@ export default function WeddingBookExperience() {
                               quality={85}
                               sizes="64px"
                               className="object-cover"
-                              unoptimized
                             />
                           </div>
                           <p className="text-[9px] font-serif text-center text-[#540D1D] mt-1 truncate">
@@ -485,13 +483,12 @@ export default function WeddingBookExperience() {
                       alt={`${currentBride.title} Model - Rishi Lal Jewellers`}
                       fill
                       priority
-                      quality={100}
+                      quality={85}
                       sizes="(max-width: 768px) 100vw, 55vw"
                       className="object-cover transition-transform duration-700 hover:scale-[1.01]"
                       style={{
                         objectPosition: currentBride.imagePosition || 'center top',
                       }}
-                      unoptimized
                     />
 
                     {/* Soft Feather Gradient at Left Edge Blending into Ivory Page */}
@@ -561,10 +558,9 @@ export default function WeddingBookExperience() {
                           src={bride.cardImage}
                           alt={`${bride.title} Preview`}
                           fill
-                          quality={95}
+                          quality={85}
                           sizes="80px"
                           className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                          unoptimized
                         />
                         {isActive && (
                           <div className="absolute inset-0 bg-[#540D1D]/20 pointer-events-none" />
@@ -628,10 +624,9 @@ export default function WeddingBookExperience() {
                           src={bride.cardImage}
                           alt={`${bride.title} Preview`}
                           fill
-                          quality={90}
+                          quality={85}
                           sizes="84px"
                           className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                          unoptimized
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       </div>

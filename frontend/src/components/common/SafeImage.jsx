@@ -27,6 +27,9 @@ function isConfiguredRemoteHost(urlStr) {
   try {
     const parsed = new URL(trimmed);
     const host = parsed.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host.endsWith('.onrender.com')) {
+      return true;
+    }
     return KNOWN_CONFIGURED_HOSTNAMES.some(
       (known) =>
         host === known ||

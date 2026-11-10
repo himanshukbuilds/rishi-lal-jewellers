@@ -22,7 +22,6 @@ export default function BridalShowcase() {
                 src="/images/categories/bridal.jpg"
                 alt="Rishi Lal Royal Bridal Suite"
                 fill
-                priority
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover object-center"
               />

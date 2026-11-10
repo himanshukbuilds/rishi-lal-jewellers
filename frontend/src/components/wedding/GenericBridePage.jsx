@@ -67,11 +67,10 @@ export default function GenericBridePage({ config }) {
             alt={`${title} – Rishi Lal Jewellers`}
             fill
             priority
-            quality={100}
+            quality={85}
             sizes="100vw"
             className="object-cover transition-transform duration-700"
             style={{ objectPosition: imagePosition }}
-            unoptimized
           />
           {/* Gradient overlay for text legibility */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent pointer-events-none" />

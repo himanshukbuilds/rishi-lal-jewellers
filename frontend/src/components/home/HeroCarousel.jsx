@@ -314,16 +314,9 @@ export default function HeroCarousel() {
                       className="block relative w-full h-[340px] sm:h-[380px] md:h-[420px] lg:h-[460px] cursor-pointer group overflow-hidden"
                       aria-label={slide.cta || 'Explore Collections'}
                     >
-                      {/* Ambient luxury backdrop that fills the entire card container with matching tone */}
-                      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                        <Image
-                          src={slide.image}
-                          alt=""
-                          fill
-                          priority={index === 0}
-                          className="object-cover object-center blur-2xl scale-110 opacity-70 brightness-95"
-                          unoptimized
-                        />
+                      {/* Ambient luxury backdrop that fills the entire card container with matching tone without duplicate network requests */}
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+                        <div className={`absolute inset-0 bg-gradient-to-r ${slide.bgGradient} opacity-90`} />
                         <div className={`absolute inset-0 ${slide.ambientOverlay || 'bg-gradient-to-r from-[#200A10]/50 via-transparent to-[#200A10]/50'}`} />
                         <div className="absolute inset-0 bg-black/10" />
                       </div>
@@ -335,14 +328,13 @@ export default function HeroCarousel() {
                           alt={slide.imageAlt}
                           fill
                           priority={index === 0}
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1400px"
-                          quality={100}
+                          sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1400px"
+                          quality={85}
                           className={`
                             object-contain object-center
                             transition-transform duration-[1.2s] ease-out
                             ${isActive ? 'scale-100' : 'scale-[0.99]'}
                           `}
-                          unoptimized
                         />
                       </div>
 
@@ -443,9 +435,9 @@ export default function HeroCarousel() {
                         alt={slide.imageAlt}
                         fill
                         priority={index === 0}
+                        quality={85}
                         sizes="(max-width: 768px) 100vw, 55vw"
                         className={`object-cover ${slide.objectPosition || 'object-center'} transition-transform duration-1000 ease-out hover:scale-105`}
-                        unoptimized
                       />
 
                       {slide.theme === 'bridal' && isActive && <BridalRibbons />}

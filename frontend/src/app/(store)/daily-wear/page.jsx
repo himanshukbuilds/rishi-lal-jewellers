@@ -24,7 +24,7 @@ export default function DailyWearPage({ searchParams }) {
           <Image src="/images/daily-wear/casual-daily-wear-hero.jpg" alt="Smiling woman wearing delicate everyday gold earrings, pendant necklace and ring" fill priority sizes="100vw" className="object-cover object-[60%_top]" />
           <div className="absolute inset-0 bg-[linear-gradient(0deg,#32070c_0%,rgba(50,7,12,.12)_65%,rgba(50,7,12,.02)_100%)]" />
         </div>
-        <Image src="/images/daily-wear/casual-daily-wear-hero.jpg" alt="" fill priority sizes="100vw" className="hidden object-cover object-[center_40%] lg:block" />
+        <Image src="/images/daily-wear/casual-daily-wear-hero.jpg" alt="" fill sizes="100vw" className="hidden object-cover object-[center_40%] lg:block" />
         <div className="absolute inset-0 hidden bg-[linear-gradient(90deg,#32070c_0%,rgba(50,7,12,.98)_29%,rgba(50,7,12,.88)_43%,rgba(50,7,12,.48)_57%,rgba(50,7,12,.04)_78%),linear-gradient(0deg,#32070c_18%,transparent_46%)] lg:block" />
 
         <svg aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full opacity-50" viewBox="0 0 1600 900" fill="none" preserveAspectRatio="none">

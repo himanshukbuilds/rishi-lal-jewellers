@@ -4,6 +4,11 @@ const nextConfig = {
   // developer server is running against the default .next directory.
   distDir: process.env.NEXT_DIST_DIR || '.next',
   images: {
+    formats: ['image/avif', 'image/webp'],
+    // Cache optimized images on edge CDN for 24 hours (86,400s) to balance CDN performance with fresh product updates
+    minimumCacheTTL: 86400,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
         protocol: 'https',
@@ -48,6 +53,28 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.onrender.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '5001',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '5001',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
       },
     ],
   },

@@ -70,8 +70,21 @@ export default function DailyWearProducts({ showFilters = false, showViewAll = f
         {isLoading && <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">{Array.from({ length: showFilters ? 8 : 4 }, (_, i) => <div key={i} className="aspect-[3/4] animate-pulse bg-[#EEE7DC]" />)}</div>}
         {isError && !isLoading && <p className="border border-[#E6DFD3] bg-white p-6 sm:p-8 text-center text-xs sm:text-sm text-[#716D64]">The Daily Wear collection is temporarily unavailable.</p>}
         {!isLoading && !isError && products.length > 0 && <>
-          <p className="mb-3 sm:mb-4 text-xs text-[#716D64]">Showing {products.length} designs</p>
-          <div className="grid grid-cols-2 items-stretch gap-2.5 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">{products.map((product) => <ProductCard key={product._id} product={product} />)}</div>
+          {(() => {
+            const displayed = showViewAll ? products.slice(0, 8) : products;
+            return (
+              <>
+                <p className="mb-3 sm:mb-4 text-xs text-[#716D64]">
+                  Showing {showViewAll ? `${displayed.length} of ${products.length}` : products.length} designs
+                </p>
+                <div className="grid grid-cols-2 items-stretch gap-2.5 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+                  {displayed.map((product) => (
+                    <ProductCard key={product._id} product={product} />
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </>}
         {!isLoading && !isError && products.length === 0 && <div className="border border-[#E6DFD3] bg-white p-10 text-center"><h3 className="font-serif text-xl text-[#17382D]">No designs found</h3><p className="mt-2 text-sm text-[#716D64]">Try another category, metal or search.</p><button type="button" onClick={() => { setCategory('all'); setMetal('all'); setPriceRange('all'); setSort('recommended'); setSearch(''); }} className="mt-4 text-xs uppercase tracking-wider text-[#7D2934] underline">Reset filters</button></div>}
       </div>

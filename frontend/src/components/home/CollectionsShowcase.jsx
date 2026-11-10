@@ -39,7 +39,6 @@ export default function CollectionsShowcase() {
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-              priority
             />
             {/* Soft bottom-to-top gradient for maximum contrast */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-90" />

@@ -164,11 +164,9 @@ export default function RajasthaniBridePage() {
               alt="Rajasthani Bride - Royal Grandeur & Heritage Polki by Rishi Lal Jewellers"
               fill
               priority
-              quality={100}
+              quality={85}
               sizes="(max-width: 1560px) 100vw, 1560px"
               className="object-cover object-center"
-              style={{ imageRendering: 'crisp-edges' }}
-              unoptimized
             />
           </div>
         </div>
@@ -254,7 +252,6 @@ export default function RajasthaniBridePage() {
                     fill
                     sizes="(max-width: 768px) 45vw, 22vw"
                     className="object-cover object-center"
-                    unoptimized
                   />
                 </div>
                 <h3 className="font-serif text-sm sm:text-base font-semibold text-[#540D1D] text-center">

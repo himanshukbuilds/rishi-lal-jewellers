@@ -29,19 +29,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" style={{ backgroundColor: '#2A080E' }}>
       <head>
-        <link
-          rel="preload"
-          as="image"
-          href="/images/splash/cinematic-ruby-ribbons.png"
-          type="image/png"
-          fetchPriority="high"
-        />
-        <link
-          rel="preload"
-          as="image"
-          href="/images/splash/bridal-intro-ruby-background.png"
-          type="image/png"
-        />
         <style dangerouslySetInnerHTML={{
           __html: `
             html, body {

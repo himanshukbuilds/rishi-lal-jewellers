@@ -12,7 +12,7 @@ const leftColumnCategories = [
     alt: 'Bridal jewellery collection',
     heightClass: 'h-[220px] sm:h-[320px] md:h-[380px] lg:h-[420px]',
     objectPosition: 'object-[center_20%]',
-    priority: true,
+    priority: false,
   },
   {
     name: 'Traditional Wear',
@@ -33,7 +33,7 @@ const rightColumnCategories = [
     alt: 'Casual and daily wear jewellery collection',
     heightClass: 'h-[260px] sm:h-[380px] md:h-[460px] lg:h-[540px]',
     objectPosition: 'object-[center_20%]',
-    priority: true,
+    priority: false,
   },
   {
     name: 'Ethnic & Festive',
